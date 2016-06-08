@@ -125,12 +125,11 @@ public class AgentBase : MonoBehaviour {
                     }
                 }
 
-                if(target != null)
+                if(target != null && GetStartGuardPointDistance() < aggroDistance * 1.5f)
                 {
                     AttackTarget();
                 }
-
-                if(Vector3.Distance(thisTransform.position, startGuardPos) > aggroDistance * 1.5f)
+                else
                 {
                     target = null;
                     agent.SetDestination(startGuardPos);
