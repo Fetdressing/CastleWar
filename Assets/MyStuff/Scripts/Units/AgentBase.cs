@@ -13,6 +13,9 @@ public class AgentBase : MonoBehaviour {
     private Health healthS;
     private AgentStats statsS;
     private NavMeshAgent agent;
+    private Camera mainCamera;
+    public Transform uiCanvas;
+    public GameObject selectionMarkerObject;
 
     public string[] friendlyLayers;
     public string[] enemyLayers;
@@ -57,6 +60,9 @@ public class AgentBase : MonoBehaviour {
         agent = thisTransform.GetComponent<NavMeshAgent>();
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
+        mainCamera = Camera.main;
+
+        ToggleSelMarker(false);
 
         InitializeStats();
         InitializeLayerMask();
@@ -94,6 +100,11 @@ public class AgentBase : MonoBehaviour {
                 }
             }
 
+            if (LayerMask.NameToLayer(enemyLayers[i]) == thisTransform.gameObject.layer)
+            {
+                isValid = false;
+            }
+
             if (isValid == true)
             {
                 enemyOnly |= (1 << LayerMask.NameToLayer(enemyLayers[i]));
@@ -104,7 +115,10 @@ public class AgentBase : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if(target != null)
+        uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
+   mainCamera.transform.rotation * Vector3.up);
+
+        if (target != null)
         {
             targetDistance = GetTargetDistance();
         }
@@ -115,11 +129,11 @@ public class AgentBase : MonoBehaviour {
                 tempTargets = ScanEnemies(aggroDistance);
                 if(tempTargets != null && tempTargets.Length != 0)
                 {
-                    target = ClosestTransform(tempTargets);
+                    EngageTarget(ClosestTransform(tempTargets));
                 }
                 else
                 {
-                    if(GetStartGuardPointDistance() > 4) //så att den inte ska jucka
+                    if(GetStartGuardPointDistance() > 1.5f) //så att den inte ska jucka
                     {
                         agent.SetDestination(startGuardPos);
                     }
@@ -141,7 +155,7 @@ public class AgentBase : MonoBehaviour {
                 tempTargets = ScanEnemies(aggroDistance);
                 if (tempTargets != null && tempTargets.Length != 0)
                 {
-                    target = ClosestTransform(tempTargets);
+                    EngageTarget(ClosestTransform(tempTargets));                    
                 }
                 else //inga targets, återvänd till pathen typ
                 {
@@ -152,7 +166,7 @@ public class AgentBase : MonoBehaviour {
                 break;
 
             case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
-                if(GetMovePosDistance() < 3)
+                if(GetMovePosDistance() < 1.5f)
                 {
                     Guard();
                 }
@@ -178,9 +192,10 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual void EngageTarget()
+    public virtual void EngageTarget(Transform t)
     {
-
+        target = t;
+        targetDistance = GetTargetDistance();
     }
 
     public virtual void AttackMove(Vector3 pos)
@@ -266,6 +281,11 @@ public class AgentBase : MonoBehaviour {
     public float GetMovePosDistance()
     {
         return Vector3.Distance(thisTransform.position, movePos);
+    }
+
+    public void ToggleSelMarker(bool b)
+    {
+        selectionMarkerObject.SetActive(b);
     }
 }
 

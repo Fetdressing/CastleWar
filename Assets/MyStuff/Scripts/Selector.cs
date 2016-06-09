@@ -42,8 +42,9 @@ public class Selector : MonoBehaviour {
             }
             else if(mouseInput != null)
             {
-                targets.Clear();
-                targets.Add(mouseInput);
+                ClearTargets();
+                //targets.Add(mouseInput);
+                AddTarget(mouseInput);
             }
             //else
             //{
@@ -92,17 +93,17 @@ public class Selector : MonoBehaviour {
         {
             if(targets[i] == null || targets[i].gameObject.activeSelf == false)
             {
-                targets.RemoveAt(i);
+                RemoveTarget(i);
             }
         }
     }
 
     void AddTarget(Transform newTarget)
     {
-        bool exists = false;
+        bool exists = false; //kolla så att den inte redan är med i listan
         for (int i = 0; i < targets.Count; i++)
         {
-            Debug.Log(targets[i].ToString());
+            //Debug.Log(targets[i].ToString());
             if(newTarget == targets[i])
             {
                 exists = true;
@@ -111,8 +112,27 @@ public class Selector : MonoBehaviour {
 
         if (exists == false)
         {
+            newTarget.GetComponent<AgentBase>().ToggleSelMarker(true);
             targets.Add(newTarget);
         }
+    }
+
+    void RemoveTarget(int i) //removes target by index
+    {
+        if (targets[i] != null)
+        {
+            targets[i].GetComponent<AgentBase>().ToggleSelMarker(false);
+        }
+        targets.RemoveAt(i);
+    }
+
+    void ClearTargets()
+    {
+        for(int i = 0; i < targets.Count; i++)
+        {
+            targets[i].GetComponent<AgentBase>().ToggleSelMarker(false);            
+        }
+        targets.Clear();
     }
 
     void OrderMove(Vector3 pos)
@@ -169,24 +189,29 @@ public class Selector : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             // Reset
-            targets.Clear();
-            GameObject[] selectableObjects = GameObject.FindGameObjectsWithTag("Selectable");
-            Rect rect = new Rect(initialSelectionBoxAnchor.x, initialSelectionBoxAnchor.y, difference.x, difference.y);
-            for (int i = 0; i < selectableObjects.Length; i++)
+            if (Mathf.Abs(difference.x) > Screen.width/100 || Mathf.Abs(difference.y) > Screen.height / 100) //så att ett simpelt klick inte ska avmarkera den vanliga
             {
-                Vector3 selPos = Camera.main.WorldToScreenPoint(selectableObjects[i].transform.position);
-                //selPos = new Vector3(selPos.x * Screen.width, selPos.y * Screen.height, selPos.z);
-                //Debug.Log(difference.ToString());
-                
-                if (rect.Contains(selPos, true))
+                ClearTargets();
+                GameObject[] selectableObjects = GameObject.FindGameObjectsWithTag("Selectable");
+                Rect rect = new Rect(initialSelectionBoxAnchor.x, initialSelectionBoxAnchor.y, difference.x, difference.y);
+                for (int i = 0; i < selectableObjects.Length; i++)
                 {
-                    targets.Add(selectableObjects[i].transform);
+                    Vector3 selPos = Camera.main.WorldToScreenPoint(selectableObjects[i].transform.position);
+                    //selPos = new Vector3(selPos.x * Screen.width, selPos.y * Screen.height, selPos.z);
+                    //Debug.Log(difference.ToString());
+
+                    if (rect.Contains(selPos, true))
+                    {
+                        //targets.Add(selectableObjects[i].transform);
+                        AddTarget(selectableObjects[i].transform);
+                    }
                 }
             }
 
             initialSelectionBoxAnchor = Vector2.zero;
             selectionBox.anchoredPosition = Vector2.zero;
             selectionBox.sizeDelta = Vector2.zero;
+            
         }
     }
 }

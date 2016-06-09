@@ -22,7 +22,7 @@ public class Health : MonoBehaviour {
     public bool isHealable = true;
 
     private Camera mainCamera;
-    public Transform uiCanvas;
+    public GameObject uiHealth;
     public Image healthBar;
 
 	// Use this for initialization
@@ -42,11 +42,11 @@ public class Health : MonoBehaviour {
 
         if(currHealth >= maxHealth)
         {
-            uiCanvas.gameObject.SetActive(false);
+            uiHealth.SetActive(false);
         }
         else
         {
-            uiCanvas.gameObject.SetActive(true);
+            uiHealth.SetActive(true);
 
             if(healthRegTimer < Time.time)
             {
@@ -54,9 +54,6 @@ public class Health : MonoBehaviour {
                 AddHealth(healthRegAmount);
             }
         }
-
-        uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
-           mainCamera.transform.rotation * Vector3.up);
 
 	}
 
