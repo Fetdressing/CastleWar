@@ -20,8 +20,11 @@ public class Selector : MonoBehaviour {
     private Vector2 initialSelectionBoxAnchor = Vector2.zero;
     //selectionBox
 
-	// Use this for initialization
-	void Start () {
+    enum MoveState { Move, AttackMove, Patrol };
+    private MoveState moveState = MoveState.Move;
+
+    // Use this for initialization
+    void Start () {
         thisTransform = this.transform;
 
         //selMask = selectLayerMask.value;
@@ -32,37 +35,10 @@ public class Selector : MonoBehaviour {
         SelectionBox();
         CheckTargetsAlive();
 
-        Transform mouseInput = GetMouseTarget();
+        GetMouseInput();
 
-        if(Input.GetButtonDown("Fire1"))
-        {
-            if (mouseInput != null && Input.GetButton("Add"))
-            {
-                AddTarget(mouseInput);
-            }
-            else if(mouseInput != null)
-            {
-                ClearTargets();
-                //targets.Add(mouseInput);
-                AddTarget(mouseInput);
-            }
-            //else
-            //{
-            //    targets.Clear();
-            //}
-        }
-        else if(Input.GetButtonDown("Fire2"))
-        {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out mouseHit, Mathf.Infinity))
-            {
-                OrderMove(mouseHit.point);
-            }
-        }
-
-        
-        if (mouseInput != null || targets.Count >= 1)
+        if (targets.Count >= 1)
         {
             uiDisplayer.SetActive(true);
         }
@@ -70,6 +46,7 @@ public class Selector : MonoBehaviour {
         {
             uiDisplayer.SetActive(false);
         }
+        GetMoveState(); //behöver vara sist
     }
 
     Transform GetMouseTarget()
@@ -85,6 +62,18 @@ public class Selector : MonoBehaviour {
         }
 
         return null;
+    }
+
+    bool GetMousePosition(ref Vector3 pos)
+    {
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out mouseHit, Mathf.Infinity))
+        {
+            pos = mouseHit.point;
+            return true;
+        }
+            return false;
     }
 
     void CheckTargetsAlive()
@@ -135,12 +124,36 @@ public class Selector : MonoBehaviour {
         targets.Clear();
     }
 
+    void CommandToPos(Vector3 pos)
+    {
+        switch (moveState)
+        {
+            case MoveState.Move:
+                OrderMove(pos);
+                break;
+
+            case MoveState.AttackMove:
+                OrderAttackMove(pos);
+                break;
+        }
+    }
+
     void OrderMove(Vector3 pos)
     {
         for (int i = 0; i < targets.Count; i++)
         {
             targets[i].GetComponent<AgentBase>().Move(pos);
         }
+        moveState = MoveState.Move;
+    }
+
+    void OrderAttackMove(Vector3 pos)
+    {
+        for (int i = 0; i < targets.Count; i++)
+        {
+            targets[i].GetComponent<AgentBase>().AttackMove(pos);
+        }
+        moveState = MoveState.Move;
     }
 
     void SelectionBox()
@@ -191,17 +204,25 @@ public class Selector : MonoBehaviour {
             // Reset
             if (Mathf.Abs(difference.x) > Screen.width/100 || Mathf.Abs(difference.y) > Screen.height / 100) //så att ett simpelt klick inte ska avmarkera den vanliga
             {
-                ClearTargets();
+           
                 GameObject[] selectableObjects = GameObject.FindGameObjectsWithTag("Selectable");
                 Rect rect = new Rect(initialSelectionBoxAnchor.x, initialSelectionBoxAnchor.y, difference.x, difference.y);
+
+                bool foundSelection = false; //så att man ska kunna tömma den gamla arrayen om en ny selectas
                 for (int i = 0; i < selectableObjects.Length; i++)
                 {
                     Vector3 selPos = Camera.main.WorldToScreenPoint(selectableObjects[i].transform.position);
-                    //selPos = new Vector3(selPos.x * Screen.width, selPos.y * Screen.height, selPos.z);
-                    //Debug.Log(difference.ToString());
 
                     if (rect.Contains(selPos, true))
                     {
+                        if (foundSelection == false)
+                        {
+                            if (!Input.GetButton("Add")) //men vill man däremot selecta fler så ska man få det
+                            {
+                                ClearTargets();
+                            }
+                            foundSelection = true;
+                        }
                         //targets.Add(selectableObjects[i].transform);
                         AddTarget(selectableObjects[i].transform);
                     }
@@ -212,6 +233,63 @@ public class Selector : MonoBehaviour {
             selectionBox.anchoredPosition = Vector2.zero;
             selectionBox.sizeDelta = Vector2.zero;
             
+        }
+    }
+
+    void GetMouseInput()
+    {
+        Vector3 mouseHitPos = Vector3.zero;
+        Transform mouseInput = GetMouseTarget();
+        bool mouseHitValid = GetMousePosition(ref mouseHitPos);
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            if (moveState == MoveState.AttackMove && mouseHitValid) //specialcase på attackmove för då ska den bara attackmova
+            {
+                OrderAttackMove(mouseHitPos);
+            }
+            else
+            {
+                if (mouseInput != null && Input.GetButton("Add"))
+                {
+                    AddTarget(mouseInput);
+                }
+                else if (mouseInput != null)
+                {
+                    ClearTargets();
+                    //targets.Add(mouseInput);
+                    AddTarget(mouseInput);
+                }
+                //else
+                //{
+                //    targets.Clear();
+                //}
+            }
+        }
+        else if (Input.GetButtonDown("Fire2"))
+        {
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (mouseHitValid)
+            {
+                CommandToPos(mouseHitPos); //have target enemys aswell in here?
+            }
+        }
+    }
+
+    void GetMoveState()
+    {
+        if (Input.GetButtonDown("MoveCommand"))
+        {
+            moveState = MoveState.Move;
+        }
+        else if (Input.GetButtonDown("AttackMoveCommand"))
+        {
+            moveState = MoveState.AttackMove;
+        }
+        else if (Input.GetButtonDown("Fire1") || (Input.GetButtonDown("Cancel"))) //escape
+        {
+            moveState = MoveState.Move; //stänger av den igen
         }
     }
 }

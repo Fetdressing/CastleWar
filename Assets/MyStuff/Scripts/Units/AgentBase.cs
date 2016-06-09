@@ -162,7 +162,22 @@ public class AgentBase : MonoBehaviour {
                     agent.SetDestination(movePos);
                 }
 
-                //den borde tröttna på att jaga efter en viss stund
+
+                if (target != null && GetTargetDistance() < aggroDistance * 1.05f)
+                {
+                    AttackTarget();
+                }
+                else
+                {
+                    target = null;
+                    agent.SetDestination(movePos);
+                }
+                //den borde tröttna på att jaga efter en viss stund also
+
+                if (GetMovePosDistance() < 1.5f)
+                {
+                    Guard();
+                }
                 break;
 
             case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
@@ -201,7 +216,9 @@ public class AgentBase : MonoBehaviour {
     public virtual void AttackMove(Vector3 pos)
     {
         state = UnitState.AttackMoving;
+        agent.avoidancePriority = 50;
         movePos = pos;
+        agent.SetDestination(movePos);
     }
 
     public virtual void Move(Vector3 pos) //dålig prioritet när man rör på sig så man inte knuffar bort någon! tvärtom på stillastående
