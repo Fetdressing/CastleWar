@@ -6,27 +6,28 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(AgentStats))]
 public class AgentBase : MonoBehaviour {
-    enum UnitState { AttackMoving, Moving, Guarding};
-    private UnitState state = UnitState.Guarding;
+    public enum UnitState { AttackMoving, Moving, Guarding};
+    [HideInInspector]
+    public UnitState state = UnitState.Guarding;
 
-    private Transform thisTransform;
-    private Health healthS;
-    private AgentStats statsS;
-    private NavMeshAgent agent;
-    private Camera mainCamera;
+    [HideInInspector]public Transform thisTransform;
+    [HideInInspector]public Health healthS;
+    [HideInInspector]public AgentStats statsS;
+    [HideInInspector]public NavMeshAgent agent;
+    [HideInInspector]public Camera mainCamera;
     public Transform uiCanvas;
     public GameObject selectionMarkerObject;
 
     public string[] friendlyLayers;
     public string[] enemyLayers;
 
-    private LayerMask friendlyOnly;
-    private LayerMask enemyOnly;
+    [HideInInspector]public LayerMask friendlyOnly;
+    [HideInInspector]public LayerMask enemyOnly;
 
-    public float aggroDistance = 50;
-    private List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
-    private Transform target;
-    private float targetDistance; //så jag inte behöver räkna om denna på flera ställen
+    public float aggroDistance = 20;
+    [HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
+    [HideInInspector]public Transform target;
+    [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
 
     //stats****
     [Header("Stats")]
@@ -40,7 +41,8 @@ public class AgentBase : MonoBehaviour {
     public float startAttackSpeed = 1.2f;
     [HideInInspector]
     public float attackSpeed; //public så att agentStats kan påverka den
-    private float attackSpeedTimer = 0.0f;
+    [HideInInspector]
+    public float attackSpeedTimer = 0.0f;
 
     public float startAttackRange = 4;
     [HideInInspector]
@@ -51,11 +53,16 @@ public class AgentBase : MonoBehaviour {
     //variables used in different states:
     Transform[] tempTargets;
 
-    private Vector3 startGuardPos;
-    private Vector3 movePos; //för attackmove och move
+    [HideInInspector]public Vector3 startGuardPos;
+    [HideInInspector]public Vector3 movePos; //för attackmove och move
 
 	// Use this for initialization
 	void Start () {
+        Init();
+    }
+
+    public virtual void Init()
+    {
         thisTransform = this.transform;
         agent = thisTransform.GetComponent<NavMeshAgent>();
         healthS = thisTransform.GetComponent<Health>();
@@ -126,65 +133,16 @@ public class AgentBase : MonoBehaviour {
         switch (state)
         {
             case UnitState.Guarding:
-                tempTargets = ScanEnemies(aggroDistance);
-                if(tempTargets != null && tempTargets.Length != 0)
-                {
-                    EngageTarget(ClosestTransform(tempTargets));
-                }
-                else
-                {
-                    if(GetStartGuardPointDistance() > 1.5f) //så att den inte ska jucka
-                    {
-                        agent.SetDestination(startGuardPos);
-                    }
-                }
-
-                if(target != null && GetStartGuardPointDistance() < aggroDistance * 1.5f)
-                {
-                    AttackTarget();
-                }
-                else
-                {
-                    target = null;
-                    agent.SetDestination(startGuardPos);
-                }
+                GuardingUpdate();
                 break;
 
 
             case UnitState.AttackMoving:
-                tempTargets = ScanEnemies(aggroDistance);
-                if (tempTargets != null && tempTargets.Length != 0)
-                {
-                    EngageTarget(ClosestTransform(tempTargets));                    
-                }
-                else //inga targets, återvänd till pathen typ
-                {
-                    agent.SetDestination(movePos);
-                }
-
-
-                if (target != null && GetTargetDistance() < aggroDistance * 1.05f)
-                {
-                    AttackTarget();
-                }
-                else
-                {
-                    target = null;
-                    agent.SetDestination(movePos);
-                }
-                //den borde tröttna på att jaga efter en viss stund also
-
-                if (GetMovePosDistance() < 1.5f)
-                {
-                    Guard();
-                }
+                AttackMovingUpdate();
                 break;
 
             case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
-                if(GetMovePosDistance() < 1.5f)
-                {
-                    Guard();
-                }
+                MovingUpdate();
                 break;
         }
 	}
@@ -233,6 +191,71 @@ public class AgentBase : MonoBehaviour {
     {
         startGuardPos = thisTransform.position;
         state = UnitState.Guarding;
+    }
+
+
+    public virtual void GuardingUpdate()
+    {
+        tempTargets = ScanEnemies(aggroDistance);
+        if (tempTargets != null && tempTargets.Length != 0)
+        {
+            EngageTarget(ClosestTransform(tempTargets));
+        }
+        else
+        {
+            if (GetStartGuardPointDistance() > 1.5f) //så att den inte ska jucka
+            {
+                agent.SetDestination(startGuardPos);
+            }
+        }
+
+        if (target != null && GetStartGuardPointDistance() < aggroDistance * 1.5f)
+        {
+            AttackTarget();
+        }
+        else
+        {
+            target = null;
+            agent.SetDestination(startGuardPos);
+        }
+    }
+
+    public virtual void AttackMovingUpdate()
+    {
+        tempTargets = ScanEnemies(aggroDistance);
+        if (tempTargets != null && tempTargets.Length != 0)
+        {
+            EngageTarget(ClosestTransform(tempTargets));
+        }
+        else //inga targets, återvänd till pathen typ
+        {
+            agent.SetDestination(movePos);
+        }
+
+
+        if (target != null && GetTargetDistance() < aggroDistance * 1.05f)
+        {
+            AttackTarget();
+        }
+        else
+        {
+            target = null;
+            agent.SetDestination(movePos);
+        }
+        //den borde tröttna på att jaga efter en viss stund also
+
+        if (GetMovePosDistance() < 1.5f)
+        {
+            Guard();
+        }
+    }
+
+    public virtual void MovingUpdate()
+    {
+        if (GetMovePosDistance() < 1.5f)
+        {
+            Guard();
+        }
     }
 
     public virtual Transform[] ScanEnemies(float aD)
