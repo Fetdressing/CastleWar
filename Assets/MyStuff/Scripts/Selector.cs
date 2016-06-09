@@ -23,6 +23,15 @@ public class Selector : MonoBehaviour {
     enum MoveState { Move, AttackMove, Patrol };
     private MoveState moveState = MoveState.Move;
 
+
+    //cursor
+    [Header("Cursor")]
+    public CursorMode cursorMode = CursorMode.Auto;
+    public Texture2D attackCursor;
+    public Texture2D moveCursor;
+    public Vector2 hotspot = Vector2.zero;
+    //cursor
+
     // Use this for initialization
     void Start () {
         thisTransform = this.transform;
@@ -257,13 +266,8 @@ public class Selector : MonoBehaviour {
                 else if (mouseInput != null)
                 {
                     ClearTargets();
-                    //targets.Add(mouseInput);
                     AddTarget(mouseInput);
                 }
-                //else
-                //{
-                //    targets.Clear();
-                //}
             }
         }
         else if (Input.GetButtonDown("Fire2"))
@@ -274,6 +278,15 @@ public class Selector : MonoBehaviour {
             {
                 CommandToPos(mouseHitPos); //have target enemys aswell in here?
             }
+        }
+
+        if(moveState == MoveState.Move)
+        {
+            Cursor.SetCursor(moveCursor, hotspot, cursorMode);
+        }
+        else if(moveState == MoveState.AttackMove)
+        {
+            Cursor.SetCursor(attackCursor, hotspot, cursorMode);
         }
     }
 
