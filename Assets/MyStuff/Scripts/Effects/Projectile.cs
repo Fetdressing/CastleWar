@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Projectile : MonoBehaviour {
@@ -15,7 +16,7 @@ public class Projectile : MonoBehaviour {
     private int damageRoll; //skickas av skjutaren
     private float shootForce = 40;
    
-    private string[] friendlyLayers;
+    private List<string> friendlyLayers;
     private string[] hitLayers;
     private Transform attackerT;
     private bool notifyAttacked = false; //denna bestäms av den som skjuter
@@ -28,7 +29,7 @@ public class Projectile : MonoBehaviour {
         thisRigidbody = thisTransform.GetComponent<Rigidbody>();
 	}
 
-    public void Init(string[] hitlayers, string[] friendlylayers, Transform attacker) //vilka saker den ska kunna göra skada på
+    public void Init(string[] hitlayers, List<string> friendlylayers, Transform attacker) //vilka saker den ska kunna göra skada på
     {
         hitLayers = hitlayers;
         friendlyLayers = friendlylayers;
@@ -102,7 +103,7 @@ public class Projectile : MonoBehaviour {
             return;
         }
 
-        for (int i = 0; i < friendlyLayers.Length; i++) //så man inte träffar sig själv
+        for (int i = 0; i < friendlyLayers.Count; i++) //så man inte träffar sig själv
         {
             if (collidingUnit.gameObject.layer == LayerMask.NameToLayer(friendlyLayers[i]))
             {
