@@ -13,7 +13,7 @@ public class AgentRanged : AgentBase {
 
     public float minimumTargetDistance = 10;
 
-    public LayerMask terrainObstacleOnly;
+    public LayerMask layerMaskLOSCheck;
     // Use this for initialization
     void Start () {
         Init();
@@ -56,6 +56,8 @@ public class AgentRanged : AgentBase {
             tempO.GetComponent<Projectile>().Init(enemyLayers, friendlyLayers, thisTransform);
             projectilePool.Add(tempO.gameObject);
         }
+
+        layerMaskLOSCheck |= friendlyOnly; //lägg till sin egen layer så att man kan skjuta igenom allierade
     }
 
     public override void AttackTarget()
@@ -106,7 +108,16 @@ public class AgentRanged : AgentBase {
         if(readyProjectile != null) //fire
         {
             readyProjectile.transform.position = shooter.position;
-            lastProjectileScript.Fire(target, damageRoll, 4);
+
+            if (targetAgentBase != null)
+            {
+                lastProjectileScript.Fire(target, damageRoll, 4, true);
+            }
+            else //bara typ nån destructable
+            {
+                lastProjectileScript.Fire(target, damageRoll, 4, false);
+            }
+            
         }
     }
 
@@ -114,7 +125,7 @@ public class AgentRanged : AgentBase {
     {
         RaycastHit hitLOS;
         Vector3 vectorToT = t.position - thisTransform.position;
-        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, terrainObstacleOnly)) //en layermask som ignorerar allt förutom terräng
+        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //en layermask som ignorerar allt förutom terräng
         {
             if(hitLOS.collider.transform == t)
             {

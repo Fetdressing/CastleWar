@@ -12,11 +12,13 @@ public class Projectile : MonoBehaviour {
     public bool homing = false;
     public bool friendlyFire = false;
 
+    private int damageRoll; //skickas av skjutaren
     private float shootForce = 40;
-
+   
     private string[] friendlyLayers;
     private string[] hitLayers;
     private Transform attackerT;
+    private bool notifyAttacked = false; //denna bestäms av den som skjuter
 
     private float startAliveTime = 0.0f; //när den börja leva, kolla mot hur länge den ska leva
 	// Use this for initialization
@@ -34,11 +36,14 @@ public class Projectile : MonoBehaviour {
         ToggleActive(false);
     }
 	
-    public void Fire(Transform target, int damage, int lifeTime)
+    public void Fire(Transform target, int damage, int lifeTime, bool notifyattacked)
     {
         ToggleActive(true);
         thisTransform.LookAt(target.position);
         thisRigidbody.AddForce(thisTransform.forward * shootForce, ForceMode.Impulse);
+
+        notifyAttacked = notifyattacked;
+        damageRoll = damage;
 
         startAliveTime = Time.time;
         StartCoroutine(LifeTime(lifeTime));
@@ -71,18 +76,44 @@ public class Projectile : MonoBehaviour {
 
         for (int i = 0; i < hitLayers.Length; i++)
         {
-            if(collidingUnit.tag == hitLayers[i])
+            if(collidingUnit.gameObject.layer == LayerMask.NameToLayer(hitLayers[i]))
             {
                 //deal damage och skicka attackerna till AgentBase
                 Hit();
+                collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
+                if(notifyAttacked)
+                {
+                    collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                }
                 return;
             }
         }
 
+        if(collidingUnit.gameObject.layer == attackerT.gameObject.layer) //attackera en från samma team
+        {
+            if (friendlyFire == true)
+            {
+                collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
+                if (notifyAttacked)
+                {
+                    collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                }
+            }
+            return;
+        }
+
         for (int i = 0; i < friendlyLayers.Length; i++) //så man inte träffar sig själv
         {
-            if (collidingUnit.tag == friendlyLayers[i])
+            if (collidingUnit.gameObject.layer == LayerMask.NameToLayer(friendlyLayers[i]))
             {
+                if (friendlyFire == true)
+                {
+                    collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
+                    if (notifyAttacked)
+                    {
+                        collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                    }
+                }
                 return;
             }
         }

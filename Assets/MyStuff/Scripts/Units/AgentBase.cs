@@ -25,8 +25,11 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]public LayerMask enemyOnly;
 
     public float aggroDistance = 20;
-    [HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
+    [HideInInspector]
+    public float temporaryAggroDistance = 0; //används när nått target skjuter långt
+    //[HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
     [HideInInspector]public Transform target;
+    [HideInInspector]public AgentBase targetAgentBase;
     [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
 
     //stats****
@@ -77,7 +80,7 @@ public class AgentBase : MonoBehaviour {
         Guard();
     }
 
-    public virtual void InitializeStats()
+    public virtual void InitializeStats() //ha med andra påverkande faktorer här sedan
     {
         damageMIN = startDamageMIN;
         damageMAX = startDamageMAX;
@@ -89,7 +92,7 @@ public class AgentBase : MonoBehaviour {
 
     void InitializeLayerMask()
     {
-        friendlyOnly |= thisTransform.gameObject.layer;
+        friendlyOnly |= (1 << thisTransform.gameObject.layer);
         for(int i = 0; i < friendlyLayers.Length; i++)
         {
             friendlyOnly |= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
@@ -107,7 +110,7 @@ public class AgentBase : MonoBehaviour {
                 }
             }
 
-            if (LayerMask.NameToLayer(enemyLayers[i]) == thisTransform.gameObject.layer)
+            if (LayerMask.NameToLayer(enemyLayers[i]) == thisTransform.gameObject.layer) //kolla så att det inte är mitt eget layer
             {
                 isValid = false;
             }
@@ -156,7 +159,10 @@ public class AgentBase : MonoBehaviour {
                 attackSpeedTimer = attackSpeed + Time.time;
                 int damageRoll = Random.Range(damageMIN, damageMAX);
                 target.GetComponent<Health>().AddHealth(-damageRoll);
-                //damage target!
+                if (targetAgentBase != null)
+                {
+                    targetAgentBase.Attacked(thisTransform); //notera att jag attackerat honom!
+                }
             }
         }
         if (attackRange + 1  < targetDistance) //+1 för marginal
@@ -165,9 +171,58 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual void EngageTarget(Transform t)
+    public virtual void Attacked(Transform attacker) //blev attackerad av någon
     {
+        bool validTarget = true;
+        for(int i = 0; i < friendlyLayers.Length; i++) //kolla så att man inte råkas göra en friendly till target
+        {
+            if(LayerMask.LayerToName(attacker.gameObject.layer) == friendlyLayers[i])
+            {
+                validTarget = false;
+                break;
+            }
+        }
+
+        if (attacker.gameObject.layer == thisTransform.gameObject.layer)
+        {
+            validTarget = false;
+        }
+
+
+        if (validTarget == true)
+        {
+            if (target == null)
+            {
+                NewTarget(attacker);
+                temporaryAggroDistance = GetDistanceToTransform(target);
+            }
+            else
+            {
+                Transform temp = ClosestTransform(target, attacker); //ta den som är närmst
+                NewTarget(temp);
+
+                if(target == attacker)
+                {
+                    temporaryAggroDistance = GetDistanceToTransform(target);
+                }
+            }
+        }
+    }
+
+    public virtual void NewTarget(Transform t)
+    {
+        //kan man store:a den nya targetets stats som kan användas för att tex påverka skadan man gör på den
+        NotifyNearbyFriendly(t.position); //viktigt denna kallas innan ett target sätts
         target = t;
+        if(target.GetComponent<AgentBase>() != null)
+        {
+            targetAgentBase = target.GetComponent<AgentBase>();
+        }
+        else
+        {
+            targetAgentBase = null;
+        }
+
         targetDistance = GetTargetDistance();
     }
 
@@ -185,6 +240,7 @@ public class AgentBase : MonoBehaviour {
         agent.avoidancePriority = 50;
         movePos = pos;
         agent.SetDestination(movePos);
+        target = null;
     }
 
     public virtual void Guard()
@@ -196,21 +252,24 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void GuardingUpdate()
     {
-        tempTargets = ScanEnemies(aggroDistance);
-        if (tempTargets != null && tempTargets.Length != 0)
+        if (target == null)
         {
-            EngageTarget(ClosestTransform(tempTargets));
-        }
-        else
-        {
-            if (GetStartGuardPointDistance() > 1.5f) //så att den inte ska jucka
+            tempTargets = ScanEnemies(aggroDistance);
+            if (tempTargets != null && tempTargets.Length != 0)
             {
-                agent.SetDestination(startGuardPos);
-                
+                NewTarget(ClosestTransform(tempTargets));
+            }
+            else
+            {
+                if (GetStartGuardPointDistance() > 1.5f) //så att den inte ska jucka
+                {
+                    agent.SetDestination(startGuardPos);
+
+                }
             }
         }
 
-        if (target != null && GetStartGuardPointDistance() < aggroDistance * 1.5f)
+        if (target != null && GetStartGuardPointDistance() < aggroDistance * 1.5f + temporaryAggroDistance)
         {
             AttackTarget();
         }
@@ -224,18 +283,21 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void AttackMovingUpdate()
     {
-        tempTargets = ScanEnemies(aggroDistance);
-        if (tempTargets != null && tempTargets.Length != 0)
+        if (target == null)
         {
-            EngageTarget(ClosestTransform(tempTargets));
-        }
-        else //inga targets, återvänd till pathen typ
-        {
-            agent.SetDestination(movePos);
+            tempTargets = ScanEnemies(aggroDistance);
+            if (tempTargets != null && tempTargets.Length != 0)
+            {
+                NewTarget(ClosestTransform(tempTargets));
+            }
+            else //inga targets, återvänd till pathen typ
+            {
+                agent.SetDestination(movePos);
+            }
         }
 
 
-        if (target != null && GetTargetDistance() < aggroDistance * 1.05f)
+        if (target != null && GetTargetDistance() < aggroDistance * 1.05f + temporaryAggroDistance)
         {
             AttackTarget();
         }
@@ -259,6 +321,7 @@ public class AgentBase : MonoBehaviour {
             Guard();
         }
     }
+
 
     public virtual Transform[] ScanEnemies(float aD)
     {
@@ -293,6 +356,17 @@ public class AgentBase : MonoBehaviour {
         }
         return closest;
     }
+    public virtual Transform ClosestTransform(Transform t1, Transform t2)
+    {
+        if(GetDistanceToTransform(t1) < GetDistanceToTransform(t2))
+        {
+            return t1;
+        }
+        else
+        {
+            return t2;
+        }
+    }
 
     public virtual Transform[] ScanFriendlys(float aD)
     {
@@ -306,11 +380,33 @@ public class AgentBase : MonoBehaviour {
         Transform[] hits = new Transform[hitColliders.Length];
         for (int i = 0; i < hitColliders.Length; i++)
         {
-            hits[i] = hitColliders[i].transform;
+            if (hits[i] != thisTransform) //vill väl inte ha mig själv i listan?
+            {
+                hits[i] = hitColliders[i].transform;
+            }
         }
         return hits;
     }
+    public virtual void NotifyNearbyFriendly(Vector3 pos)
+    {
+        if (target == null)
+        {
+            if (state == UnitState.Guarding) //inte attackmoving, då blire endless loop
+            {
+                Transform[] nearbyFriendly = ScanFriendlys(aggroDistance*20);
 
+                for (int i = 0; i < nearbyFriendly.Length; i++)
+                {
+                    if (nearbyFriendly[i].gameObject.activeSelf == true)
+                    {
+                        nearbyFriendly[i].GetComponent<AgentBase>().AttackMove(pos); //behöver något annat än attackmove, investigate
+                    }
+                }
+
+                AttackMove(pos); //här kan behövas en annan, en som typ flyttar tillbaks dem till samma ställe efter, investigate elr nått
+            }
+        }
+    }
 
     public virtual float GetTargetDistance()
     {
@@ -323,6 +419,10 @@ public class AgentBase : MonoBehaviour {
     public float GetMovePosDistance()
     {
         return Vector3.Distance(thisTransform.position, movePos);
+    }
+    public float GetDistanceToTransform(Transform t)
+    {
+        return Vector3.Distance(thisTransform.position, t.position);
     }
 
     public void ToggleSelMarker(bool b)
