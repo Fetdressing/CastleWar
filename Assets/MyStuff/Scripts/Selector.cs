@@ -36,6 +36,7 @@ public class Selector : MonoBehaviour {
     void Start () {
         thisTransform = this.transform;
 
+        Cursor.SetCursor(moveCursor, hotspot, cursorMode);
         //selMask = selectLayerMask.value;
     }
 	
@@ -149,11 +150,15 @@ public class Selector : MonoBehaviour {
 
     void OrderMove(Vector3 pos)
     {
-        for (int i = 0; i < targets.Count; i++)
+        if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
-            targets[i].GetComponent<AgentBase>().Move(pos);
+            for (int i = 0; i < targets.Count; i++)
+            {
+                targets[i].GetComponent<AgentBase>().Move(pos);
+            }
         }
         moveState = MoveState.Move;
+        Cursor.SetCursor(moveCursor, hotspot, cursorMode);
     }
 
     void OrderAttackMove(Vector3 pos)
@@ -163,6 +168,7 @@ public class Selector : MonoBehaviour {
             targets[i].GetComponent<AgentBase>().AttackMove(pos);
         }
         moveState = MoveState.Move;
+        Cursor.SetCursor(moveCursor, hotspot, cursorMode);
     }
 
     void SelectionBox()
@@ -276,17 +282,8 @@ public class Selector : MonoBehaviour {
 
             if (mouseHitValid)
             {
-                CommandToPos(mouseHitPos); //have target enemys aswell in here?
+                OrderMove(mouseHitPos); //have target enemys aswell in here?
             }
-        }
-
-        if(moveState == MoveState.Move)
-        {
-            Cursor.SetCursor(moveCursor, hotspot, cursorMode);
-        }
-        else if(moveState == MoveState.AttackMove)
-        {
-            Cursor.SetCursor(attackCursor, hotspot, cursorMode);
         }
     }
 
@@ -295,14 +292,18 @@ public class Selector : MonoBehaviour {
         if (Input.GetButtonDown("MoveCommand"))
         {
             moveState = MoveState.Move;
+            Cursor.SetCursor(moveCursor, hotspot, cursorMode);
         }
         else if (Input.GetButtonDown("AttackMoveCommand"))
         {
             moveState = MoveState.AttackMove;
+            Cursor.SetCursor(attackCursor, hotspot, cursorMode);
         }
         else if (Input.GetButtonDown("Fire1") || (Input.GetButtonDown("Cancel"))) //escape
         {
             moveState = MoveState.Move; //stänger av den igen
+            Cursor.SetCursor(moveCursor, hotspot, cursorMode);
         }
+
     }
 }

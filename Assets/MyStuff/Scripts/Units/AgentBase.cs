@@ -18,7 +18,7 @@ public class AgentBase : MonoBehaviour {
     public Transform uiCanvas;
     public GameObject selectionMarkerObject;
 
-    public string[] friendlyLayers;
+    public string[] friendlyLayers; //bra att dessa är strings, behövs till tex AgentRanged
     public string[] enemyLayers;
 
     [HideInInspector]public LayerMask friendlyOnly;
@@ -57,7 +57,7 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]public Vector3 movePos; //för attackmove och move
 
 	// Use this for initialization
-	void Start () {
+	void Start () { //får jag dubbla starts?
         Init();
     }
 
@@ -206,6 +206,7 @@ public class AgentBase : MonoBehaviour {
             if (GetStartGuardPointDistance() > 1.5f) //så att den inte ska jucka
             {
                 agent.SetDestination(startGuardPos);
+                
             }
         }
 
@@ -216,7 +217,8 @@ public class AgentBase : MonoBehaviour {
         else
         {
             target = null;
-            agent.SetDestination(startGuardPos);
+            Move(startGuardPos);
+            //agent.SetDestination(startGuardPos);
         }
     }
 

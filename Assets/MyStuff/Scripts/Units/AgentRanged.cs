@@ -1,11 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class AgentRanged : AgentBase {
 
-    [Header("Stats")]
+    [Header("Ranged")]
     public GameObject projectile;
+    [HideInInspector]
+    public List<GameObject> projectilePool = new List<GameObject>();
+    public int projectilePoolSize = 15;
+    public Transform shooter;
 
+    public float minimumTargetDistance = 10;
+
+    public LayerMask terrainObstacleOnly;
     // Use this for initialization
     void Start () {
         Init();
@@ -38,27 +46,83 @@ public class AgentRanged : AgentBase {
         }
     }
 
-    public override void Init()
+    public virtual void Init()
     {
         base.Init();
+
+        for(int i = 0; i < projectilePoolSize; i++)
+        {
+            GameObject tempO = Instantiate(projectile.gameObject) as GameObject;
+            tempO.GetComponent<Projectile>().Init(enemyLayers, friendlyLayers, thisTransform);
+            projectilePool.Add(tempO.gameObject);
+        }
     }
 
     public override void AttackTarget()
     {
-           
+        bool los;
+        los = LineOfSight(target);
         if (attackRange > targetDistance) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
                 attackSpeedTimer = attackSpeed + Time.time;
                 int damageRoll = Random.Range(damageMIN, damageMAX);
-                target.GetComponent<Health>().AddHealth(-damageRoll);
-                //damage target!
+                
+                if(los)
+                {
+                    Fire(damageRoll);
+                }
             }
         }
-        if (attackRange + 1 < targetDistance) //+1 för marginal
+        if (attackRange + 1 < targetDistance || !los) //+1 för marginal
         {
             agent.SetDestination(target.position);
-        }    
+        }
+        else if(targetDistance < minimumTargetDistance)
+        {
+            Vector3 vectorFromTarget = thisTransform.position - target.position;
+            agent.SetDestination(thisTransform.position + vectorFromTarget);
+        }
+        else
+        {
+            agent.ResetPath();
+        } 
     }
+
+    public virtual void Fire(int damageRoll)
+    {
+        GameObject readyProjectile = null;
+        Projectile lastProjectileScript = null;
+        for(int i = 0; i < projectilePool.Count; i++)
+        {
+            lastProjectileScript = projectilePool[i].GetComponent<Projectile>();
+            if (lastProjectileScript.IsReady())
+            {
+                readyProjectile = projectilePool[i].gameObject;
+                break;
+            }
+        }
+        if(readyProjectile != null) //fire
+        {
+            readyProjectile.transform.position = shooter.position;
+            lastProjectileScript.Fire(target, damageRoll, 4);
+        }
+    }
+
+    public bool LineOfSight(Transform t) //has LOS to t?
+    {
+        RaycastHit hitLOS;
+        Vector3 vectorToT = t.position - thisTransform.position;
+        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, terrainObstacleOnly)) //en layermask som ignorerar allt förutom terräng
+        {
+            if(hitLOS.collider.transform == t)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
