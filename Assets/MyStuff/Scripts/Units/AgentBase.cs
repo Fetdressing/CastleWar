@@ -10,7 +10,7 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]
     public UnitState state;
     [HideInInspector]
-    public UnitState nextState; //kedje kommandon??
+    public List<Command> nextCommando = new List<Command>(); //kedje kommandon??
 
     [HideInInspector]public Transform thisTransform;
     [HideInInspector]public Health healthS;
@@ -64,8 +64,11 @@ public class AgentBase : MonoBehaviour {
     Transform[] tempTargets;
 
     [HideInInspector]public Vector3 startPos;
+    [HideInInspector]public Vector3 startPos2; //används när man tex frångår pathen
     [HideInInspector]public Vector3 movePos; //för attackmove och move
 
+
+    bool ignoreSurrounding = false;
 	// Use this for initialization
 	void Start () { //får jag dubbla starts?
         Init();
@@ -176,9 +179,13 @@ public class AgentBase : MonoBehaviour {
                 }
             }
         }
-        if (attackRange + 1  < targetDistance) //+1 för marginal
+        if (attackRange + 1 < targetDistance) //+1 för marginal
         {
             agent.SetDestination(target.position);
+        }
+        else
+        {
+            agent.ResetPath();
         }
     }
 
@@ -238,6 +245,7 @@ public class AgentBase : MonoBehaviour {
         targetDistance = GetTargetDistance();
     }
 
+
     public virtual void AttackMove(Vector3 pos)
     {
         state = UnitState.AttackMoving;
@@ -257,7 +265,15 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void Guard()
     {
+        nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
         startPos = thisTransform.position;
+        state = UnitState.Guarding;
+    }
+
+    public virtual void Guard(Vector3 pos) //redefinition
+    {
+        nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
+        startPos = pos;
         state = UnitState.Guarding;
     }
 
@@ -265,12 +281,72 @@ public class AgentBase : MonoBehaviour {
     {
         if (target == null)
         {
-            state = UnitState.Investigating;
-            agent.avoidancePriority = 50;
-            movePos = pos;
-            startPos = thisTransform.position;
-            //agent.SetDestination(movePos);
+            if (state == UnitState.Guarding) //vill ju inte den tex ska påbörja en ny investigate
+            {
+                state = UnitState.Investigating;
+                agent.avoidancePriority = 50;
+                movePos = pos;
+                startPos = thisTransform.position;
+                ignoreSurrounding = false;
+                //agent.SetDestination(movePos);
+            }
         }
+    }
+
+    public virtual void ExecuteNextCommand()
+    {
+        if(nextCommando.Count <= 0)
+        {
+            //default kommando
+            switch(state)
+            {
+                case UnitState.Moving:
+                    Guard(); //får väl se ifall någon av dessa behöver ändras men känns rätt stabilt
+                    break;
+                case UnitState.AttackMoving:
+                    Guard();
+                    break;
+                case UnitState.Investigating:
+                    Guard();
+                    break;
+                case UnitState.Guarding:
+                    Guard();
+                    break;
+            }
+        }
+        else //finns states som ska köras
+        {
+            //state = nextCommando[0].stateToExecute;
+            Vector3 pos = nextCommando[0].positionToExecute;
+            switch (nextCommando[0].stateToExecute)
+            {
+                case UnitState.Moving:
+                    Move(pos);
+                    break;
+                case UnitState.AttackMoving:
+                    AttackMove(pos);
+                    break;
+                case UnitState.Investigating:
+                    Investigate(pos);
+                    break;
+                case UnitState.Guarding:
+                    Guard(pos);
+                    break;
+            }  
+            nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
+        }
+
+    }
+
+    public virtual void AddCommandToList(Vector3 pos, UnitState nextState)
+    {
+        Command c = new Command(nextState, pos);
+        if(nextCommando.Count > 5) //vill inte göra denna lista hur lång som helst
+        {
+            nextCommando[nextCommando.Count] = c; //släng på den på sista platsen
+            return;
+        }
+        nextCommando.Add(c);
     }
 
 
@@ -293,15 +369,17 @@ public class AgentBase : MonoBehaviour {
             }
         }
 
-        if (target != null && GetStartPointDistance() < aggroDistance * 1.5f && (startChaseTime + chaseTimeNormal) > Time.time)
+        if (target != null)
         {
-            AttackTarget();
-        }
-        else
-        {
-            target = null;
-            Move(startPos); //kanske borde ha något dynamiskt event här
-            //agent.SetDestination(startPos);
+            if (GetStartPointDistance() < aggroDistance * 1.5f || (startChaseTime + chaseTimeNormal) > Time.time)
+            {
+                AttackTarget();
+            }
+            else
+            {
+                target = null;
+                Move(startPos); //kanske borde ha något dynamiskt event här
+            }
         }
     }
 
@@ -321,39 +399,45 @@ public class AgentBase : MonoBehaviour {
         }
 
 
-        if (target != null && GetTargetDistance() < aggroDistance * 1.05f && (startChaseTime + chaseTimeNormal) > Time.time)
+        if (target != null)
         {
-            AttackTarget();
-        }
-        else
-        {
-            target = null;
-            agent.SetDestination(movePos);
+            if (GetTargetDistance() < aggroDistance * 1.05f || (startChaseTime + chaseTimeNormal) > Time.time)
+            {
+                AttackTarget();
+            }
+            else
+            {
+                target = null;
+                agent.SetDestination(movePos);
+            }
         }
         //den borde tröttna på att jaga efter en viss stund also
 
         if (GetMovePosDistance() < 1.5f) //kom fram
         {
-            Guard();
+            ExecuteNextCommand();
         }
     }
 
     public virtual void MovingUpdate()
     {
-        if (GetMovePosDistance() < 1.5f)
+        if (GetMovePosDistance() < 1.5f) //ifall man är klar
         {
-            Guard(); //ha ett storeat 'next command', finns inget så kör default ofc!
+            ExecuteNextCommand(); //ha ett storeat 'next command', finns inget så kör default ofc!
         }
     }
 
-    public virtual void InvestigatingUpdate() //HÄR ÄR FELET!
+    public virtual void InvestigatingUpdate() //HÄR ÄR FELET!, se över denna, lite oklart när de ger upp chasen o återvänder hem
     {
-        if (target == null)
+        if (target == null && ignoreSurrounding == false)
         {
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
             {
                 NewTarget(ClosestTransform(tempTargets));
+                startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin investigation efter den jagat
+                //AddCommandToList(startPos2, UnitState.Moving); //dessa blir mega stackade!!!!!!!!!!!!!!
+                //AddCommandToList(movePos, UnitState.Investigating); //fortsätt där den slutade
             }
             else
             {
@@ -363,20 +447,36 @@ public class AgentBase : MonoBehaviour {
                 }
                 else //återvänd hem igen
                 {
+                    //Debug.Log("GO home!");
                     Move(startPos);
                 }
             }
         }
 
-        if (target != null && (startChaseTime + chaseTimeNormal) > Time.time) //måste kunna återvända till där den var innan den påbörja pathen
+        if (target != null)
         {
-            AttackTarget();
+            if (GetStartPointDistance2() < aggroDistance || (startChaseTime + chaseTimeNormal) > Time.time) //måste kunna återvända till där den var innan den påbörja pathen
+            {
+                AttackTarget();
+            }
+            else
+            {
+                target = null;
+                Move(startPos2);
+                ignoreSurrounding = true;
+                //ExecuteNextCommand();
+                //agent.SetDestination(startPos);
+            }
+        }    
+        if(ignoreSurrounding && GetStartPointDistance2() < 4.0f) //kommit tillbaks till pathen -> fortsätt investigate!
+        {
+            ignoreSurrounding = false;
         }
-        else
+
+        if (GetMovePosDistance() < 1.5f) //så att den inte ska jucka
         {
-            target = null;
-            //Move(startPos);
-            //agent.SetDestination(startPos);
+            //Debug.Log("GO home!");
+            Move(startPos);
         }
     }
 
@@ -426,7 +526,7 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual Transform[] ScanFriendlys(float aD)
+    public virtual List<Transform> ScanFriendlys(float aD)
     {
         Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aD, friendlyOnly);
         //int i = 0;
@@ -435,12 +535,12 @@ public class AgentBase : MonoBehaviour {
         //    Debug.Log(hitColliders[i].transform.name);
         //    i++;
         //}
-        Transform[] hits = new Transform[hitColliders.Length];
+        List<Transform> hits = new List<Transform>();
         for (int i = 0; i < hitColliders.Length; i++)
         {
-            if (hits[i] != thisTransform) //vill väl inte ha mig själv i listan?
+            if (hitColliders[i].transform != thisTransform) //vill väl inte ha mig själv i listan?
             {
-                hits[i] = hitColliders[i].transform;
+                hits.Add(hitColliders[i].transform);
             }
         }
         return hits;
@@ -449,9 +549,9 @@ public class AgentBase : MonoBehaviour {
     {
         if (state == UnitState.Guarding) //inte attackmoving, då blire endless loop
         {
-            Transform[] nearbyFriendly = ScanFriendlys(aggroDistance);
+            List<Transform> nearbyFriendly = ScanFriendlys(aggroDistance);
 
-            for (int i = 0; i < nearbyFriendly.Length; i++)
+            for (int i = 0; i < nearbyFriendly.Count; i++)
             {
                 if (nearbyFriendly[i].gameObject.activeSelf == true)
                 {
@@ -469,6 +569,11 @@ public class AgentBase : MonoBehaviour {
     {
         return Vector3.Distance(thisTransform.position, startPos);
     }
+    public float GetStartPointDistance2()
+    {
+        //Debug.Log(Vector3.Distance(thisTransform.position, startPos2).ToString());
+        return Vector3.Distance(thisTransform.position, startPos2);
+    }
     public float GetMovePosDistance()
     {
         return Vector3.Distance(thisTransform.position, movePos);
@@ -481,6 +586,19 @@ public class AgentBase : MonoBehaviour {
     public void ToggleSelMarker(bool b)
     {
         selectionMarkerObject.SetActive(b);
+    }
+
+
+    public struct Command
+    {
+        public UnitState stateToExecute;
+        public Vector3 positionToExecute; //använd sedan thisTransform.position för start ofc
+
+        public Command(UnitState uS, Vector3 pos)
+        {
+            stateToExecute = uS;
+            positionToExecute = pos;
+        }
     }
 }
 

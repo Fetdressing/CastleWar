@@ -21,20 +21,19 @@ public class AgentRanged : AgentBase {
 	
 	// Update is called once per frame
 	void Update () {
+        //Debug.Log(startPos.ToString());
         uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
-  mainCamera.transform.rotation * Vector3.up);
+   mainCamera.transform.rotation * Vector3.up);
 
         if (target != null)
         {
             targetDistance = GetTargetDistance();
         }
-
         switch (state)
         {
             case UnitState.Guarding:
                 GuardingUpdate();
                 break;
-
 
             case UnitState.AttackMoving:
                 AttackMovingUpdate();
@@ -42,6 +41,9 @@ public class AgentRanged : AgentBase {
 
             case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
                 MovingUpdate();
+                break;
+            case UnitState.Investigating:
+                InvestigatingUpdate();
                 break;
         }
     }
@@ -57,7 +59,12 @@ public class AgentRanged : AgentBase {
             projectilePool.Add(tempO.gameObject);
         }
 
-        layerMaskLOSCheck |= friendlyOnly; //lägg till sin egen layer så att man kan skjuta igenom allierade
+        for (int i = 0; i < friendlyLayers.Count; i++)
+        {
+            layerMaskLOSCheck ^= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
+        }
+
+        //layerMaskLOSCheck |= (1 << friendlyOnly); //lägg till sin egen layer så att man kan skjuta igenom allierade
     }
 
     public override void AttackTarget()
