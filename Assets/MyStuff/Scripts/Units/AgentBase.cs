@@ -179,13 +179,13 @@ public class AgentBase : MonoBehaviour {
                 }
             }
         }
-        if (attackRange + 1 < targetDistance) //+1 för marginal
+        if (attackRange * 0.7f < targetDistance) //marginal med jue
         {
             agent.SetDestination(target.position);
         }
         else
         {
-            agent.ResetPath();
+            //agent.ResetPath();
         }
     }
 
@@ -249,15 +249,16 @@ public class AgentBase : MonoBehaviour {
     public virtual void AttackMove(Vector3 pos)
     {
         state = UnitState.AttackMoving;
-        agent.avoidancePriority = 50;
+        agent.avoidancePriority = 0;
         movePos = pos;
         agent.SetDestination(movePos);
+        ignoreSurrounding = false;
     }
 
     public virtual void Move(Vector3 pos) //dålig prioritet när man rör på sig så man inte knuffar bort någon! tvärtom på stillastående
     {
         state = UnitState.Moving;
-        agent.avoidancePriority = 50;
+        agent.avoidancePriority = 0;
         movePos = pos;
         agent.SetDestination(movePos);
         target = null;
@@ -385,12 +386,13 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void AttackMovingUpdate()
     {
-        if (target == null)
+        if (target == null && ignoreSurrounding == false)
         {
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
             {
                 NewTarget(ClosestTransform(tempTargets));
+                startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin path efter den jagat
             }
             else //inga targets, återvänd till pathen typ
             {
@@ -403,15 +405,21 @@ public class AgentBase : MonoBehaviour {
         {
             if (GetTargetDistance() < aggroDistance * 1.05f || (startChaseTime + chaseTimeNormal) > Time.time)
             {
+                //Debug.Log("Attack");
                 AttackTarget();
             }
             else
             {
                 target = null;
-                agent.SetDestination(movePos);
+                agent.SetDestination(startPos2); //återvänd till pathen
+                ignoreSurrounding = true;
             }
         }
-        //den borde tröttna på att jaga efter en viss stund also
+
+        if (ignoreSurrounding && GetStartPointDistance2() < attackRange) //kommit tillbaks till pathen -> fortsätt attackmove!
+        {
+            ignoreSurrounding = false;
+        }
 
         if (GetMovePosDistance() < 1.5f) //kom fram
         {
@@ -421,7 +429,7 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void MovingUpdate()
     {
-        if (GetMovePosDistance() < 1.5f) //ifall man är klar
+        if (GetMovePosDistance() < 1.5f) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
         {
             ExecuteNextCommand(); //ha ett storeat 'next command', finns inget så kör default ofc!
         }
@@ -441,7 +449,7 @@ public class AgentBase : MonoBehaviour {
             }
             else
             {
-                if (GetMovePosDistance() > 1.5f) //så att den inte ska jucka
+                if (GetMovePosDistance() > attackRange) //så att den inte ska jucka
                 {
                     agent.SetDestination(movePos);
                 }
@@ -462,18 +470,19 @@ public class AgentBase : MonoBehaviour {
             else
             {
                 target = null;
-                Move(startPos2);
+                agent.SetDestination(startPos2);
+                //Move(startPos2);
                 ignoreSurrounding = true;
                 //ExecuteNextCommand();
                 //agent.SetDestination(startPos);
             }
         }    
-        if(ignoreSurrounding && GetStartPointDistance2() < 4.0f) //kommit tillbaks till pathen -> fortsätt investigate!
+        if(ignoreSurrounding && GetStartPointDistance2() < attackRange) //kommit tillbaks till pathen -> fortsätt investigate!
         {
             ignoreSurrounding = false;
         }
 
-        if (GetMovePosDistance() < 1.5f) //så att den inte ska jucka
+        if (GetMovePosDistance() < attackRange) //så att den inte ska jucka, när jag nått target så dra hem igen!
         {
             //Debug.Log("GO home!");
             Move(startPos);
