@@ -20,7 +20,7 @@ public class Selector : MonoBehaviour {
     private Vector2 initialSelectionBoxAnchor = Vector2.zero;
     //selectionBox
 
-    enum MoveState { Move, AttackMove, Patrol };
+    enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
 
 
@@ -142,7 +142,7 @@ public class Selector : MonoBehaviour {
                 OrderMove(pos);
                 break;
 
-            case MoveState.AttackMove:
+            case MoveState.Attack:
                 OrderAttackMove(pos);
                 break;
         }
@@ -166,6 +166,16 @@ public class Selector : MonoBehaviour {
         for (int i = 0; i < targets.Count; i++)
         {
             targets[i].GetComponent<AgentBase>().AttackMove(pos);
+        }
+        moveState = MoveState.Move;
+        Cursor.SetCursor(moveCursor, hotspot, cursorMode);
+    }
+
+    void OrderAttackUnit(Transform t, bool friendfire)
+    {
+        for (int i = 0; i < targets.Count; i++)
+        {
+            targets[i].GetComponent<AgentBase>().AttackUnit(t, friendfire);
         }
         moveState = MoveState.Move;
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
@@ -257,9 +267,9 @@ public class Selector : MonoBehaviour {
         Transform mouseInput = GetMouseTarget();
         bool mouseHitValid = GetMousePosition(ref mouseHitPos);
 
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetButtonDown("Fire1")) //attack unit om man har MoveState.Attack och ifall mouseInput != null!!!!!!!!!!!!!!!!!!!!!!!
         {
-            if (moveState == MoveState.AttackMove && mouseHitValid) //specialcase på attackmove för då ska den bara attackmova
+            if (moveState == MoveState.Attack && mouseHitValid) //specialcase på attackmove för då ska den bara attackmova
             {
                 OrderAttackMove(mouseHitPos);
             }
@@ -278,9 +288,12 @@ public class Selector : MonoBehaviour {
         }
         else if (Input.GetButtonDown("Fire2"))
         {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (mouseHitValid)
+            if(mouseInput != null) //träffade ett target
+            {
+                //order attack
+                OrderAttackUnit(mouseInput, false); //när det är höger klick så är det bara attack på fiender
+            }
+            else if (mouseHitValid)
             {
                 OrderMove(mouseHitPos); //have target enemys aswell in here?
             }
@@ -296,7 +309,7 @@ public class Selector : MonoBehaviour {
         }
         else if (Input.GetButtonDown("AttackMoveCommand"))
         {
-            moveState = MoveState.AttackMove;
+            moveState = MoveState.Attack;
             Cursor.SetCursor(attackCursor, hotspot, cursorMode);
         }
         else if (Input.GetButtonDown("Fire1") || (Input.GetButtonDown("Cancel"))) //escape

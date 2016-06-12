@@ -93,6 +93,18 @@ public class Health : MonoBehaviour {
         return true; //target vid liv
     }
 
+    public bool IsAlive()
+    {
+        if(currHealth > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public int GetCurrHealth()
     {
         return currHealth;

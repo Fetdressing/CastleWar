@@ -67,8 +67,15 @@ public class AgentRanged : AgentBase {
         //layerMaskLOSCheck |= (1 << friendlyOnly); //lägg till sin egen layer så att man kan skjuta igenom allierade
     }
 
-    public override void AttackTarget()
+    public override bool AttackTarget()
     {
+        bool targetAlive = true;
+        if (target.gameObject.activeSelf == false || !targetHealth.IsAlive())
+        {
+            targetAlive = false;
+            return targetAlive;
+        }
+
         bool los;
         los = LineOfSight(target);
         if (attackRange > targetDistance) //kolla så att target står framför mig oxå
@@ -96,7 +103,8 @@ public class AgentRanged : AgentBase {
         else
         {
             agent.ResetPath();
-        } 
+        }
+        return true;
     }
 
     public virtual void Fire(int damageRoll)

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(AgentStats))]
 public class AgentBase : MonoBehaviour {
-    public enum UnitState { AttackMoving, Moving, Guarding, Investigating};
+    public enum UnitState { AttackMoving, Moving, Guarding, Investigating, AttackingUnit};
     [HideInInspector]
     public UnitState state;
     [HideInInspector]
@@ -32,6 +32,7 @@ public class AgentBase : MonoBehaviour {
     //[HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
     [HideInInspector]public Transform target;
     [HideInInspector]public AgentBase targetAgentBase;
+    [HideInInspector]public Health targetHealth;
     [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
 
     //stats****
@@ -151,7 +152,7 @@ public class AgentBase : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
-   mainCamera.transform.rotation * Vector3.up);
+   mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara har health då?
 
         if (target != null)
         {
@@ -164,7 +165,6 @@ public class AgentBase : MonoBehaviour {
                 GuardingUpdate();
                 break;
 
-
             case UnitState.AttackMoving:
                 AttackMovingUpdate();
                 break;
@@ -175,18 +175,37 @@ public class AgentBase : MonoBehaviour {
             case UnitState.Investigating:
                 InvestigatingUpdate();
                 break;
+            case UnitState.AttackingUnit:
+                AttackUnitUpdate();
+                break;
         }
 	}
 
-    public virtual void AttackTarget()
+    public virtual bool AttackTarget()
     {
+        bool targetAlive = true;
+        if(target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive())
+        {
+            targetAlive = false;
+            return targetAlive;
+        }
+
         if (attackRange > targetDistance) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
                 attackSpeedTimer = attackSpeed + Time.time;
                 int damageRoll = Random.Range(damageMIN, damageMAX);
-                target.GetComponent<Health>().AddHealth(-damageRoll);
+
+                if (targetHealth.AddHealth(-damageRoll)) //target överlevde attacken
+                {
+                    targetAlive = true;
+                }
+                else //target dog
+                {
+                    targetAlive = false;
+                }
+
                 if (targetAgentBase != null)
                 {
                     targetAgentBase.Attacked(thisTransform); //notera att jag attackerat honom!
@@ -201,41 +220,40 @@ public class AgentBase : MonoBehaviour {
         {
             //agent.ResetPath();
         }
+
+        return targetAlive;
     }
 
     public virtual void Attacked(Transform attacker) //blev attackerad av någon
     {
-        bool validTarget = true;
-        for(int i = 0; i < friendlyLayers.Count; i++) //kolla så att man inte råkas göra en friendly till target
+        if (state != UnitState.AttackingUnit && state != UnitState.Moving && attacker != null)
         {
-            if(LayerMask.LayerToName(attacker.gameObject.layer) == friendlyLayers[i])
+            bool validTarget = true;
+            for (int i = 0; i < friendlyLayers.Count; i++) //kolla så att man inte råkas göra en friendly till target
+            {
+                if (LayerMask.LayerToName(attacker.gameObject.layer) == friendlyLayers[i])
+                {
+                    validTarget = false;
+                    break;
+                }
+            }
+
+            if (attacker.gameObject.layer == thisTransform.gameObject.layer)
             {
                 validTarget = false;
-                break;
             }
-        }
-
-        if (attacker.gameObject.layer == thisTransform.gameObject.layer)
-        {
-            validTarget = false;
-        }
 
 
-        if (validTarget == true)
-        {
-            if (target == null)
+            if (validTarget == true)
             {
-                NewTarget(attacker);
-                temporaryAggroDistance = GetDistanceToTransform(target);
-            }
-            else
-            {
-                Transform temp = ClosestTransform(target, attacker); //ta den som är närmst
-                NewTarget(temp);
-
-                if(target == attacker)
+                if (target == null)
                 {
-                    temporaryAggroDistance = GetDistanceToTransform(target);
+                    NewTarget(attacker);
+                }
+                else
+                {
+                    Transform temp = ClosestTransform(target, attacker); //ta den som är närmst
+                    NewTarget(temp);
                 }
             }
         }
@@ -247,7 +265,25 @@ public class AgentBase : MonoBehaviour {
         NotifyNearbyFriendly(t.position); //viktigt denna kallas innan ett target sätts
         startChaseTime = Time.time;
         target = t;
-        if(target.GetComponent<AgentBase>() != null)
+        targetHealth = target.GetComponent<Health>();
+        if (target.GetComponent<AgentBase>() != null)
+        {
+            targetAgentBase = target.GetComponent<AgentBase>();
+        }
+        else
+        {
+            targetAgentBase = null;
+        }
+
+        targetDistance = GetTargetDistance();
+    }
+
+    public virtual void SetTarget(Transform t) //när man order attack, så att den inte allertar allierade
+    {
+        startChaseTime = Time.time;
+        target = t;
+        targetHealth = target.GetComponent<Health>();
+        if (target.GetComponent<AgentBase>() != null)
         {
             targetAgentBase = target.GetComponent<AgentBase>();
         }
@@ -316,6 +352,28 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
+    public virtual void AttackUnit(Transform t, bool friendlyFire)
+    {
+        bool canAttack = false;
+        if(IsFriendly(t) && friendlyFire)
+        {
+            canAttack = true;
+        }
+        else if(!IsFriendly(t))
+        {
+            canAttack = true;
+        }
+
+        if(canAttack)
+        {
+            agent.ResetPath();
+            state = UnitState.AttackingUnit;
+            agent.avoidancePriority = 0;
+            agent.SetDestination(t.position);
+            SetTarget(t); //set target så den inte alertar allierade i onödan
+        }
+    }
+
     public virtual void ExecuteNextCommand()
     {
         if(nextCommando.Count <= 0)
@@ -335,12 +393,17 @@ public class AgentBase : MonoBehaviour {
                 case UnitState.Guarding:
                     Guard();
                     break;
+                case UnitState.AttackingUnit:
+                    Guard();
+                    break;
             }
         }
         else //finns states som ska köras
         {
             //state = nextCommando[0].stateToExecute;
             Vector3 pos = nextCommando[0].positionToExecute;
+            Transform t = nextCommando[0].target;
+            bool friendfire = nextCommando[0].friendlyFire;
             switch (nextCommando[0].stateToExecute)
             {
                 case UnitState.Moving:
@@ -355,15 +418,18 @@ public class AgentBase : MonoBehaviour {
                 case UnitState.Guarding:
                     Guard(pos);
                     break;
+                case UnitState.AttackingUnit:
+                    AttackUnit(t, friendfire);
+                    break;
             }  
             nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
         }
 
     }
 
-    public virtual void AddCommandToList(Vector3 pos, UnitState nextState)
+    public virtual void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire)
     {
-        Command c = new Command(nextState, pos);
+        Command c = new Command(nextState, pos, tar, friendlyfire);
         if(nextCommando.Count > 5) //vill inte göra denna lista hur lång som helst
         {
             nextCommando[nextCommando.Count] = c; //släng på den på sista platsen
@@ -447,6 +513,10 @@ public class AgentBase : MonoBehaviour {
         {
             ExecuteNextCommand();
         }
+        else if (target == null && IsCloseEnoughToPos(movePos)) //den får inte vara klar bara för att den råkar passera punkten när den jagar ett target
+        {
+            ExecuteNextCommand();
+        }
     }
 
     public virtual void MovingUpdate()
@@ -511,37 +581,16 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual bool IsCloseEnoughToPos(Vector3 endPos) //använder tid för att inte försöka för evigt
+    public virtual void AttackUnitUpdate()
     {
-        //if (!agent.hasPath)
-        //{
-        //    Debug.Log("No path");
-        //    return true;
-        //}
+        bool targetAlive = AttackTarget();
 
-        if(closeToEnd == false)
+        if (target == null || targetAlive == false) //kom fram
         {
-            if(GetDistanceToPosition(endPos) < reachDistanceThreshhold) //jag är nära nog, påbörja count down!
-            {
-                closeToEnd = true;
-                timerReachEnd = Time.time + reachEndPatience; //påbörja countdown
-            }
-            return false;
+            ExecuteNextCommand();
         }
-        else if(closeToEnd == true)
-        {
-            if(timerReachEnd < Time.time)
-            {
-                closeToEnd = false;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return false;
     }
+
 
     public virtual Transform[] ScanEnemies(float aD)
     {
@@ -587,7 +636,38 @@ public class AgentBase : MonoBehaviour {
             return t2;
         }
     }
+    public virtual bool IsCloseEnoughToPos(Vector3 endPos) //använder tid för att inte försöka för evigt
+    {
+        //if (!agent.hasPath)
+        //{
+        //    Debug.Log("No path");
+        //    return true;
+        //}
 
+        if (closeToEnd == false)
+        {
+            if (GetDistanceToPosition(endPos) < reachDistanceThreshhold) //jag är nära nog, påbörja count down!
+            {
+                closeToEnd = true;
+                timerReachEnd = Time.time + reachEndPatience; //påbörja countdown
+            }
+            return false;
+        }
+        else if (closeToEnd == true)
+        {
+            if (timerReachEnd < Time.time)
+            {
+                closeToEnd = false;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+    
     public virtual List<Transform> ScanFriendlys(float aD)
     {
         Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aD, friendlyOnly);
@@ -649,6 +729,22 @@ public class AgentBase : MonoBehaviour {
         return Vector3.Distance(thisTransform.position, p);
     }
 
+    public bool IsFriendly(Transform t)
+    {
+        string tLayer = LayerMask.LayerToName(t.gameObject.layer);
+        
+        for(int i = 0; i < friendlyLayers.Count; i++)
+        {
+            if(tLayer == friendlyLayers[i])
+            {
+                return true;
+                break;
+            }
+        }
+
+        return false;
+    }
+
     public void ToggleSelMarker(bool b)
     {
         selectionMarkerObject.SetActive(b);
@@ -659,11 +755,15 @@ public class AgentBase : MonoBehaviour {
     {
         public UnitState stateToExecute;
         public Vector3 positionToExecute; //använd sedan thisTransform.position för start ofc
+        public Transform target;
+        public bool friendlyFire;
 
-        public Command(UnitState uS, Vector3 pos)
+        public Command(UnitState uS, Vector3 pos, Transform t, bool ff)
         {
             stateToExecute = uS;
             positionToExecute = pos;
+            target = t;
+            friendlyFire = ff;
         }
     }
 }
