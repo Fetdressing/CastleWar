@@ -55,22 +55,36 @@ public class AgentBase : MonoBehaviour {
 
     //stats****
 
+    [Header("Other")]
+    //variables used in different states*****
+
+    //almost reach target**
+    public float reachDistanceThreshhold = 10; //hur nära som är 'close enough'
+    bool closeToEnd = false;
+    float timerReachEnd; //när denna nästan nått pathen så set en timer för att inte stå o jucka för all evighet, finns risk att denne inte kan nå target
+    float reachEndPatience = 2.0f; //om den är hyfsat länge till slutpunkten så hur länge den ska vänta innan den ger upp och nöjer sig med nuvarande punkt    
+    //almost reach target**
+    
     [HideInInspector]
     public float startChaseTime;
+    [HideInInspector]
     public float chaseTimeAggressive = 6;
+    [HideInInspector]
     public float chaseTimeNormal = 3;
 
-    //variables used in different states:
-    Transform[] tempTargets;
+    Transform[] tempTargets; //används för att skanna nearby fiender tex
 
     [HideInInspector]public Vector3 startPos;
     [HideInInspector]public Vector3 startPos2; //används när man tex frångår pathen
     [HideInInspector]public Vector3 movePos; //för attackmove och move
 
 
-    bool ignoreSurrounding = false;
-	// Use this for initialization
-	void Start () { //får jag dubbla starts?
+    bool ignoreSurrounding = false; //används för att återta en path så att denne inte försöker jaga fiender hela tiden
+
+    //variables used in different states*****
+
+    // Use this for initialization
+    void Start () { //får jag dubbla starts?
         Init();
     }
 
@@ -248,24 +262,29 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void AttackMove(Vector3 pos)
     {
+        agent.ResetPath();
         state = UnitState.AttackMoving;
         agent.avoidancePriority = 0;
         movePos = pos;
         agent.SetDestination(movePos);
         ignoreSurrounding = false;
+        closeToEnd = false;
     }
 
     public virtual void Move(Vector3 pos) //dålig prioritet när man rör på sig så man inte knuffar bort någon! tvärtom på stillastående
     {
+        agent.ResetPath();
         state = UnitState.Moving;
         agent.avoidancePriority = 0;
         movePos = pos;
         agent.SetDestination(movePos);
         target = null;
+        closeToEnd = false;
     }
 
     public virtual void Guard()
     {
+        agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
         startPos = thisTransform.position;
         state = UnitState.Guarding;
@@ -273,6 +292,7 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void Guard(Vector3 pos) //redefinition
     {
+        agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
         startPos = pos;
         state = UnitState.Guarding;
@@ -284,11 +304,13 @@ public class AgentBase : MonoBehaviour {
         {
             if (state == UnitState.Guarding) //vill ju inte den tex ska påbörja en ny investigate
             {
+                agent.ResetPath();
                 state = UnitState.Investigating;
                 agent.avoidancePriority = 50;
                 movePos = pos;
                 startPos = thisTransform.position;
                 ignoreSurrounding = false;
+                closeToEnd = false; //vill kanske använda den här oxå?
                 //agent.SetDestination(movePos);
             }
         }
@@ -429,7 +451,7 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void MovingUpdate()
     {
-        if (GetMovePosDistance() < 1.5f) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
+        if (GetMovePosDistance() < 1.5f || IsCloseEnoughToPos(movePos)) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
         {
             ExecuteNextCommand(); //ha ett storeat 'next command', finns inget så kör default ofc!
         }
@@ -489,6 +511,37 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
+    public virtual bool IsCloseEnoughToPos(Vector3 endPos) //använder tid för att inte försöka för evigt
+    {
+        //if (!agent.hasPath)
+        //{
+        //    Debug.Log("No path");
+        //    return true;
+        //}
+
+        if(closeToEnd == false)
+        {
+            if(GetDistanceToPosition(endPos) < reachDistanceThreshhold) //jag är nära nog, påbörja count down!
+            {
+                closeToEnd = true;
+                timerReachEnd = Time.time + reachEndPatience; //påbörja countdown
+            }
+            return false;
+        }
+        else if(closeToEnd == true)
+        {
+            if(timerReachEnd < Time.time)
+            {
+                closeToEnd = false;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return false;
+    }
 
     public virtual Transform[] ScanEnemies(float aD)
     {
@@ -590,6 +643,10 @@ public class AgentBase : MonoBehaviour {
     public float GetDistanceToTransform(Transform t)
     {
         return Vector3.Distance(thisTransform.position, t.position);
+    }
+    public float GetDistanceToPosition(Vector3 p)
+    {
+        return Vector3.Distance(thisTransform.position, p);
     }
 
     public void ToggleSelMarker(bool b)
