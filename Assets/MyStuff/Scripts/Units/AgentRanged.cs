@@ -87,7 +87,7 @@ public class AgentRanged : AgentBase {
                 
                 if(los)
                 {
-                    Fire(damageRoll);
+                    Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
                 }
             }
         }

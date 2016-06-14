@@ -269,7 +269,11 @@ public class Selector : MonoBehaviour {
 
         if (Input.GetButtonDown("Fire1")) //attack unit om man har MoveState.Attack och ifall mouseInput != null!!!!!!!!!!!!!!!!!!!!!!!
         {
-            if (moveState == MoveState.Attack && mouseHitValid) //specialcase på attackmove för då ska den bara attackmova
+            if(moveState == MoveState.Attack && mouseInput != null)
+            {
+                OrderAttackUnit(mouseInput, true);
+            }
+            else if (moveState == MoveState.Attack && mouseHitValid) //specialcase på attackmove för då ska den bara attackmova
             {
                 OrderAttackMove(mouseHitPos);
             }

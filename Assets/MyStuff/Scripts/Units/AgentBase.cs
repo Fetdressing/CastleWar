@@ -65,6 +65,10 @@ public class AgentBase : MonoBehaviour {
     float timerReachEnd; //när denna nästan nått pathen så set en timer för att inte stå o jucka för all evighet, finns risk att denne inte kan nå target
     float reachEndPatience = 2.0f; //om den är hyfsat länge till slutpunkten så hur länge den ska vänta innan den ger upp och nöjer sig med nuvarande punkt    
     //almost reach target**
+
+    //look angle threshhold, hur mycket den måste titta på fienden för att kunna attackera
+    private float lookAngleThreshhold = 25;
+    public float turnRatio = 2;
     
     [HideInInspector]
     public float startChaseTime;
@@ -190,7 +194,7 @@ public class AgentBase : MonoBehaviour {
             return targetAlive;
         }
 
-        if (attackRange > targetDistance) //kolla så att target står framför mig oxå
+        if (attackRange > targetDistance && IsFacingTransform(target)) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
@@ -216,9 +220,14 @@ public class AgentBase : MonoBehaviour {
         {
             agent.SetDestination(target.position);
         }
+        else if(!IsFacingTransform(target))
+        {
+            RotateTowards(target);
+            agent.ResetPath();
+        }
         else
         {
-            //agent.ResetPath();
+            agent.ResetPath();
         }
 
         return targetAlive;
@@ -354,23 +363,34 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void AttackUnit(Transform t, bool friendlyFire)
     {
-        bool canAttack = false;
-        if(IsFriendly(t) && friendlyFire)
+        if (t != thisTransform)
         {
-            canAttack = true;
-        }
-        else if(!IsFriendly(t))
-        {
-            canAttack = true;
-        }
+            bool canAttack = false;
+            if (IsFriendly(t) && friendlyFire)
+            {
+                canAttack = true;
+            }
+            else if (!IsFriendly(t))
+            {
+                canAttack = true;
+            }
 
-        if(canAttack)
+            if (canAttack)
+            {
+                agent.ResetPath();
+                state = UnitState.AttackingUnit;
+                agent.avoidancePriority = 0;
+                agent.SetDestination(t.position);
+                SetTarget(t); //set target så den inte alertar allierade i onödan
+            }
+            else
+            {
+                Move(t.position); //om det inte är valid target så bara gå dit istället 
+            }
+        }
+        else
         {
-            agent.ResetPath();
-            state = UnitState.AttackingUnit;
-            agent.avoidancePriority = 0;
-            agent.SetDestination(t.position);
-            SetTarget(t); //set target så den inte alertar allierade i onödan
+            Guard();
         }
     }
 
@@ -703,7 +723,7 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual float GetTargetDistance()
+    public float GetTargetDistance()
     {
         return Vector3.Distance(thisTransform.position, target.position);
     }
@@ -743,6 +763,26 @@ public class AgentBase : MonoBehaviour {
         }
 
         return false;
+    }
+    public bool IsFacingTransform(Transform t)
+    {
+        Vector3 tPosWithoutY = new Vector3(t.position.x, thisTransform.position.y, t.position.z); //så den bara kollar på x o z leden
+        Vector3 vecToTransform = tPosWithoutY - thisTransform.position;
+        float angle = Vector3.Angle(thisTransform.forward, vecToTransform);
+
+        if(angle > lookAngleThreshhold)
+        {
+            //Debug.Log(angle.ToString());
+            return false;
+        }
+        return true;
+    }
+    public void RotateTowards(Transform t)
+    {
+        Vector3 tPosWithoutY = new Vector3(t.position.x, thisTransform.position.y, t.position.z); //så den bara kollar på x o z leden
+        Vector3 direction = (tPosWithoutY - thisTransform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        thisTransform.rotation = Quaternion.Slerp(thisTransform.rotation, lookRotation, Time.deltaTime * turnRatio);
     }
 
     public void ToggleSelMarker(bool b)
