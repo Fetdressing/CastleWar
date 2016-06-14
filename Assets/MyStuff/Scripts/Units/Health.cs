@@ -3,6 +3,11 @@ using System.Collections;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
+    private Transform thisTransform;
+    [HideInInspector]
+    public Vector3 middlePoint; //var dennas mittpunkt ligger
+    public float middlePointOffsetY = 0.5f;
+
     [HideInInspector]
     public bool isAlive = true;
 
@@ -25,9 +30,12 @@ public class Health : MonoBehaviour {
     public GameObject uiHealth;
     public Image healthBar;
 
-	// Use this for initialization
-	void Start () {
+    public Transform uiCanvas;
+
+    // Use this for initialization
+    void Start () {
         isAlive = true;
+        thisTransform = this.transform;
         mainCamera = Camera.main;
 
         maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
@@ -39,8 +47,12 @@ public class Health : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        middlePoint = new Vector3(thisTransform.position.x, thisTransform.position.y + middlePointOffsetY, thisTransform.position.z);
 
-        if(currHealth >= maxHealth)
+        uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
+mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara har health då?
+
+        if (currHealth >= maxHealth)
         {
             uiHealth.SetActive(false);
         }

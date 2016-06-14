@@ -16,8 +16,6 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]public Health healthS;
     [HideInInspector]public AgentStats statsS;
     [HideInInspector]public NavMeshAgent agent;
-    [HideInInspector]public Camera mainCamera;
-    public Transform uiCanvas;
     public GameObject selectionMarkerObject;
 
     public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
@@ -99,7 +97,6 @@ public class AgentBase : MonoBehaviour {
         agent = thisTransform.GetComponent<NavMeshAgent>();
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
-        mainCamera = Camera.main;
 
         ToggleSelMarker(false);
 
@@ -155,9 +152,6 @@ public class AgentBase : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
-   mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara har health då?
-
         if (target != null)
         {
             targetDistance = GetTargetDistance();
@@ -194,7 +188,9 @@ public class AgentBase : MonoBehaviour {
             return targetAlive;
         }
 
-        if (attackRange > targetDistance && IsFacingTransform(target)) //kolla så att target står framför mig oxå
+        bool isFacingTarget = IsFacingTransform(target);
+
+        if (attackRange > targetDistance && isFacingTarget) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
@@ -220,7 +216,7 @@ public class AgentBase : MonoBehaviour {
         {
             agent.SetDestination(target.position);
         }
-        else if(!IsFacingTransform(target))
+        else if(!isFacingTarget)
         {
             RotateTowards(target);
             agent.ResetPath();

@@ -279,7 +279,7 @@ public class Selector : MonoBehaviour {
             }
             else
             {
-                if (mouseInput != null && Input.GetButton("Add"))
+                if (mouseInput != null && Input.GetButton("Add")) //kolla oxå så att det inte bara är en destructable
                 {
                     AddTarget(mouseInput);
                 }

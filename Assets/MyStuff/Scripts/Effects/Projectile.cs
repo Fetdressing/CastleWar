@@ -37,13 +37,14 @@ public class Projectile : MonoBehaviour {
         ToggleActive(false);
     }
 	
-    public void Fire(Transform target, int damage, int lifeTime, bool notifyattacked)
+    public void Fire(Transform target, Vector3 aimPos, int damage, int lifeTime, bool notifyattacked, bool ff)
     {
         ToggleActive(true);
-        thisTransform.LookAt(target.position);
+        thisTransform.LookAt(aimPos);
         thisRigidbody.AddForce(thisTransform.forward * shootForce, ForceMode.Impulse);
 
         notifyAttacked = notifyattacked;
+        friendlyFire = ff;
         damageRoll = damage;
 
         startAliveTime = Time.time;
@@ -70,7 +71,7 @@ public class Projectile : MonoBehaviour {
 
     void OnTriggerEnter(Collider collidingUnit)
     {
-        if (collidingUnit.transform == attackerT)
+        if (collidingUnit.transform == attackerT) //ska inte träffa en själv
         {
             return;
         }

@@ -14,6 +14,13 @@ public class AgentRanged : AgentBase {
     public float minimumTargetDistance = 10;
 
     public LayerMask layerMaskLOSCheck;
+    [HideInInspector]
+    public LayerMask layerMaskLOSCheckFriendlyIncluded; //samma som layerMaskLOSCheck fast MED sin egen layer
+
+    [HideInInspector]
+    public bool movingBack; //target är för nära för mig så jag håller på att flytta mig bakåt
+    [HideInInspector]
+    public float moveBackThreshhold = 1.3f;
     // Use this for initialization
     void Start () {
         Init();
@@ -21,10 +28,6 @@ public class AgentRanged : AgentBase {
 	
 	// Update is called once per frame
 	void Update () {
-        //Debug.Log(startPos.ToString());
-        uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,
-   mainCamera.transform.rotation * Vector3.up);
-
         if (target != null)
         {
             targetDistance = GetTargetDistance();
@@ -45,6 +48,9 @@ public class AgentRanged : AgentBase {
             case UnitState.Investigating:
                 InvestigatingUpdate();
                 break;
+            case UnitState.AttackingUnit:
+                AttackUnitUpdate();
+                break;
         }
     }
 
@@ -59,6 +65,7 @@ public class AgentRanged : AgentBase {
             projectilePool.Add(tempO.gameObject);
         }
 
+        layerMaskLOSCheckFriendlyIncluded = layerMaskLOSCheck; //set denna innan så att den får med alla friendly layers
         for (int i = 0; i < friendlyLayers.Count; i++)
         {
             layerMaskLOSCheck ^= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
@@ -70,15 +77,16 @@ public class AgentRanged : AgentBase {
     public override bool AttackTarget()
     {
         bool targetAlive = true;
-        if (target.gameObject.activeSelf == false || !targetHealth.IsAlive())
+        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive())
         {
             targetAlive = false;
             return targetAlive;
         }
 
-        bool los;
-        los = LineOfSight(target);
-        if (attackRange > targetDistance) //kolla så att target står framför mig oxå
+        bool los, isFacingTarget;
+        los = LineOfSight();
+        isFacingTarget = IsFacingTransform(target);
+        if (attackRange > targetDistance && isFacingTarget) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
@@ -93,12 +101,33 @@ public class AgentRanged : AgentBase {
         }
         if (attackRange + 1 < targetDistance || !los) //+1 för marginal
         {
+            movingBack = false;
             agent.SetDestination(target.position);
         }
         else if(targetDistance < minimumTargetDistance)
         {
+            movingBack = true;
             Vector3 vectorFromTarget = thisTransform.position - target.position;
-            agent.SetDestination(thisTransform.position + vectorFromTarget);
+            vectorFromTarget *= 3.5f;
+            agent.SetDestination(thisTransform.position + vectorFromTarget); //gånger ett värde för att förflytta denne lite extra
+        }
+        else if (movingBack) //backar alldelles för långttt!!!!!!
+        {
+            if (targetDistance * moveBackThreshhold < minimumTargetDistance)
+            {
+                movingBack = false;
+                agent.ResetPath();
+            }
+            else
+            {
+                Vector3 vectorFromTarget = thisTransform.position - target.position;
+                agent.SetDestination(thisTransform.position + vectorFromTarget * 3.5f);
+            }
+        }
+        else if (!isFacingTarget) //den resetar pathen för ovanstående när den går utanför minimumTargetDistance
+        {
+            RotateTowards(target);
+            agent.ResetPath();
         }
         else
         {
@@ -126,25 +155,74 @@ public class AgentRanged : AgentBase {
 
             if (targetAgentBase != null)
             {
-                lastProjectileScript.Fire(target, damageRoll, 4, true);
+                if (IsFriendly(target)) //om man har satt en friendly som target så måste man kunna skada den, så sätt ff = true
+                {
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, true);
+                }
+                else
+                {
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, false); //annars inte
+                }
             }
             else //bara typ nån destructable
             {
-                lastProjectileScript.Fire(target, damageRoll, 4, false);
+                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, false, false);
             }
             
         }
     }
 
+    public bool LineOfSight() //has LOS to t?
+    {
+        RaycastHit hitLOS;
+        Vector3 vectorToT = targetHealth.middlePoint - thisTransform.position; //hämta mittpunkten istället
+
+        if (!IsFriendly(target))
+        {
+            if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.transform == target)
+                {
+                    return true;
+                }
+            }
+        }
+        else //target är friendly -> då får jag använda ett annat layer så jag hittar denne
+        {
+            if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyIncluded)) //nu kommer friendlys oxå kunna blocka denne, tänk på det
+            {
+                if (hitLOS.collider.transform == target)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
     public bool LineOfSight(Transform t) //has LOS to t?
     {
         RaycastHit hitLOS;
-        Vector3 vectorToT = t.position - thisTransform.position;
-        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //en layermask som ignorerar allt förutom terräng
+        Vector3 vectorToT = t.GetComponent<Health>().middlePoint - thisTransform.position; //hämta mittpunkten istället
+
+        if (!IsFriendly(target))
         {
-            if(hitLOS.collider.transform == t)
+            if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
             {
-                return true;
+                if (hitLOS.collider.transform == t)
+                {
+                    return true;
+                }
+            }
+        }
+        else //target är friendly -> då får jag använda ett annat layer så jag hittar denne
+        {
+            if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyIncluded)) //nu kommer friendlys oxå kunna blocka denne, tänk på det
+            {
+                if (hitLOS.collider.transform == t)
+                {
+                    return true;
+                }
             }
         }
 
