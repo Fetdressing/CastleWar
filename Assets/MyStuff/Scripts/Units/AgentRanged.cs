@@ -17,10 +17,6 @@ public class AgentRanged : AgentBase {
     [HideInInspector]
     public LayerMask layerMaskLOSCheckFriendlyIncluded; //samma som layerMaskLOSCheck fast MED sin egen layer
 
-    [HideInInspector]
-    public bool movingBack; //target är för nära för mig så jag håller på att flytta mig bakåt
-    [HideInInspector]
-    public float moveBackThreshhold = 1.3f;
     // Use this for initialization
     void Start () {
         Init();
@@ -99,30 +95,15 @@ public class AgentRanged : AgentBase {
                 }
             }
         }
+
         if (attackRange + 1 < targetDistance || !los) //+1 för marginal
         {
-            movingBack = false;
             agent.SetDestination(target.position);
         }
         else if(targetDistance < minimumTargetDistance)
         {
-            movingBack = true;
             Vector3 vectorFromTarget = thisTransform.position - target.position;
-            vectorFromTarget *= 3.5f;
             agent.SetDestination(thisTransform.position + vectorFromTarget); //gånger ett värde för att förflytta denne lite extra
-        }
-        else if (movingBack) //backar alldelles för långttt!!!!!!
-        {
-            if (targetDistance * moveBackThreshhold < minimumTargetDistance)
-            {
-                movingBack = false;
-                agent.ResetPath();
-            }
-            else
-            {
-                Vector3 vectorFromTarget = thisTransform.position - target.position;
-                agent.SetDestination(thisTransform.position + vectorFromTarget * 3.5f);
-            }
         }
         else if (!isFacingTarget) //den resetar pathen för ovanstående när den går utanför minimumTargetDistance
         {
