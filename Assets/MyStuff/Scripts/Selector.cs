@@ -111,7 +111,7 @@ public class Selector : MonoBehaviour {
 
         if (exists == false)
         {
-            newTarget.GetComponent<AgentBase>().ToggleSelMarker(true);
+            newTarget.GetComponent<Health>().ToggleSelMarker(true);
             targets.Add(newTarget);
         }
     }
@@ -120,7 +120,7 @@ public class Selector : MonoBehaviour {
     {
         if (targets[i] != null)
         {
-            targets[i].GetComponent<AgentBase>().ToggleSelMarker(false);
+            targets[i].GetComponent<Health>().ToggleSelMarker(false);
         }
         targets.RemoveAt(i);
     }
@@ -129,7 +129,7 @@ public class Selector : MonoBehaviour {
     {
         for(int i = 0; i < targets.Count; i++)
         {
-            targets[i].GetComponent<AgentBase>().ToggleSelMarker(false);            
+            targets[i].GetComponent<Health>().ToggleSelMarker(false);            
         }
         targets.Clear();
     }
@@ -154,7 +154,10 @@ public class Selector : MonoBehaviour {
         {
             for (int i = 0; i < targets.Count; i++)
             {
-                targets[i].GetComponent<AgentBase>().Move(pos);
+                if (targets[i].GetComponent<AgentBase>() != null)
+                {
+                    targets[i].GetComponent<AgentBase>().Move(pos);
+                }
             }
         }
         moveState = MoveState.Move;
@@ -165,7 +168,10 @@ public class Selector : MonoBehaviour {
     {
         for (int i = 0; i < targets.Count; i++)
         {
-            targets[i].GetComponent<AgentBase>().AttackMove(pos);
+            if (targets[i].GetComponent<AgentBase>() != null)
+            {
+                targets[i].GetComponent<AgentBase>().AttackMove(pos);
+            }
         }
         moveState = MoveState.Move;
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
@@ -175,7 +181,10 @@ public class Selector : MonoBehaviour {
     {
         for (int i = 0; i < targets.Count; i++)
         {
-            targets[i].GetComponent<AgentBase>().AttackUnit(t, friendfire);
+            if (targets[i].GetComponent<AgentBase>() != null)
+            {
+                targets[i].GetComponent<AgentBase>().AttackUnit(t, friendfire);
+            }
         }
         moveState = MoveState.Move;
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);

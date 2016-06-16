@@ -4,12 +4,11 @@ using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
     private Transform thisTransform;
+    public float unitSize = 1;
+
     [HideInInspector]
     public Vector3 middlePoint; //var dennas mittpunkt ligger
     public float middlePointOffsetY = 0.5f;
-
-    [HideInInspector]
-    public bool isAlive = true;
 
     public int startHealth = 100;
     [HideInInspector]
@@ -31,10 +30,20 @@ public class Health : MonoBehaviour {
     public Image healthBar;
 
     public Transform uiCanvas;
+    public GameObject selectionMarkerObject;
 
     // Use this for initialization
     void Start () {
-        isAlive = true;
+        Init();
+	}
+
+    void Awake()
+    {
+        Init();
+    }
+
+    public void Init()
+    {
         thisTransform = this.transform;
         mainCamera = Camera.main;
 
@@ -42,7 +51,20 @@ public class Health : MonoBehaviour {
         currHealth = maxHealth;
 
         healthRegAmount = startHealthRegAmount;
-	}
+
+        ToggleSelMarker(false);
+    }
+    public void Reset()
+    {
+        maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
+        currHealth = maxHealth;
+
+        healthRegAmount = startHealthRegAmount;
+
+        AddHealth(1); //bara så barsen ska fixas
+
+        ToggleSelMarker(false);
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -96,7 +118,6 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         else if(currHealth <= 0)
         {
             healthBar.fillAmount = (float)currHealth / (float)maxHealth;
-            isAlive = false;
             Destroy(this.gameObject);
             return false; //target dog
             //die
@@ -120,5 +141,11 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
     public int GetCurrHealth()
     {
         return currHealth;
+    }
+
+
+    public void ToggleSelMarker(bool b)
+    {
+        selectionMarkerObject.SetActive(b);
     }
 }

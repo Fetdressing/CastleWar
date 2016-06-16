@@ -16,9 +16,10 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]public Health healthS;
     [HideInInspector]public AgentStats statsS;
     [HideInInspector]public NavMeshAgent agent;
-    public GameObject selectionMarkerObject;
 
+    [HideInInspector]
     public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
+    [HideInInspector]
     public string[] enemyLayers;
 
     [HideInInspector]public LayerMask friendlyOnly;
@@ -91,6 +92,16 @@ public class AgentBase : MonoBehaviour {
         Init();
     }
 
+    void Awake()
+    {
+        Init();
+    }
+
+    public virtual void Reset()
+    {
+        Guard();
+    }
+
     public virtual void Init()
     {
         thisTransform = this.transform;
@@ -98,7 +109,8 @@ public class AgentBase : MonoBehaviour {
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
 
-        ToggleSelMarker(false);
+        TeamHandler th = GameObject.FindGameObjectWithTag("TeamHandler").gameObject.GetComponent<TeamHandler>();
+        th.GetFriendsAndFoes(LayerMask.LayerToName(thisTransform.gameObject.layer), ref friendlyLayers, ref enemyLayers);
 
         InitializeStats();
         InitializeLayerMask();
@@ -190,7 +202,7 @@ public class AgentBase : MonoBehaviour {
 
         bool isFacingTarget = IsFacingTransform(target);
 
-        if (attackRange > targetDistance && isFacingTarget) //kolla så att target står framför mig oxå
+        if (attackRange > (targetDistance-targetHealth.unitSize) && isFacingTarget) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
@@ -212,7 +224,7 @@ public class AgentBase : MonoBehaviour {
                 }
             }
         }
-        if (attackRange * 0.7f < targetDistance) //marginal med jue
+        if (attackRange * 0.7f < (targetDistance-targetHealth.unitSize)) //marginal med jue
         {
             agent.SetDestination(target.position);
         }
@@ -371,6 +383,11 @@ public class AgentBase : MonoBehaviour {
                 canAttack = true;
             }
 
+            if(t.GetComponent<Health>() == null)
+            {
+                canAttack = false;
+            }
+
             if (canAttack)
             {
                 agent.ResetPath();
@@ -381,7 +398,7 @@ public class AgentBase : MonoBehaviour {
             }
             else
             {
-                Move(t.position); //om det inte är valid target så bara gå dit istället 
+                AttackMove(t.position); //om det inte är valid target så bara gå dit istället 
             }
         }
         else
@@ -711,7 +728,7 @@ public class AgentBase : MonoBehaviour {
 
             for (int i = 0; i < nearbyFriendly.Count; i++)
             {
-                if (nearbyFriendly[i].gameObject.activeSelf == true)
+                if (nearbyFriendly[i].gameObject.activeSelf == true && nearbyFriendly[i].GetComponent<AgentBase>() != null)
                 {
                     nearbyFriendly[i].GetComponent<AgentBase>().Investigate(pos); //behöver något annat än attackmove, investigate
                 }
@@ -780,12 +797,6 @@ public class AgentBase : MonoBehaviour {
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         thisTransform.rotation = Quaternion.Slerp(thisTransform.rotation, lookRotation, Time.deltaTime * turnRatio);
     }
-
-    public void ToggleSelMarker(bool b)
-    {
-        selectionMarkerObject.SetActive(b);
-    }
-
 
     public struct Command
     {
