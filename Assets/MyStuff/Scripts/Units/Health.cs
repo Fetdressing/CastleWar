@@ -32,10 +32,12 @@ public class Health : MonoBehaviour {
     public Transform uiCanvas;
     public GameObject selectionMarkerObject;
 
+    public bool destroyOnDeath = false;
+
     // Use this for initialization
-    void Start () {
-        Init();
-	}
+ //   void Start () {
+ //       Init();
+	//}
 
     void Awake()
     {
@@ -118,12 +120,24 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         else if(currHealth <= 0)
         {
             healthBar.fillAmount = (float)currHealth / (float)maxHealth;
-            Destroy(this.gameObject);
+            Die();
             return false; //target dog
             //die
         }
         healthBar.fillAmount = (float)currHealth / (float)maxHealth;
         return true; //target vid liv
+    }
+
+    public void Die()
+    {
+        if(destroyOnDeath == true)
+        {
+            Destroy(thisTransform.gameObject);
+        }
+        else
+        {
+            thisTransform.gameObject.SetActive(false);
+        }        
     }
 
     public bool IsAlive()

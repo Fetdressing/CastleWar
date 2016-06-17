@@ -17,13 +17,13 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]public AgentStats statsS;
     [HideInInspector]public NavMeshAgent agent;
 
-    [HideInInspector]
+    //[HideInInspector]
     public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
-    [HideInInspector]
+    //[HideInInspector]
     public string[] enemyLayers;
 
-    [HideInInspector]public LayerMask friendlyOnly;
-    [HideInInspector]public LayerMask enemyOnly;
+    public LayerMask friendlyOnly;
+    public LayerMask enemyOnly;
 
     public float aggroDistance = 20;
     [HideInInspector]
@@ -88,9 +88,9 @@ public class AgentBase : MonoBehaviour {
     //variables used in different states*****
 
     // Use this for initialization
-    void Start () { //får jag dubbla starts?
-        Init();
-    }
+    //void Start () { //får jag dubbla starts?
+    //    Init();
+    //}
 
     void Awake()
     {
@@ -109,8 +109,7 @@ public class AgentBase : MonoBehaviour {
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
 
-        TeamHandler th = GameObject.FindGameObjectWithTag("TeamHandler").gameObject.GetComponent<TeamHandler>();
-        th.GetFriendsAndFoes(LayerMask.LayerToName(thisTransform.gameObject.layer), ref friendlyLayers, ref enemyLayers);
+        GetFriendsAndFoes();
 
         InitializeStats();
         InitializeLayerMask();
@@ -130,8 +129,26 @@ public class AgentBase : MonoBehaviour {
 
     void InitializeLayerMask()
     {
+        friendlyOnly = LayerMask.NameToLayer("Nothing"); //inte riktigt säker på varför detta funkar men det gör
+        enemyOnly = LayerMask.NameToLayer("Nothing");
+
+        friendlyOnly = ~friendlyOnly; //inte riktigt säker på varför detta funkar men det gör
+        enemyOnly = ~enemyOnly;
         //friendlyOnly |= (1 << thisTransform.gameObject.layer);
-        friendlyLayers.Add(LayerMask.LayerToName(thisTransform.gameObject.layer));
+        bool alreadyExist = false;
+        for(int i = 0; i < friendlyLayers.Count; i++)
+        {
+            if(LayerMask.LayerToName(thisTransform.gameObject.layer) == friendlyLayers[i])
+            {
+                alreadyExist = true;
+            }
+        }
+        if (alreadyExist == false)
+        {
+            friendlyLayers.Add(LayerMask.LayerToName(thisTransform.gameObject.layer));
+        }
+
+
         for(int i = 0; i < friendlyLayers.Count; i++)
         {
             friendlyOnly |= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
@@ -164,30 +181,33 @@ public class AgentBase : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (target != null)
+        if (healthS.IsAlive() && thisTransform.gameObject.activeSelf == true)
         {
-            targetDistance = GetTargetDistance();
-        }
+            if (target != null)
+            {
+                targetDistance = GetTargetDistance();
+            }
+            //Debug.Log(state.ToString());
+            switch (state)
+            {
+                case UnitState.Guarding:
+                    GuardingUpdate();
+                    break;
 
-        switch (state)
-        {
-            case UnitState.Guarding:
-                GuardingUpdate();
-                break;
+                case UnitState.AttackMoving:
+                    AttackMovingUpdate();
+                    break;
 
-            case UnitState.AttackMoving:
-                AttackMovingUpdate();
-                break;
-
-            case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
-                MovingUpdate();
-                break;
-            case UnitState.Investigating:
-                InvestigatingUpdate();
-                break;
-            case UnitState.AttackingUnit:
-                AttackUnitUpdate();
-                break;
+                case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
+                    MovingUpdate();
+                    break;
+                case UnitState.Investigating:
+                    InvestigatingUpdate();
+                    break;
+                case UnitState.AttackingUnit:
+                    AttackUnitUpdate();
+                    break;
+            }
         }
 	}
 
@@ -760,6 +780,12 @@ public class AgentBase : MonoBehaviour {
     public float GetDistanceToPosition(Vector3 p)
     {
         return Vector3.Distance(thisTransform.position, p);
+    }
+    public void GetFriendsAndFoes()
+    {
+        TeamHandler th = GameObject.FindGameObjectWithTag("TeamHandler").gameObject.GetComponent<TeamHandler>();
+        th.GetFriendsAndFoes(LayerMask.LayerToName(thisTransform.gameObject.layer), ref friendlyLayers, ref enemyLayers);
+        InitializeLayerMask();
     }
 
     public bool IsFriendly(Transform t)

@@ -22,7 +22,7 @@ public class SpawnBuilding : MonoBehaviour {
     }
 
 	void Start () {
-        Init();
+        //Init();
 	}
 
     void Awake()
@@ -39,6 +39,10 @@ public class SpawnBuilding : MonoBehaviour {
             Health unitHealth = temp.GetComponent<Health>();
 
             Unit tempUnit = new Unit(temp, agentBase, unitHealth);
+
+            temp.layer = thisTransform.gameObject.layer;
+            agentBase.GetFriendsAndFoes();
+            temp.transform.parent = thisTransform;
             temp.SetActive(false);
             unitPool.Add(tempUnit);
         }
@@ -67,12 +71,15 @@ public class SpawnBuilding : MonoBehaviour {
                 {
                     unitPool[i].agentB.AttackMove(rallyPointTransform.position);
                 }
-                //sätt den till samma lag som en själv!!!
-                unitPool[i].obj.layer = thisTransform.gameObject.layer;
+                else
+                {
+                    unitPool[i].agentB.Guard();
+                }
                 break;
             }
         }
     }
+    //tomma referenser när denna dör
 }
 
 public struct Unit
