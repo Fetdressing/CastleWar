@@ -17,12 +17,14 @@ public class AgentBase : MonoBehaviour {
     [HideInInspector]public AgentStats statsS;
     [HideInInspector]public NavMeshAgent agent;
 
-    //[HideInInspector]
+    [HideInInspector]
     public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
-    //[HideInInspector]
+    [HideInInspector]
     public string[] enemyLayers;
 
+    [HideInInspector]
     public LayerMask friendlyOnly;
+    [HideInInspector]
     public LayerMask enemyOnly;
 
     public float aggroDistance = 20;
@@ -99,6 +101,8 @@ public class AgentBase : MonoBehaviour {
 
     public virtual void Reset()
     {
+        closeToEnd = false;
+        ignoreSurrounding = false;
         Guard();
     }
 
@@ -515,7 +519,10 @@ public class AgentBase : MonoBehaviour {
         {
             if (GetStartPointDistance() < aggroDistance * 1.5f || (startChaseTime + chaseTimeNormal) > Time.time)
             {
-                AttackTarget();
+                if (AttackTarget() == false) //target död?
+                {
+                    target = null;
+                }
             }
             else
             {
@@ -547,7 +554,10 @@ public class AgentBase : MonoBehaviour {
             if (GetTargetDistance() < aggroDistance * 1.05f || (startChaseTime + chaseTimeNormal) > Time.time)
             {
                 //Debug.Log("Attack");
-                AttackTarget();
+                if(AttackTarget() == false)
+                {
+                    target = null;
+                }
             }
             else
             {
@@ -610,7 +620,10 @@ public class AgentBase : MonoBehaviour {
         {
             if (GetStartPointDistance2() < aggroDistance || (startChaseTime + chaseTimeNormal) > Time.time) //måste kunna återvända till där den var innan den påbörja pathen
             {
-                AttackTarget();
+                if (AttackTarget() == false)
+                {
+                    target = null;
+                }
             }
             else
             {
@@ -696,7 +709,6 @@ public class AgentBase : MonoBehaviour {
         //    Debug.Log("No path");
         //    return true;
         //}
-
         if (closeToEnd == false)
         {
             if (GetDistanceToPosition(endPos) < reachDistanceThreshhold) //jag är nära nog, påbörja count down!

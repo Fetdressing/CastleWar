@@ -18,9 +18,9 @@ public class AgentRanged : AgentBase {
     public LayerMask layerMaskLOSCheckFriendlyIncluded; //samma som layerMaskLOSCheck fast MED sin egen layer
 
     // Use this for initialization
-    void Start () {
-        Init();
-	}
+ //   void Start () {
+ //       Init();
+	//}
 
     void Awake()
     {
@@ -95,28 +95,28 @@ public class AgentRanged : AgentBase {
             return targetAlive;
         }
 
+        float targetDistanceuS = (targetDistance - targetHealth.unitSize);
         bool los, isFacingTarget;
         los = LineOfSight();
         isFacingTarget = IsFacingTransform(target);
-        if (attackRange > (targetDistance-targetHealth.unitSize) && isFacingTarget) //kolla så att target står framför mig oxå
+        if (attackRange > targetDistanceuS && isFacingTarget) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
-                attackSpeedTimer = attackSpeed + Time.time;
-                int damageRoll = Random.Range(damageMIN, damageMAX);
-                
                 if(los)
                 {
+                    attackSpeedTimer = attackSpeed + Time.time;
+                    int damageRoll = Random.Range(damageMIN, damageMAX);
                     Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
                 }
             }
         }
 
-        if (attackRange + 1 < (targetDistance-targetHealth.unitSize) || !los) //+1 för marginal
+        if (attackRange + 1 < targetDistanceuS || !los) //+1 för marginal
         {
             agent.SetDestination(target.position);
         }
-        else if(targetDistance < minimumTargetDistance)
+        else if(targetDistanceuS <= minimumTargetDistance)
         {
             Vector3 vectorFromTarget = thisTransform.position - target.position;
             agent.SetDestination(thisTransform.position + vectorFromTarget); //gånger ett värde för att förflytta denne lite extra
@@ -130,6 +130,7 @@ public class AgentRanged : AgentBase {
         {
             agent.ResetPath();
         }
+        //ta bort "targetDistanceuS > (minimumTargetDistance - minimumTargetDistance * 0.3f)" från de två sista statementsen om det ej funkar
         return true;
     }
 
@@ -172,18 +173,27 @@ public class AgentRanged : AgentBase {
     public bool LineOfSight() //has LOS to t?
     {
         RaycastHit hitLOS;
-        RaycastHit[] hitsLOS;
+        //RaycastHit[] hitsLOS;
         Vector3 vectorToT = targetHealth.middlePoint - thisTransform.position; //hämta mittpunkten istället
 
-        List<Transform> potBlockers = new List<Transform>();
+        //List<Transform> potBlockers = new List<Transform>();
 
-        hitsLOS = Physics.RaycastAll(thisTransform.position, vectorToT, attackRange * 1.2f, layerMaskLOSCheck);
+        //hitsLOS = Physics.RaycastAll(thisTransform.position, vectorToT, attackRange * 1.2f, layerMaskLOSCheck);
 
-        for(int i = 0; i < hitsLOS.Length; i++)
+        //for(int i = 0; i < hitsLOS.Length; i++)
+        //{
+        //    if (hitsLOS[i].collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+        //    {
+        //        potBlockers.Add(hitsLOS[i].collider.transform);
+        //    }
+        //}
+        //return false;
+
+        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
         {
-            if (hitsLOS[i].collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+            if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
             {
-                potBlockers.Add(hitsLOS[i].collider.transform);
+                return true;
             }
         }
         return false;

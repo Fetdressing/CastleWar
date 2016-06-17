@@ -73,7 +73,8 @@ public class SpawnBuilding : MonoBehaviour {
                 }
                 else
                 {
-                    unitPool[i].agentB.Guard();
+                    unitPool[i].agentB.Move(unitPool[i].obj.transform.position + new Vector3(0,0, 1)); //move så de inte fastnar inuti varandra
+                    //unitPool[i].agentB.Guard();
                 }
                 break;
             }
