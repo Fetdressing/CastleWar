@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SpawnBuilding : MonoBehaviour {
-    private Transform thisTransform;
-
+public class SpawnBuilding : BuildingBase {
     public GameObject spawnUnit;
     public int maxUnitsOut = 5;
     public float spawnRate = 10;
@@ -13,9 +11,9 @@ public class SpawnBuilding : MonoBehaviour {
 
     List<Unit> unitPool = new List<Unit>();
 	// Use this for initialization
-    public void Init()
+    public override void Init()
     {
-        thisTransform = this.transform;
+        base.Init();
         CreateObjectPool();
 
         StartCoroutine(Spawn());

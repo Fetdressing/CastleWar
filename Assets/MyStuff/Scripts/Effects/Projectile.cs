@@ -85,9 +85,9 @@ public class Projectile : MonoBehaviour {
                 collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                 if(notifyAttacked)
                 {
-                    if (collidingUnit.transform.GetComponent<AgentBase>() != null)
+                    if (collidingUnit.transform.GetComponent<AIBase>() != null)
                     {
-                        collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                        collidingUnit.transform.GetComponent<AIBase>().Attacked(attackerT);
                     }
                 }
                 return;
@@ -101,9 +101,9 @@ public class Projectile : MonoBehaviour {
                 collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                 if (notifyAttacked)
                 {
-                    if (collidingUnit.transform.GetComponent<AgentBase>() != null)
+                    if (collidingUnit.transform.GetComponent<AIBase>() != null)
                     {
-                        collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                        collidingUnit.transform.GetComponent<AIBase>().Attacked(attackerT);
                     }
                 }
             }
@@ -119,9 +119,9 @@ public class Projectile : MonoBehaviour {
                     collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                     if (notifyAttacked)
                     {
-                        if (collidingUnit.transform.GetComponent<AgentBase>() != null)
+                        if (collidingUnit.transform.GetComponent<AIBase>() != null)
                         {
-                            collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                            collidingUnit.transform.GetComponent<AIBase>().Attacked(attackerT);
                         }
                     }
                 }

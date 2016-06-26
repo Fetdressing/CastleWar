@@ -151,7 +151,7 @@ public class AgentRanged : AgentBase {
         {
             readyProjectile.transform.position = shooter.position;
 
-            if (targetAgentBase != null)
+            if (targetBase != null)
             {
                 if (IsFriendly(target)) //om man har satt en friendly som target så måste man kunna skada den, så sätt ff = true
                 {
@@ -193,7 +193,10 @@ public class AgentRanged : AgentBase {
         {
             if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
             {
-                return true;
+                if (hitLOS.transform == target) //vet inte ifall jag vill ha med denna checken eller ej, förmodligen så
+                {
+                    return true;
+                }
             }
         }
         return false;

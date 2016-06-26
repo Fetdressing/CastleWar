@@ -9,27 +9,16 @@ public class AgentBase : AIBase {
     [HideInInspector]
     public UnitState state;
 
-    [HideInInspector]public Transform thisTransform;
     [HideInInspector]public Health healthS;
     [HideInInspector]public AgentStats statsS;
     [HideInInspector]public NavMeshAgent agent;
-
-    [HideInInspector]
-    public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
-    [HideInInspector]
-    public string[] enemyLayers;
-
-    [HideInInspector]
-    public LayerMask friendlyOnly;
-    [HideInInspector]
-    public LayerMask enemyOnly;
 
     public float aggroDistance = 20;
     [HideInInspector]
     public float temporaryAggroDistance = 0; //används när nått target skjuter långt
     //[HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
     [HideInInspector]public Transform target;
-    [HideInInspector]public AgentBase targetAgentBase;
+    [HideInInspector]public AIBase targetBase;
     [HideInInspector]public Health targetHealth;
     [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
 
@@ -105,15 +94,12 @@ public class AgentBase : AIBase {
 
     public virtual void Init()
     {
-        thisTransform = this.transform;
+        base.Init();
         agent = thisTransform.GetComponent<NavMeshAgent>();
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
 
-        GetFriendsAndFoes();
-
         InitializeStats();
-        InitializeLayerMask();
 
         Guard();
     }
@@ -126,58 +112,6 @@ public class AgentBase : AIBase {
         attackSpeed = startAttackSpeed;
 
         attackRange = startAttackRange;
-    }
-
-    void InitializeLayerMask()
-    {
-        friendlyOnly = LayerMask.NameToLayer("Nothing"); //inte riktigt säker på varför detta funkar men det gör
-        enemyOnly = LayerMask.NameToLayer("Nothing");
-
-        friendlyOnly = ~friendlyOnly; //inte riktigt säker på varför detta funkar men det gör
-        enemyOnly = ~enemyOnly;
-        //friendlyOnly |= (1 << thisTransform.gameObject.layer);
-        bool alreadyExist = false;
-        for(int i = 0; i < friendlyLayers.Count; i++)
-        {
-            if(LayerMask.LayerToName(thisTransform.gameObject.layer) == friendlyLayers[i])
-            {
-                alreadyExist = true;
-            }
-        }
-        if (alreadyExist == false)
-        {
-            friendlyLayers.Add(LayerMask.LayerToName(thisTransform.gameObject.layer));
-        }
-
-
-        for(int i = 0; i < friendlyLayers.Count; i++)
-        {
-            friendlyOnly |= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
-        }
-
-
-        for (int i = 0; i < enemyLayers.Length; i++)
-        {
-            bool isValid = true;
-            for(int y = 0; y < friendlyLayers.Count; y++) //kolla så att den inte är en friendly oxå
-            {
-                if (LayerMask.NameToLayer(enemyLayers[i]) == LayerMask.NameToLayer(friendlyLayers[y]))
-                {
-                    isValid = false;
-                }
-            }
-
-            if (LayerMask.NameToLayer(enemyLayers[i]) == thisTransform.gameObject.layer) //kolla så att det inte är mitt eget layer
-            {
-                isValid = false;
-            }
-
-            if (isValid == true)
-            {
-                enemyOnly |= (1 << LayerMask.NameToLayer(enemyLayers[i]));
-            }
-        }
-
     }
 	
 	// Update is called once per frame
@@ -239,9 +173,9 @@ public class AgentBase : AIBase {
                     targetAlive = false;
                 }
 
-                if (targetAgentBase != null)
+                if (targetBase != null)
                 {
-                    targetAgentBase.Attacked(thisTransform); //notera att jag attackerat honom!
+                    targetBase.Attacked(thisTransform); //notera att jag attackerat honom!
                 }
             }
         }
@@ -262,7 +196,7 @@ public class AgentBase : AIBase {
         return targetAlive;
     }
 
-    public virtual void Attacked(Transform attacker) //blev attackerad av någon
+    public override void Attacked(Transform attacker) //blev attackerad av någon
     {
         if (state != UnitState.AttackingUnit && state != UnitState.Moving && attacker != null)
         {
@@ -304,13 +238,13 @@ public class AgentBase : AIBase {
         startChaseTime = Time.time;
         target = t;
         targetHealth = target.GetComponent<Health>();
-        if (target.GetComponent<AgentBase>() != null)
+        if (target.GetComponent<AIBase>() != null)
         {
-            targetAgentBase = target.GetComponent<AgentBase>();
+            targetBase = target.GetComponent<AIBase>();
         }
         else
         {
-            targetAgentBase = null;
+            targetBase = null;
         }
 
         targetDistance = GetTargetDistance();
@@ -321,13 +255,13 @@ public class AgentBase : AIBase {
         startChaseTime = Time.time;
         target = t;
         targetHealth = target.GetComponent<Health>();
-        if (target.GetComponent<AgentBase>() != null)
+        if (target.GetComponent<AIBase>() != null)
         {
-            targetAgentBase = target.GetComponent<AgentBase>();
+            targetBase = target.GetComponent<AIBase>();
         }
         else
         {
-            targetAgentBase = null;
+            targetBase = null;
         }
 
         targetDistance = GetTargetDistance();
@@ -637,7 +571,7 @@ public class AgentBase : AIBase {
             ignoreSurrounding = false;
         }
 
-        if (GetMovePosDistance() < attackRange) //så att den inte ska jucka, när jag nått target så dra hem igen!
+        if (IsCloseEnoughToPos(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
         {
             //Debug.Log("GO home!");
             Move(startPos);
@@ -730,26 +664,8 @@ public class AgentBase : AIBase {
         return false;
     }
     
-    public virtual List<Transform> ScanFriendlys(float aD)
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aD, friendlyOnly);
-        //int i = 0;
-        //while (i < hitColliders.Length)
-        //{
-        //    Debug.Log(hitColliders[i].transform.name);
-        //    i++;
-        //}
-        List<Transform> hits = new List<Transform>();
-        for (int i = 0; i < hitColliders.Length; i++)
-        {
-            if (hitColliders[i].transform != thisTransform) //vill väl inte ha mig själv i listan?
-            {
-                hits.Add(hitColliders[i].transform);
-            }
-        }
-        return hits;
-    }
-    public virtual void NotifyNearbyFriendly(Vector3 pos)
+
+    public override void NotifyNearbyFriendly(Vector3 pos)
     {
         if (state == UnitState.Guarding) //inte attackmoving, då blire endless loop
         {
@@ -789,12 +705,6 @@ public class AgentBase : AIBase {
     public float GetDistanceToPosition(Vector3 p)
     {
         return Vector3.Distance(thisTransform.position, p);
-    }
-    public void GetFriendsAndFoes()
-    {
-        TeamHandler th = GameObject.FindGameObjectWithTag("TeamHandler").gameObject.GetComponent<TeamHandler>();
-        th.GetFriendsAndFoes(LayerMask.LayerToName(thisTransform.gameObject.layer), ref friendlyLayers, ref enemyLayers);
-        InitializeLayerMask();
     }
 
     public bool IsFriendly(Transform t)
