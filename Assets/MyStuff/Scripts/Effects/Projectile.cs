@@ -17,7 +17,7 @@ public class Projectile : MonoBehaviour {
     private float shootForce = 40;
    
     private List<string> friendlyLayers;
-    private string[] hitLayers;
+    private string[] hitLayers = null;
     private Transform attackerT;
     private bool notifyAttacked = false; //denna bestäms av den som skjuter
 
@@ -85,7 +85,10 @@ public class Projectile : MonoBehaviour {
                 collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                 if(notifyAttacked)
                 {
-                    collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                    if (collidingUnit.transform.GetComponent<AgentBase>() != null)
+                    {
+                        collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                    }
                 }
                 return;
             }
@@ -98,7 +101,10 @@ public class Projectile : MonoBehaviour {
                 collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                 if (notifyAttacked)
                 {
-                    collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                    if (collidingUnit.transform.GetComponent<AgentBase>() != null)
+                    {
+                        collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                    }
                 }
             }
             return;
@@ -113,7 +119,10 @@ public class Projectile : MonoBehaviour {
                     collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                     if (notifyAttacked)
                     {
-                        collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                        if (collidingUnit.transform.GetComponent<AgentBase>() != null)
+                        {
+                            collidingUnit.transform.GetComponent<AgentBase>().Attacked(attackerT);
+                        }
                     }
                 }
                 return;
