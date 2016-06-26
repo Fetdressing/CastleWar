@@ -272,7 +272,7 @@ public class AgentBase : AIBase {
     {
         agent.ResetPath();
         state = UnitState.AttackMoving;
-        agent.avoidancePriority = 0;
+        agent.avoidancePriority = 1;
         movePos = pos;
         agent.SetDestination(movePos);
         ignoreSurrounding = false;
@@ -283,7 +283,7 @@ public class AgentBase : AIBase {
     {
         agent.ResetPath();
         state = UnitState.Moving;
-        agent.avoidancePriority = 0;
+        agent.avoidancePriority = 1;
         movePos = pos;
         agent.SetDestination(movePos);
         target = null;
@@ -294,6 +294,7 @@ public class AgentBase : AIBase {
     {
         agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
+        agent.avoidancePriority = 0;
         startPos = thisTransform.position;
         state = UnitState.Guarding;
     }
@@ -302,6 +303,7 @@ public class AgentBase : AIBase {
     {
         agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
+        agent.avoidancePriority = 0;
         startPos = pos;
         state = UnitState.Guarding;
     }
@@ -314,7 +316,7 @@ public class AgentBase : AIBase {
             {
                 agent.ResetPath();
                 state = UnitState.Investigating;
-                agent.avoidancePriority = 50;
+                agent.avoidancePriority = 1;
                 movePos = pos;
                 startPos = thisTransform.position;
                 ignoreSurrounding = false;
@@ -420,7 +422,7 @@ public class AgentBase : AIBase {
         Command c = new Command(nextState, pos, tar, friendlyfire);
         if(nextCommando.Count > 5) //vill inte göra denna lista hur lång som helst
         {
-            nextCommando[nextCommando.Count] = c; //släng på den på sista platsen
+            nextCommando[nextCommando.Count-1] = c; //släng på den på sista platsen
             return;
         }
         nextCommando.Add(c);
@@ -431,6 +433,7 @@ public class AgentBase : AIBase {
     {
         if (target == null)
         {
+            ExecuteNextCommand();
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
             {

@@ -23,6 +23,7 @@ public class Selector : MonoBehaviour {
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
 
+    public float movePositionsMult = 3; // hur långt ifrån de ska ställa sig från varandra
 
     //cursor
     [Header("Cursor")]
@@ -152,13 +153,15 @@ public class Selector : MonoBehaviour {
     {
         if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
+            List<Vector3> movePositions = GetBoxPattern(targets, pos);
+
             if (Input.GetButton("Add"))
             {
                 for (int i = 0; i < targets.Count; i++)
                 {
                     if (targets[i].GetComponent<AIBase>() != null)
                     {
-                        targets[i].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.Moving, thisTransform, false);
+                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, thisTransform, false);
                     }
                 }
             }
@@ -169,7 +172,7 @@ public class Selector : MonoBehaviour {
                     if (targets[i].GetComponent<AIBase>() != null)
                     {
                         targets[i].GetComponent<AIBase>().ClearCommands();
-                        targets[i].GetComponent<AIBase>().Move(pos);
+                        targets[i].GetComponent<AIBase>().Move(movePositions[i]);
                     }
                 }
             }
@@ -180,13 +183,15 @@ public class Selector : MonoBehaviour {
 
     void OrderAttackMove(Vector3 pos)
     {
+        List<Vector3> movePositions = GetBoxPattern(targets, pos);
+
         if (Input.GetButton("Add"))
         {
             for (int i = 0; i < targets.Count; i++)
             {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
-                    targets[i].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.AttackMoving, thisTransform, false);
+                    targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, thisTransform, false);
                 }
             }
         }
@@ -197,7 +202,7 @@ public class Selector : MonoBehaviour {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
                     targets[i].GetComponent<AIBase>().ClearCommands();
-                    targets[i].GetComponent<AIBase>().AttackMove(pos);
+                    targets[i].GetComponent<AIBase>().AttackMove(movePositions[i]);
                 }
             }
         }
@@ -374,5 +379,30 @@ public class Selector : MonoBehaviour {
             Cursor.SetCursor(moveCursor, hotspot, cursorMode);
         }
 
+    }
+
+
+    List<Vector3> GetBoxPattern(List<Transform> t, Vector3 posi) //special case för när den bara är 1 eller 2!!!
+    {
+        //int cols = 5;
+        List<Vector3> movePositions = new List<Vector3>();
+        int pI = 0;
+
+        int pX = -2;
+        int pY = 0;
+        for (pI = 0; pI < t.Count;)
+        {
+            if (pX >= 2)
+            {
+                pY++;
+                pX = -2;
+            }
+            Vector3 movePosTemp = new Vector3(posi.x + (pX * movePositionsMult), posi.y, posi.z + (pY * movePositionsMult));
+            movePositions.Add(movePosTemp);
+            pX++;
+            pI++;
+        }
+
+        return movePositions;
     }
 }
