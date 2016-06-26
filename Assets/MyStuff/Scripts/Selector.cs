@@ -152,11 +152,25 @@ public class Selector : MonoBehaviour {
     {
         if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
-            for (int i = 0; i < targets.Count; i++)
+            if (Input.GetButton("Add"))
             {
-                if (targets[i].GetComponent<AgentBase>() != null)
+                for (int i = 0; i < targets.Count; i++)
                 {
-                    targets[i].GetComponent<AgentBase>().Move(pos);
+                    if (targets[i].GetComponent<AIBase>() != null)
+                    {
+                        targets[i].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.Moving, thisTransform, false);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    if (targets[i].GetComponent<AIBase>() != null)
+                    {
+                        targets[i].GetComponent<AIBase>().ClearCommands();
+                        targets[i].GetComponent<AIBase>().Move(pos);
+                    }
                 }
             }
         }
@@ -166,24 +180,53 @@ public class Selector : MonoBehaviour {
 
     void OrderAttackMove(Vector3 pos)
     {
-        for (int i = 0; i < targets.Count; i++)
+        if (Input.GetButton("Add"))
         {
-            if (targets[i].GetComponent<AgentBase>() != null)
+            for (int i = 0; i < targets.Count; i++)
             {
-                targets[i].GetComponent<AgentBase>().AttackMove(pos);
+                if (targets[i].GetComponent<AIBase>() != null)
+                {
+                    targets[i].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.AttackMoving, thisTransform, false);
+                }
             }
         }
+        else
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                if (targets[i].GetComponent<AIBase>() != null)
+                {
+                    targets[i].GetComponent<AIBase>().ClearCommands();
+                    targets[i].GetComponent<AIBase>().AttackMove(pos);
+                }
+            }
+        }
+
         moveState = MoveState.Move;
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
     }
 
     void OrderAttackUnit(Transform t, bool friendfire)
     {
-        for (int i = 0; i < targets.Count; i++)
+        if (Input.GetButton("Add"))
         {
-            if (targets[i].GetComponent<AgentBase>() != null)
+            for (int i = 0; i < targets.Count; i++)
             {
-                targets[i].GetComponent<AgentBase>().AttackUnit(t, friendfire);
+                if (targets[i].GetComponent<AIBase>() != null)
+                {
+                    targets[i].GetComponent<AIBase>().AddCommandToList(t.position, AIBase.UnitState.AttackingUnit, t, friendfire);
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                if (targets[i].GetComponent<AIBase>() != null)
+                {
+                    targets[i].GetComponent<AIBase>().ClearCommands();
+                    targets[i].GetComponent<AIBase>().AttackUnit(t, friendfire);
+                }
             }
         }
         moveState = MoveState.Move;

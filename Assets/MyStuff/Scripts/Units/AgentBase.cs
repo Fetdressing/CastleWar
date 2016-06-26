@@ -5,12 +5,9 @@ using System.Collections.Generic;
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(AgentStats))]
-public class AgentBase : MonoBehaviour {
-    public enum UnitState { AttackMoving, Moving, Guarding, Investigating, AttackingUnit};
+public class AgentBase : AIBase {
     [HideInInspector]
     public UnitState state;
-    [HideInInspector]
-    public List<Command> nextCommando = new List<Command>(); //kedje kommandon??
 
     [HideInInspector]public Transform thisTransform;
     [HideInInspector]public Health healthS;
@@ -337,7 +334,7 @@ public class AgentBase : MonoBehaviour {
     }
 
 
-    public virtual void AttackMove(Vector3 pos)
+    public override void AttackMove(Vector3 pos)
     {
         agent.ResetPath();
         state = UnitState.AttackMoving;
@@ -348,7 +345,7 @@ public class AgentBase : MonoBehaviour {
         closeToEnd = false;
     }
 
-    public virtual void Move(Vector3 pos) //dålig prioritet när man rör på sig så man inte knuffar bort någon! tvärtom på stillastående
+    public override void Move(Vector3 pos) //dålig prioritet när man rör på sig så man inte knuffar bort någon! tvärtom på stillastående
     {
         agent.ResetPath();
         state = UnitState.Moving;
@@ -359,7 +356,7 @@ public class AgentBase : MonoBehaviour {
         closeToEnd = false;
     }
 
-    public virtual void Guard()
+    public override void Guard()
     {
         agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
@@ -367,7 +364,7 @@ public class AgentBase : MonoBehaviour {
         state = UnitState.Guarding;
     }
 
-    public virtual void Guard(Vector3 pos) //redefinition
+    public override void Guard(Vector3 pos) //redefinition
     {
         agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
@@ -375,7 +372,7 @@ public class AgentBase : MonoBehaviour {
         state = UnitState.Guarding;
     }
 
-    public virtual void Investigate(Vector3 pos)
+    public override void Investigate(Vector3 pos)
     {
         if (target == null)
         {
@@ -393,7 +390,7 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual void AttackUnit(Transform t, bool friendlyFire)
+    public override void AttackUnit(Transform t, bool friendlyFire)
     {
         if (t != thisTransform)
         {
@@ -431,7 +428,7 @@ public class AgentBase : MonoBehaviour {
         }
     }
 
-    public virtual void ExecuteNextCommand()
+    public override void ExecuteNextCommand()
     {
         if(nextCommando.Count <= 0)
         {
@@ -484,7 +481,7 @@ public class AgentBase : MonoBehaviour {
 
     }
 
-    public virtual void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire)
+    public override void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire)
     {
         Command c = new Command(nextState, pos, tar, friendlyfire);
         if(nextCommando.Count > 5) //vill inte göra denna lista hur lång som helst
@@ -836,21 +833,6 @@ public class AgentBase : MonoBehaviour {
         thisTransform.rotation = Quaternion.Slerp(thisTransform.rotation, lookRotation, Time.deltaTime * turnRatio);
     }
 
-    public struct Command
-    {
-        public UnitState stateToExecute;
-        public Vector3 positionToExecute; //använd sedan thisTransform.position för start ofc
-        public Transform target;
-        public bool friendlyFire;
-
-        public Command(UnitState uS, Vector3 pos, Transform t, bool ff)
-        {
-            stateToExecute = uS;
-            positionToExecute = pos;
-            target = t;
-            friendlyFire = ff;
-        }
-    }
 }
 
 public struct Target
