@@ -55,7 +55,19 @@ public class AgentRanged : AgentBase {
         }
     }
 
-    public virtual void Init()
+    public override void Reset()
+    {
+        base.Reset();
+
+        //reset projectiles, för säkerhetsskull
+        for (int i = 0; i < projectilePoolSize; i++)
+        {
+            projectilePool[i].GetComponent<Projectile>().Init(enemyLayers, friendlyLayers, thisTransform);
+        }
+    }
+
+
+    public override void Init()
     {
         base.Init();
 

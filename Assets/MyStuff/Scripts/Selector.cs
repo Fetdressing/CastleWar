@@ -208,7 +208,19 @@ public class Selector : MonoBehaviour {
     void OrderAttackMove(Vector3 pos)
     {
         PlaceGroundMarker(pos + new Vector3(0, 0.2f, 0));
-        List<Vector3> movePositions = GetBoxPattern(targets, pos);
+
+        List<Vector3> movePositions = new List<Vector3>();
+        if (targets.Count > 2) //använd bara box pattern när det är fler än 2
+        {
+            movePositions = GetBoxPattern(targets, pos);
+        }
+        else
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                movePositions.Add(pos);
+            }
+        }
 
         if (Input.GetButton("Add"))
         {

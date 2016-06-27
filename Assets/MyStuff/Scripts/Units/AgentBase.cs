@@ -82,6 +82,7 @@ public class AgentBase : AIBase {
 
     void Awake()
     {
+        GetFriendsAndFoes();
         Init();
     }
 
@@ -92,7 +93,7 @@ public class AgentBase : AIBase {
         Guard();
     }
 
-    public virtual void Init()
+    public override void Init()
     {
         base.Init();
         agent = thisTransform.GetComponent<NavMeshAgent>();
@@ -596,7 +597,7 @@ public class AgentBase : AIBase {
                 //agent.SetDestination(startPos);
             }
         }    
-        if(ignoreSurrounding && GetStartPointDistance2() < attackRange) //kommit tillbaks till pathen -> fortsätt investigate!
+        if(ignoreSurrounding && IsCloseEnoughToPos(startPos2)) //kommit tillbaks till pathen -> fortsätt investigate!
         {
             ignoreSurrounding = false;
         }
