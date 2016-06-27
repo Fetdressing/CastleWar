@@ -43,6 +43,7 @@ public abstract class AIBase : MonoBehaviour {
         GetFriendsAndFoes();
         ClearCommands();
     }
+    public virtual void Dealloc() { }
     public void GetFriendsAndFoes()
     {
         TeamHandler th = GameObject.FindGameObjectWithTag("TeamHandler").gameObject.GetComponent<TeamHandler>();

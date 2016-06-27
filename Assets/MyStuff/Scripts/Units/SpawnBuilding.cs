@@ -19,7 +19,16 @@ public class SpawnBuilding : BuildingBase {
         StartCoroutine(Spawn());
     }
 
-	void Start () {
+    public override void Dealloc()
+    {
+        base.Dealloc();
+        for(int i = 0; i < unitPool.Count; i++)
+        {
+            unitPool[i].agentB.Dealloc();
+        }
+    }
+
+    void Start () {
         //Init();
 	}
 
@@ -36,12 +45,12 @@ public class SpawnBuilding : BuildingBase {
             AgentBase agentBase = temp.GetComponent<AgentBase>();
             Health unitHealth = temp.GetComponent<Health>();
 
-            Unit tempUnit = new Unit(temp, agentBase, unitHealth);
-
             temp.layer = thisTransform.gameObject.layer;
             agentBase.GetFriendsAndFoes();
             temp.transform.parent = thisTransform;
             temp.SetActive(false);
+
+            Unit tempUnit = new Unit(temp, agentBase, unitHealth);
             unitPool.Add(tempUnit);
 
             //GameObject temp = Instantiate(spawnUnit.gameObject);

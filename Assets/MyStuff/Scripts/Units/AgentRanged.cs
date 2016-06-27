@@ -86,6 +86,15 @@ public class AgentRanged : AgentBase {
         //layerMaskLOSCheck |= (1 << friendlyOnly); //lägg till sin egen layer så att man kan skjuta igenom allierade
     }
 
+    public override void Dealloc()
+    {
+        base.Dealloc();
+        for (int i = 0; i < projectilePoolSize; i++)
+        {
+            Destroy(projectilePool[i].gameObject);
+        }
+    }
+
     public override bool AttackTarget()
     {
         bool targetAlive = true;

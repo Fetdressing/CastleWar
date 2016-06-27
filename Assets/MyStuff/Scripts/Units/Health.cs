@@ -132,6 +132,11 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
     {
         if(destroyOnDeath == true)
         {
+            if (thisTransform.GetComponent<AIBase>() != null)
+            {
+                thisTransform.GetComponent<AIBase>().Dealloc();
+            }
+
             Destroy(thisTransform.gameObject);
         }
         else
