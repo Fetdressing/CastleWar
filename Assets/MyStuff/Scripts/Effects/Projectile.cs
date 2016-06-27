@@ -7,6 +7,7 @@ public class Projectile : MonoBehaviour {
     private GameObject thisObject;
     private Transform thisTransform;
     private Rigidbody thisRigidbody;
+    private Transform targetE;
 
     private bool isReady = true; //den vill kanske inte skjuta igen förrens tex dess explosion är klar
 
@@ -14,7 +15,8 @@ public class Projectile : MonoBehaviour {
     public bool friendlyFire = false;
 
     private int damageRoll; //skickas av skjutaren
-    private float shootForce = 40;
+    public float shootForce = 40;
+    public float maxVelocity = 0.02f;
    
     private List<string> friendlyLayers;
     private string[] hitLayers = null;
@@ -41,6 +43,7 @@ public class Projectile : MonoBehaviour {
     {
         ToggleActive(true);
         thisTransform.LookAt(aimPos);
+        targetE = target;
         thisRigidbody.AddForce(thisTransform.forward * shootForce, ForceMode.Impulse);
 
         notifyAttacked = notifyattacked;
@@ -55,9 +58,16 @@ public class Projectile : MonoBehaviour {
     {
         if(homing)
         {
-            while(thisObject.activeSelf == true && (startAliveTime + time) > Time.time)
+            while(thisObject.activeSelf == true && (startAliveTime + time) > Time.time && targetE.gameObject.activeSelf == true)
             {
-
+                thisTransform.LookAt(targetE.position);
+                thisRigidbody.AddForce(thisTransform.forward * shootForce, ForceMode.Impulse);
+                if (thisRigidbody.velocity.sqrMagnitude > maxVelocity)
+                {
+                    //smoothness of the slowdown is controlled by the 0.99f, 
+                    //0.5f is less smooth, 0.9999f is more smooth
+                    thisRigidbody.velocity *= 0.01f;
+                }
                 yield return new WaitForSeconds(0.1f);
             }
             ToggleActive(false);
