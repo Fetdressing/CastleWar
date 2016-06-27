@@ -43,6 +43,19 @@ public class SpawnBuilding : BuildingBase {
             temp.transform.parent = thisTransform;
             temp.SetActive(false);
             unitPool.Add(tempUnit);
+
+            //GameObject temp = Instantiate(spawnUnit.gameObject);
+            //Transform unitTransform = temp.transform.transform.GetChild(0); //första barnet
+            //AgentBase agentBase = unitTransform.GetComponent<AgentBase>();
+            //Health unitHealth = unitTransform.GetComponent<Health>();
+            //unitTransform.gameObject.layer = thisTransform.gameObject.layer;
+
+            //Unit tempUnit = new Unit(temp, agentBase, unitHealth);
+
+            //agentBase.GetFriendsAndFoes();
+            //temp.transform.parent = thisTransform;
+            //temp.SetActive(false);
+            //unitPool.Add(tempUnit);
         }
     }
 

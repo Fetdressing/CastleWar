@@ -33,11 +33,23 @@ public class Selector : MonoBehaviour {
     public Vector2 hotspot = Vector2.zero;
     //cursor
 
+    public GameObject groundMarkerObject;
+    private List<Transform> groundMarkerPool = new List<Transform>();
+    private int groundMarkerPoolSize = 7;
+    private int roundRobinIndex = 0; //för groundmarkern
+
     // Use this for initialization
     void Start () {
         thisTransform = this.transform;
 
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
+
+        for(int i = 0; i < groundMarkerPoolSize; i++)
+        {
+            GameObject temp = GameObject.Instantiate(groundMarkerObject.gameObject);
+            temp.SetActive(false);
+            groundMarkerPool.Add(temp.transform);
+        }
         //selMask = selectLayerMask.value;
     }
 	
@@ -151,9 +163,21 @@ public class Selector : MonoBehaviour {
 
     void OrderMove(Vector3 pos)
     {
+        PlaceGroundMarker(pos + new Vector3(0, 0.2f, 0));
         if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
-            List<Vector3> movePositions = GetBoxPattern(targets, pos);
+            List<Vector3> movePositions = new List<Vector3>();
+            if(targets.Count > 2) //använd bara box pattern när det är fler än 2
+            {
+                movePositions = GetBoxPattern(targets, pos);
+            }
+            else
+            {
+                for(int i = 0; i < targets.Count; i++)
+                {
+                    movePositions.Add(pos);
+                }
+            }
 
             if (Input.GetButton("Add"))
             {
@@ -183,6 +207,7 @@ public class Selector : MonoBehaviour {
 
     void OrderAttackMove(Vector3 pos)
     {
+        PlaceGroundMarker(pos + new Vector3(0, 0.2f, 0));
         List<Vector3> movePositions = GetBoxPattern(targets, pos);
 
         if (Input.GetButton("Add"))
@@ -213,6 +238,7 @@ public class Selector : MonoBehaviour {
 
     void OrderAttackUnit(Transform t, bool friendfire)
     {
+        PlaceGroundMarker(t.position + new Vector3(0, 0.2f, 0));
         if (Input.GetButton("Add"))
         {
             for (int i = 0; i < targets.Count; i++)
@@ -326,7 +352,7 @@ public class Selector : MonoBehaviour {
 
         if (Input.GetButtonDown("Fire1")) //attack unit om man har MoveState.Attack och ifall mouseInput != null!!!!!!!!!!!!!!!!!!!!!!!
         {
-            if(moveState == MoveState.Attack && mouseInput != null)
+            if (moveState == MoveState.Attack && mouseInput != null)
             {
                 OrderAttackUnit(mouseInput, true);
             }
@@ -349,7 +375,7 @@ public class Selector : MonoBehaviour {
         }
         else if (Input.GetButtonDown("Fire2"))
         {
-            if(mouseInput != null) //träffade ett target
+            if (mouseInput != null) //träffade ett target
             {
                 //order attack
                 OrderAttackUnit(mouseInput, false); //när det är höger klick så är det bara attack på fiender
@@ -404,5 +430,28 @@ public class Selector : MonoBehaviour {
         }
 
         return movePositions;
+    }
+
+    void PlaceGroundMarker(Vector3 pos)
+    {
+        for (int i = 0; i < groundMarkerPoolSize; i++)
+        {
+
+            if(groundMarkerPool[i].gameObject.activeSelf == false)
+            {
+                groundMarkerPool[i].position = pos;
+                groundMarkerPool[i].GetComponent<FadingLight>().StartFade();
+                return;
+            }
+        }
+
+        groundMarkerPool[roundRobinIndex].position = pos;
+        groundMarkerPool[roundRobinIndex].GetComponent<FadingLight>().StartFade();
+
+        roundRobinIndex++; //så den inte ska använda samma gamla hela tiden
+        if(roundRobinIndex >= groundMarkerPoolSize)
+        {
+            roundRobinIndex = 0;
+        }
     }
 }

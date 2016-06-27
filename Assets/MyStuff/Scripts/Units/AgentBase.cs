@@ -294,7 +294,7 @@ public class AgentBase : AIBase {
     {
         agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
-        agent.avoidancePriority = 0;
+        agent.avoidancePriority = 100;
         startPos = thisTransform.position;
         state = UnitState.Guarding;
     }
@@ -303,7 +303,7 @@ public class AgentBase : AIBase {
     {
         agent.ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
-        agent.avoidancePriority = 0;
+        agent.avoidancePriority = 100;
         startPos = pos;
         state = UnitState.Guarding;
     }
@@ -349,7 +349,7 @@ public class AgentBase : AIBase {
             {
                 agent.ResetPath();
                 state = UnitState.AttackingUnit;
-                agent.avoidancePriority = 0;
+                agent.avoidancePriority = 100;
                 agent.SetDestination(t.position);
                 SetTarget(t); //set target så den inte alertar allierade i onödan
             }
@@ -451,6 +451,15 @@ public class AgentBase : AIBase {
 
         if (target != null)
         {
+            if (GetTargetDistance() > attackRange * 1.5f) //check for closer target
+            {
+                Transform potTarget = CheckForBetterTarget(attackRange);
+                if (potTarget != null)
+                {
+                    NewTarget(potTarget);
+                }
+            }
+
             if (GetStartPointDistance() < aggroDistance * 1.5f || (startChaseTime + chaseTimeNormal) > Time.time)
             {
                 if (AttackTarget() == false) //target död?
@@ -485,6 +494,15 @@ public class AgentBase : AIBase {
 
         if (target != null)
         {
+            if(GetTargetDistance() > attackRange * 1.5f) //check for closer target
+            {
+                Transform potTarget = CheckForBetterTarget(attackRange);
+                if(potTarget != null)
+                {
+                    NewTarget(potTarget);
+                }
+            }
+
             if (GetTargetDistance() < aggroDistance * 1.05f || (startChaseTime + chaseTimeNormal) > Time.time)
             {
                 //Debug.Log("Attack");
@@ -552,6 +570,15 @@ public class AgentBase : AIBase {
 
         if (target != null)
         {
+            if (GetTargetDistance() > attackRange * 1.5f) //check for closer target
+            {
+                Transform potTarget = CheckForBetterTarget(attackRange);
+                if (potTarget != null)
+                {
+                    NewTarget(potTarget);
+                }
+            }
+
             if (GetStartPointDistance2() < aggroDistance || (startChaseTime + chaseTimeNormal) > Time.time) //måste kunna återvända till där den var innan den påbörja pathen
             {
                 if (AttackTarget() == false)
@@ -602,11 +629,16 @@ public class AgentBase : AIBase {
         //    i++;
         //}
         Transform[] hits = new Transform[hitColliders.Length];
-        for(int i = 0; i < hitColliders.Length; i++)
+
+        if (hitColliders.Length > 0)
         {
-            hits[i] = hitColliders[i].transform;
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                hits[i] = hitColliders[i].transform;
+            }
+            return hits;
         }
-        return hits;
+        else return null;
     }
     public virtual bool TargetReachable(Transform target) //kolla ifall jag kan nå transformen
     {
@@ -615,15 +647,19 @@ public class AgentBase : AIBase {
     }
     public virtual Transform ClosestTransform(Transform[] transforms)
     {
-        Transform closest = transforms[0];
-        for(int i = 0; i < transforms.Length; i++)
+        if (transforms != null)
         {
-            if(Vector3.Distance(thisTransform.position, closest.position) > Vector3.Distance(thisTransform.position, transforms[i].position))
+            Transform closest = transforms[0];
+            for (int i = 0; i < transforms.Length; i++)
             {
-                closest = transforms[i];
+                if (Vector3.Distance(thisTransform.position, closest.position) > Vector3.Distance(thisTransform.position, transforms[i].position))
+                {
+                    closest = transforms[i];
+                }
             }
+            return closest;
         }
-        return closest;
+        else return null;
     }
     public virtual Transform ClosestTransform(Transform t1, Transform t2)
     {
@@ -666,6 +702,22 @@ public class AgentBase : AIBase {
         }
         return false;
     }
+    public virtual Transform CheckForBetterTarget(float d)
+    {
+        Transform[] potTargets = ScanEnemies(attackRange);
+        if(potTargets == null)
+        {
+            return null;
+        }
+
+        Transform tTemp = ClosestTransform(potTargets);
+
+        if (GetTargetDistance() > GetDistanceToTransform(tTemp))
+        {
+            return tTemp;
+        }
+        return null;
+    }
     
 
     public override void NotifyNearbyFriendly(Vector3 pos)
@@ -686,7 +738,11 @@ public class AgentBase : AIBase {
 
     public float GetTargetDistance()
     {
-        return Vector3.Distance(thisTransform.position, target.position);
+        if (target != null)
+        {
+            return Vector3.Distance(thisTransform.position, target.position);
+        }
+        else return 0;
     }
     public float GetStartPointDistance()
     {

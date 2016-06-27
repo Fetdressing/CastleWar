@@ -193,10 +193,10 @@ public class AgentRanged : AgentBase {
         {
             if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
             {
-                if (hitLOS.transform == target) //vet inte ifall jag vill ha med denna checken eller ej, förmodligen så
-                {
-                    return true;
-                }
+                //if (hitLOS.transform == target) //vet inte ifall jag vill ha med denna checken eller ej, förmodligen så
+                //{
+                return true;
+                //}
             }
         }
         return false;
