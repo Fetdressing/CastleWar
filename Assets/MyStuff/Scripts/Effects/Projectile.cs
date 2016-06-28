@@ -38,6 +38,11 @@ public class Projectile : MonoBehaviour {
         attackerT = attacker;
         ToggleActive(false);
     }
+
+    public void Dealloc()
+    {
+        //ta bort explosions objekt
+    }
 	
     public void Fire(Transform target, Vector3 aimPos, int damage, int lifeTime, bool notifyattacked, bool ff)
     {

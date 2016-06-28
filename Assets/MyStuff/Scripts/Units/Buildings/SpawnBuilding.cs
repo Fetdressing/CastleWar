@@ -25,6 +25,7 @@ public class SpawnBuilding : BuildingBase {
         for(int i = 0; i < unitPool.Count; i++)
         {
             unitPool[i].agentB.Dealloc();
+            Destroy(unitPool[i].obj);
         }
     }
 
@@ -47,7 +48,7 @@ public class SpawnBuilding : BuildingBase {
 
             temp.layer = thisTransform.gameObject.layer;
             agentBase.GetFriendsAndFoes();
-            temp.transform.parent = thisTransform;
+            //temp.transform.parent = thisTransform;
             temp.SetActive(false);
 
             Unit tempUnit = new Unit(temp, agentBase, unitHealth);
@@ -101,6 +102,31 @@ public class SpawnBuilding : BuildingBase {
         }
     }
     //tomma referenser när denna dör
+
+    public override void AttackMove(Vector3 pos)
+    {
+        if(rallyPointTransform != null)
+        {
+            rallyPointTransform.position = pos;
+        }
+    }
+
+    public override void Move(Vector3 pos)
+    {
+        if (rallyPointTransform != null)
+        {
+            rallyPointTransform.position = pos;
+        }
+    }
+
+    public override void AttackUnit(Transform t, bool friendlyFire)
+    {
+        if (rallyPointTransform != null)
+        {
+            rallyPointTransform.position = t.position;
+        }
+    }
+
 }
 
 public struct Unit

@@ -103,6 +103,7 @@ public class AgentRanged : AgentBase {
         base.Dealloc();
         for (int i = 0; i < projectilePoolSize; i++)
         {
+            projectilePool[i].GetComponent<Projectile>().Dealloc();
             Destroy(projectilePool[i].gameObject);
         }
     }
@@ -135,21 +136,21 @@ public class AgentRanged : AgentBase {
 
         if (attackRange + 1 < targetDistanceuS || !los) //+1 för marginal
         {
-            agent.SetDestination(target.position);
+            SetDestination(target.position);
         }
         else if(targetDistanceuS <= minimumTargetDistance)
         {
             Vector3 vectorFromTarget = thisTransform.position - target.position;
-            agent.SetDestination(thisTransform.position + vectorFromTarget); //gånger ett värde för att förflytta denne lite extra
+            SetDestination(thisTransform.position + vectorFromTarget); //gånger ett värde för att förflytta denne lite extra
         }
         else if (!isFacingTarget) //den resetar pathen för ovanstående när den går utanför minimumTargetDistance
         {
             RotateTowards(target);
-            agent.ResetPath();
+            ResetPath();
         }
         else
         {
-            agent.ResetPath();
+            ResetPath();
         }
         //ta bort "targetDistanceuS > (minimumTargetDistance - minimumTargetDistance * 0.3f)" från de två sista statementsen om det ej funkar
         return true;
@@ -210,6 +211,7 @@ public class AgentRanged : AgentBase {
         //}
         //return false;
 
+        //if(Physics.SphereCast(thisTransform.position, losWidthCheck, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) 
         if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
         {
             if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))

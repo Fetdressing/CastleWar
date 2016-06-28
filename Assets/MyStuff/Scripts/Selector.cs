@@ -179,13 +179,13 @@ public class Selector : MonoBehaviour {
                 }
             }
 
-            if (Input.GetButton("Add"))
+            if (Input.GetButton("Add")) //om add så lägg till kommandot i listan
             {
                 for (int i = 0; i < targets.Count; i++)
                 {
                     if (targets[i].GetComponent<AIBase>() != null)
                     {
-                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, thisTransform, false);
+                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, null, false);
                     }
                 }
             }
@@ -228,7 +228,7 @@ public class Selector : MonoBehaviour {
             {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
-                    targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, thisTransform, false);
+                    targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, null, false);
                 }
             }
         }

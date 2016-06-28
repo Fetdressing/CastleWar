@@ -82,11 +82,10 @@ public class AgentBase : AIBase {
 
     void Awake()
     {
-        GetFriendsAndFoes();
         Init();
     }
 
-    public virtual void Reset()
+    public override void Reset()
     {
         closeToEnd = false;
         ignoreSurrounding = false;
@@ -149,6 +148,9 @@ public class AgentBase : AIBase {
 
     public virtual bool AttackTarget()
     {
+        if (!IsActive())
+            return false;
+
         bool targetAlive = true;
         if(target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive())
         {
@@ -182,16 +184,16 @@ public class AgentBase : AIBase {
         }
         if (attackRange * 0.7f < (targetDistance-targetHealth.unitSize)) //marginal med jue
         {
-            agent.SetDestination(target.position);
+            SetDestination(target.position);
         }
         else if(!isFacingTarget)
         {
             RotateTowards(target);
-            agent.ResetPath();
+            ResetPath();
         }
         else
         {
-            agent.ResetPath();
+            ResetPath();
         }
 
         return targetAlive;
@@ -271,29 +273,36 @@ public class AgentBase : AIBase {
 
     public override void AttackMove(Vector3 pos)
     {
-        agent.ResetPath();
+        if (!IsActive())
+            return;
+        ResetPath();
         state = UnitState.AttackMoving;
         agent.avoidancePriority = 1;
         movePos = pos;
-        agent.SetDestination(movePos);
+        SetDestination(movePos);
         ignoreSurrounding = false;
         closeToEnd = false;
     }
 
     public override void Move(Vector3 pos) //dålig prioritet när man rör på sig så man inte knuffar bort någon! tvärtom på stillastående
     {
-        agent.ResetPath();
+        if (!IsActive())
+            return;
+        ResetPath();
         state = UnitState.Moving;
         agent.avoidancePriority = 1;
         movePos = pos;
-        agent.SetDestination(movePos);
+        SetDestination(movePos);
         target = null;
         closeToEnd = false;
     }
 
     public override void Guard()
     {
-        agent.ResetPath();
+        if (!IsActive())
+            return;
+        target = null;
+        ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
         agent.avoidancePriority = 100;
         startPos = thisTransform.position;
@@ -302,7 +311,9 @@ public class AgentBase : AIBase {
 
     public override void Guard(Vector3 pos) //redefinition
     {
-        agent.ResetPath();
+        if (!IsActive())
+            return;
+        ResetPath();
         nextCommando.Clear(); //för man kan ju inte ha Guard i en kedja duh
         agent.avoidancePriority = 100;
         startPos = pos;
@@ -311,57 +322,64 @@ public class AgentBase : AIBase {
 
     public override void Investigate(Vector3 pos)
     {
+        if (!IsActive())
+            return;
         if (target == null)
         {
             if (state == UnitState.Guarding) //vill ju inte den tex ska påbörja en ny investigate
             {
-                agent.ResetPath();
+                ResetPath();
                 state = UnitState.Investigating;
                 agent.avoidancePriority = 1;
                 movePos = pos;
                 startPos = thisTransform.position;
                 ignoreSurrounding = false;
                 closeToEnd = false; //vill kanske använda den här oxå?
-                //agent.SetDestination(movePos);
+                //SetDestination(movePos);
             }
         }
     }
 
     public override void AttackUnit(Transform t, bool friendlyFire)
     {
-        if (t != thisTransform)
+        if (t != null && t.gameObject.activeSelf == true)
         {
-            bool canAttack = false;
-            if (IsFriendly(t) && friendlyFire)
+            if (!IsActive())
+                return;
+            if (t != thisTransform)
             {
-                canAttack = true;
-            }
-            else if (!IsFriendly(t))
-            {
-                canAttack = true;
-            }
+                bool canAttack = false;
+                if (IsFriendly(t) && friendlyFire)
+                {
+                    canAttack = true;
+                }
+                else if (!IsFriendly(t))
+                {
+                    canAttack = true;
+                }
 
-            if(t.GetComponent<Health>() == null)
-            {
-                canAttack = false;
-            }
+                if (t.GetComponent<Health>() == null)
+                {
+                    canAttack = false;
+                }
 
-            if (canAttack)
-            {
-                agent.ResetPath();
-                state = UnitState.AttackingUnit;
-                agent.avoidancePriority = 100;
-                agent.SetDestination(t.position);
-                SetTarget(t); //set target så den inte alertar allierade i onödan
+                if (canAttack)
+                {
+                    ResetPath();
+                    state = UnitState.AttackingUnit;
+                    agent.avoidancePriority = 100;
+                    SetDestination(t.position);
+                    SetTarget(t); //set target så den inte alertar allierade i onödan
+                }
+                else
+                {
+                    AttackMove(t.position); //om det inte är valid target så bara gå dit istället 
+                }
             }
             else
             {
-                AttackMove(t.position); //om det inte är valid target så bara gå dit istället 
+                Guard();
             }
-        }
-        else
-        {
-            Guard();
         }
     }
 
@@ -412,7 +430,7 @@ public class AgentBase : AIBase {
                 case UnitState.AttackingUnit:
                     AttackUnit(t, friendfire);
                     break;
-            }  
+            }
             nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
         }
 
@@ -444,8 +462,7 @@ public class AgentBase : AIBase {
             {
                 if (GetStartPointDistance() > 1.5f) //så att den inte ska jucka
                 {
-                    agent.SetDestination(startPos);
-
+                    SetDestination(startPos);
                 }
             }
         }
@@ -488,7 +505,7 @@ public class AgentBase : AIBase {
             }
             else //inga targets, återvänd till pathen typ
             {
-                agent.SetDestination(movePos);
+                SetDestination(movePos);
             }
         }
 
@@ -515,7 +532,7 @@ public class AgentBase : AIBase {
             else
             {
                 target = null;
-                agent.SetDestination(startPos2); //återvänd till pathen
+                SetDestination(startPos2); //återvänd till pathen
                 ignoreSurrounding = true;
             }
         }
@@ -559,7 +576,7 @@ public class AgentBase : AIBase {
             {
                 if (GetMovePosDistance() > attackRange) //så att den inte ska jucka
                 {
-                    agent.SetDestination(movePos);
+                    SetDestination(movePos);
                 }
                 else //återvänd hem igen
                 {
@@ -590,11 +607,11 @@ public class AgentBase : AIBase {
             else
             {
                 target = null;
-                agent.SetDestination(startPos2);
+                SetDestination(startPos2);
                 //Move(startPos2);
                 ignoreSurrounding = true;
                 //ExecuteNextCommand();
-                //agent.SetDestination(startPos);
+                //SetDestination(startPos);
             }
         }    
         if(ignoreSurrounding && IsCloseEnoughToPos(startPos2)) //kommit tillbaks till pathen -> fortsätt investigate!
@@ -620,27 +637,6 @@ public class AgentBase : AIBase {
     }
 
 
-    public virtual Transform[] ScanEnemies(float aD)
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aD, enemyOnly);
-        //int i = 0;
-        //while (i < hitColliders.Length)
-        //{
-        //    Debug.Log(hitColliders[i].transform.name);
-        //    i++;
-        //}
-        Transform[] hits = new Transform[hitColliders.Length];
-
-        if (hitColliders.Length > 0)
-        {
-            for (int i = 0; i < hitColliders.Length; i++)
-            {
-                hits[i] = hitColliders[i].transform;
-            }
-            return hits;
-        }
-        else return null;
-    }
     public virtual bool TargetReachable(Transform target) //kolla ifall jag kan nå transformen
     {
 
@@ -758,30 +754,7 @@ public class AgentBase : AIBase {
     {
         return Vector3.Distance(thisTransform.position, movePos);
     }
-    public float GetDistanceToTransform(Transform t)
-    {
-        return Vector3.Distance(thisTransform.position, t.position);
-    }
-    public float GetDistanceToPosition(Vector3 p)
-    {
-        return Vector3.Distance(thisTransform.position, p);
-    }
 
-    public bool IsFriendly(Transform t)
-    {
-        string tLayer = LayerMask.LayerToName(t.gameObject.layer);
-        
-        for(int i = 0; i < friendlyLayers.Count; i++)
-        {
-            if(tLayer == friendlyLayers[i])
-            {
-                return true;
-                break;
-            }
-        }
-
-        return false;
-    }
     public bool IsFacingTransform(Transform t)
     {
         Vector3 tPosWithoutY = new Vector3(t.position.x, thisTransform.position.y, t.position.z); //så den bara kollar på x o z leden
@@ -803,6 +776,26 @@ public class AgentBase : AIBase {
         thisTransform.rotation = Quaternion.Slerp(thisTransform.rotation, lookRotation, Time.deltaTime * turnRatio);
     }
 
+    public void ResetPath() //så att den inte fuckar när den är av, mer safe
+    {
+        if (agent != null)
+        {
+            if (IsActive() && agent.enabled == true && agent.isOnNavMesh == true)
+            {
+                agent.ResetPath();
+            }
+        }
+    }
+    public void SetDestination(Vector3 pos)
+    {
+        if (agent != null)
+        {
+            if (IsActive() && agent.enabled == true && agent.isOnNavMesh == true)
+            {
+                agent.SetDestination(pos);
+            }
+        }
+    }
 }
 
 public struct Target

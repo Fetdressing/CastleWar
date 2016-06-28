@@ -43,6 +43,11 @@ public abstract class AIBase : MonoBehaviour {
         GetFriendsAndFoes();
         ClearCommands();
     }
+
+    public virtual void Reset()
+    {
+    }
+
     public virtual void Dealloc() { }
     public void GetFriendsAndFoes()
     {
@@ -159,5 +164,63 @@ public abstract class AIBase : MonoBehaviour {
             }
         }
         return hits;
+    }
+    public virtual Transform[] ScanEnemies(float aD)
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aD, enemyOnly);
+        //int i = 0;
+        //while (i < hitColliders.Length)
+        //{
+        //    Debug.Log(hitColliders[i].transform.name);
+        //    i++;
+        //}
+        Transform[] hits = new Transform[hitColliders.Length];
+
+        if (hitColliders.Length > 0)
+        {
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                hits[i] = hitColliders[i].transform;
+            }
+            return hits;
+        }
+        else return null;
+    }
+
+    public bool IsFriendly(Transform t)
+    {
+        string tLayer = LayerMask.LayerToName(t.gameObject.layer);
+
+        for (int i = 0; i < friendlyLayers.Count; i++)
+        {
+            if (tLayer == friendlyLayers[i])
+            {
+                return true;
+                break;
+            }
+        }
+
+        return false;
+    }
+
+    public float GetDistanceToTransform(Transform t)
+    {
+        return Vector3.Distance(thisTransform.position, t.position);
+    }
+    public float GetDistanceToPosition(Vector3 p)
+    {
+        return Vector3.Distance(thisTransform.position, p);
+    }
+
+    public virtual bool IsActive() //kolla ifall denna är aktiv
+    {
+        if (thisTransform != null)
+        {
+            if (thisTransform.gameObject.activeSelf == true)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
