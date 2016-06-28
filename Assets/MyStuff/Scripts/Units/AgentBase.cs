@@ -542,7 +542,7 @@ public class AgentBase : AIBase {
             ignoreSurrounding = false;
         }
 
-        if (GetMovePosDistance() < 1.5f) //kom fram
+        if (GetMovePosDistance() < 1.5f || agent.remainingDistance < 1.5f) //kom fram
         {
             ExecuteNextCommand();
         }
@@ -554,7 +554,7 @@ public class AgentBase : AIBase {
 
     public virtual void MovingUpdate()
     {
-        if (GetMovePosDistance() < 1.5f || IsCloseEnoughToPos(movePos)) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
+        if (GetMovePosDistance() < 1.5f || IsCloseEnoughToPos(movePos) || agent.remainingDistance < 1.5f) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
         {
             ExecuteNextCommand(); //ha ett storeat 'next command', finns inget så kör default ofc!
         }
