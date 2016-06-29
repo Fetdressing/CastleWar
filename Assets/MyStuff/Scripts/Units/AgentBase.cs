@@ -76,13 +76,14 @@ public class AgentBase : AIBase {
     //variables used in different states*****
 
     // Use this for initialization
-    //void Start () { //får jag dubbla starts?
-    //    Init();
-    //}
+    void Start()
+    { //får jag dubbla starts?
+        Init();
+    }
 
     void Awake()
     {
-        Init();
+        //Init();
     }
 
     public override void Reset()
@@ -101,7 +102,7 @@ public class AgentBase : AIBase {
 
         InitializeStats();
 
-        Guard();
+        //Reset(); inte här
     }
 
     public virtual void InitializeStats() //ha med andra påverkande faktorer här sedan
@@ -378,7 +379,7 @@ public class AgentBase : AIBase {
             }
             else
             {
-                Guard();
+                ExecuteNextCommand();
             }
         }
     }
@@ -387,6 +388,7 @@ public class AgentBase : AIBase {
     {
         if(nextCommando.Count <= 0)
         {
+            nextCommando.Clear();
             //default kommando
             switch(state)
             {
@@ -416,22 +418,26 @@ public class AgentBase : AIBase {
             switch (nextCommando[0].stateToExecute)
             {
                 case UnitState.Moving:
+                    nextCommando.RemoveAt(0); //viktigt denna körs innan själva kommandot så det ej blir en endless loop
                     Move(pos);
                     break;
                 case UnitState.AttackMoving:
+                    nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
                     AttackMove(pos);
                     break;
                 case UnitState.Investigating:
+                    nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
                     Investigate(pos);
                     break;
                 case UnitState.Guarding:
+                    nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
                     Guard(pos);
                     break;
                 case UnitState.AttackingUnit:
+                    nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
                     AttackUnit(t, friendfire);
                     break;
             }
-            nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
         }
 
     }
@@ -542,7 +548,10 @@ public class AgentBase : AIBase {
             ignoreSurrounding = false;
         }
 
-        if (GetMovePosDistance() < 1.5f || agent.remainingDistance < 1.5f) //kom fram
+
+        if (agent.pathPending) //så agent.remainingDistance funkar
+        { }
+        else if (GetMovePosDistance() < 1.5f || agent.remainingDistance < 1.5f) //kom fram
         {
             ExecuteNextCommand();
         }
@@ -554,7 +563,9 @@ public class AgentBase : AIBase {
 
     public virtual void MovingUpdate()
     {
-        if (GetMovePosDistance() < 1.5f || IsCloseEnoughToPos(movePos) || agent.remainingDistance < 1.5f) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
+        if(agent.pathPending) //så agent.remainingDistance funkar
+        { }
+        else if (GetMovePosDistance() < 1.5f || IsCloseEnoughToPos(movePos) || agent.remainingDistance < 1.5f) //ifall man är klar, denna måste bli klar also efter tid eller liknande, stora units har svårt att nå fram. Kanske nått med grupp stuff o göra?
         {
             ExecuteNextCommand(); //ha ett storeat 'next command', finns inget så kör default ofc!
         }

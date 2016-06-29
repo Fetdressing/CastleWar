@@ -185,7 +185,7 @@ public class Selector : MonoBehaviour {
                 {
                     if (targets[i].GetComponent<AIBase>() != null)
                     {
-                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, null, false);
+                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, targets[i].transform, false);
                     }
                 }
             }
@@ -228,7 +228,7 @@ public class Selector : MonoBehaviour {
             {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
-                    targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, null, false);
+                    targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, targets[i].transform, false); //skicka sig själv som target så inget fuckar
                 }
             }
         }

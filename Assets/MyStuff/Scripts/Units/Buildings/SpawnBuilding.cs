@@ -47,7 +47,8 @@ public class SpawnBuilding : BuildingBase {
             Health unitHealth = temp.GetComponent<Health>();
 
             temp.layer = thisTransform.gameObject.layer;
-            agentBase.GetFriendsAndFoes();
+            //agentBase.GetFriendsAndFoes();
+            agentBase.Init();
             //temp.transform.parent = thisTransform;
             temp.SetActive(false);
 
@@ -94,7 +95,7 @@ public class SpawnBuilding : BuildingBase {
                 }
                 else
                 {
-                    unitPool[i].agentB.Move(unitPool[i].obj.transform.position + new Vector3(0,0, 1)); //move så de inte fastnar inuti varandra
+                    unitPool[i].agentB.Move(unitPool[i].obj.transform.position + new Vector3(0, 0, 1)); //move så de inte fastnar inuti varandra
                     //unitPool[i].agentB.Guard();
                 }
                 break;
