@@ -15,6 +15,8 @@ public class AgentBase : AIBase {
 
     public float aggroDistance = 20;
     [HideInInspector]
+    public float investigateDistance; //sätts när man börjar investigate:a
+    [HideInInspector]
     public float temporaryAggroDistance = 0; //används när nått target skjuter långt
     //[HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
     [HideInInspector]public Transform target;
@@ -67,7 +69,7 @@ public class AgentBase : AIBase {
     [HideInInspector]
     public float chaseTimeAggressive = 6;
     [HideInInspector]
-    public float chaseTimeNormal = 3;
+    public float chaseTimeNormal = 8;
 
     Transform[] tempTargets; //används för att skanna nearby fiender tex
 
@@ -343,6 +345,7 @@ public class AgentBase : AIBase {
                 startPos = thisTransform.position;
                 ignoreSurrounding = false;
                 closeToEnd = false; //vill kanske använda den här oxå?
+                investigateDistance = GetDistanceToPosition(pos) * 1.3f;
                 //SetDestination(movePos);
             }
         }
@@ -615,11 +618,14 @@ public class AgentBase : AIBase {
                 }
             }
 
-            if (GetStartPointDistance2() < aggroDistance || (startChaseTime + chaseTimeNormal) > Time.time) //måste kunna återvända till där den var innan den påbörja pathen
+            if (GetStartPointDistance2() < investigateDistance) //måste kunna återvända till där den var innan den påbörja pathen
             {
-                if (AttackTarget() == false)
+                if ((startChaseTime + chaseTimeNormal) > Time.time) //denna skulle kunna påbörjas när den går utanför investigateDistance
                 {
-                    target = null;
+                    if (AttackTarget() == false)
+                    {
+                        target = null;
+                    }
                 }
             }
             else
@@ -631,16 +637,19 @@ public class AgentBase : AIBase {
                 //ExecuteNextCommand();
                 //SetDestination(startPos);
             }
-        }    
-        if(ignoreSurrounding && IsCloseEnoughToPos(startPos2)) //kommit tillbaks till pathen -> fortsätt investigate!
-        {
-            ignoreSurrounding = false;
         }
-
-        if (IsCloseEnoughToPos(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
+        else
         {
-            //Debug.Log("GO home!");
-            Move(startPos);
+            if (ignoreSurrounding && IsCloseEnoughToPos(startPos2)) //kommit tillbaks till pathen -> fortsätt investigate!
+            {
+                ignoreSurrounding = false;
+            }
+
+            if (IsCloseEnoughToPos(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
+            {
+                //Debug.Log("GO home!");
+                Move(startPos);
+            }
         }
     }
 

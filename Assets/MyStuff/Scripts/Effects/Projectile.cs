@@ -41,6 +41,7 @@ public class Projectile : MonoBehaviour {
 
     public void Dealloc()
     {
+        StopAllCoroutines();
         //ta bort explosions objekt
     }
 	
@@ -65,9 +66,9 @@ public class Projectile : MonoBehaviour {
         if(homing)
         {
             bool lostTarget = false;
-            while(thisObject.activeSelf == true && (startAliveTime + time) > Time.time)
+            while(attackerT != null && thisObject.activeSelf == true && (startAliveTime + time) > Time.time)
             {
-                if (targetE.gameObject.activeSelf == false)
+                if (targetE == null || targetE.gameObject.activeSelf == false)
                 {
                     lostTarget = true;
                 }
@@ -96,6 +97,7 @@ public class Projectile : MonoBehaviour {
 
     void OnTriggerEnter(Collider collidingUnit)
     {
+        //Debug.Log(Time.time.ToString());
         if (collidingUnit.transform == attackerT) //ska inte träffa en själv
         {
             return;

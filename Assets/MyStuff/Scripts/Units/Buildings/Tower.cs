@@ -160,17 +160,16 @@ public class Tower : BuildingBase {
     {
         bool los;
         los = LineOfSight();
+        float targetDistanceuS = (targetDistance - targetHealth.unitSize);
 
         bool targetValid = true;
-        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive() || targetDistance > attackRange || targetDistance < minimumTargetDistance || !los)
+        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive() || targetDistanceuS > attackRange || targetDistanceuS < minimumTargetDistance || !los)
         {
             targetValid = false;
             return targetValid;
         }
 
-        float targetDistanceuS = (targetDistance - targetHealth.unitSize);
-
-        if (attackRange > targetDistanceuS) //kolla så att target står framför mig oxå
+        if (attackRange > targetDistanceuS && targetDistanceuS > minimumTargetDistance) //kolla så att target står framför mig oxå
         {
             if (attackSpeedTimer <= Time.time)
             {
