@@ -12,10 +12,7 @@ public class AgentRanged : AgentBase {
     public Transform shooter;
 
     public float minimumTargetDistance = 10;
-
-    public LayerMask layerMaskLOSCheck;
-    [HideInInspector]
-    public LayerMask layerMaskLOSCheckFriendlyIncluded; //samma som layerMaskLOSCheck fast MED sin egen layer
+    public float projectileLifeTime = 4;
 
     // Use this for initialization
  //   void Start () {
@@ -81,15 +78,17 @@ public class AgentRanged : AgentBase {
 
         for (int i = 0; i < friendlyLayers.Count; i++)
         {
-            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //ta bort friendly layers
+            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //lägg till friendly layers
         }
         for (int i = 0; i < enemyLayers.Length; i++)
         {
-            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(enemyLayers[i])); //ta bort friendly layers
+            layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer(enemyLayers[i]));
+            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(enemyLayers[i])); //lägg till enemy layers
         }
         layerMaskLOSCheck |= (1 << LayerMask.NameToLayer("Terrain"));
+        layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer("Terrain"));
 
-        //layerMaskLOSCheckFriendlyIncluded = layerMaskLOSCheck; //set denna innan så att den får med alla friendly layers
+        //layerMaskLOSCheckFriendlyExcluded = layerMaskLOSCheck; //set denna innan så att den får med alla friendly layers
         //for (int i = 0; i < friendlyLayers.Count; i++)
         //{
         //    layerMaskLOSCheck ^= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //ta bort friendly layers
@@ -177,26 +176,26 @@ public class AgentRanged : AgentBase {
             {
                 if (IsFriendly(target)) //om man har satt en friendly som target så måste man kunna skada den, så sätt ff = true
                 {
-                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, true);
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, true, true);
                 }
                 else
                 {
-                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, false); //annars inte
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, true, false); //annars inte
                 }
             }
             else //bara typ nån destructable
             {
-                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, false, false);
+                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, false, false);
             }
             
         }
     }
 
-    public bool LineOfSight() //has LOS to t?
+    public override bool LineOfSight() //has LOS to t?
     {
         RaycastHit hitLOS;
         //RaycastHit[] hitsLOS;
-        Vector3 vectorToT = targetHealth.middlePoint - thisTransform.position; //hämta mittpunkten istället
+        Vector3 vectorToT = targetHealth.middlePoint - shooter.position; //hämta mittpunkten istället
 
         //List<Transform> potBlockers = new List<Transform>();
 
@@ -212,48 +211,38 @@ public class AgentRanged : AgentBase {
         //return false;
 
         //if(Physics.SphereCast(thisTransform.position, losWidthCheck, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) 
-        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+        if (!isFriendlyTarget)
         {
-            if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+            if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyExcluded)) //ett layar som ignorerar allt förutom units o terräng
             {
-                //if (hitLOS.transform == target) //vet inte ifall jag vill ha med denna checken eller ej, förmodligen så
-                //{
-                return true;
-                //}
+                if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+                {
+                    //Debug.Log(hitLOS.collider.transform.name);
+                    return true;
+                }
+            }
+        }
+        else //friendly target
+        {
+            if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+                {
+                    //Debug.Log(hitLOS.collider.transform.name);
+                    return true;
+                }
             }
         }
         return false;
-        //if (!IsFriendly(target))
-        //{
-        //    if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
-        //    {
-        //        if (hitLOS.collider.transform == target)
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //}
-        //else //target är friendly -> då får jag använda ett annat layer så jag hittar denne
-        //{
-        //    if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyIncluded)) //nu kommer friendlys oxå kunna blocka denne, tänk på det
-        //    {
-        //        if (hitLOS.collider.transform == target)
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //}
-
-        //return false;
     }
-    public bool LineOfSight(Transform t) //has LOS to t?
+    public override bool LineOfSight(Transform t) //has LOS to t?
     {
         RaycastHit hitLOS;
-        Vector3 vectorToT = t.GetComponent<Health>().middlePoint - thisTransform.position; //hämta mittpunkten istället
+        Vector3 vectorToT = t.GetComponent<Health>().middlePoint - shooter.position; //hämta mittpunkten istället
 
         if (!IsFriendly(target))
         {
-            if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+            if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
             {
                 if (hitLOS.collider.transform == t)
                 {
@@ -263,7 +252,7 @@ public class AgentRanged : AgentBase {
         }
         else //target är friendly -> då får jag använda ett annat layer så jag hittar denne
         {
-            if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyIncluded)) //nu kommer friendlys oxå kunna blocka denne, tänk på det
+            if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyExcluded)) //nu kommer friendlys oxå kunna blocka denne, tänk på det
             {
                 if (hitLOS.collider.transform == t)
                 {

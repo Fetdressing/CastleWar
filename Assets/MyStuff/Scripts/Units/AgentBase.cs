@@ -21,6 +21,7 @@ public class AgentBase : AIBase {
     [HideInInspector]public AIBase targetBase;
     [HideInInspector]public Health targetHealth;
     [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
+    [HideInInspector]public bool isFriendlyTarget;
 
     //stats****
     [Header("Stats")]
@@ -56,7 +57,11 @@ public class AgentBase : AIBase {
     //look angle threshhold, hur mycket den måste titta på fienden för att kunna attackera
     private float lookAngleThreshhold = 25;
     public float turnRatio = 2;
-    
+
+    public LayerMask layerMaskLOSCheck;
+    [HideInInspector]
+    public LayerMask layerMaskLOSCheckFriendlyExcluded; //samma som layerMaskLOSCheck fast MED sin egen layer
+
     [HideInInspector]
     public float startChaseTime;
     [HideInInspector]
@@ -252,6 +257,7 @@ public class AgentBase : AIBase {
         }
 
         targetDistance = GetTargetDistance();
+        isFriendlyTarget = IsFriendly(target);
     }
 
     public virtual void SetTarget(Transform t) //när man order attack, så att den inte allertar allierade
@@ -269,6 +275,7 @@ public class AgentBase : AIBase {
         }
 
         targetDistance = GetTargetDistance();
+        isFriendlyTarget = IsFriendly(target);
     }
 
 
@@ -748,7 +755,7 @@ public class AgentBase : AIBase {
     {
         if (target != null)
         {
-            return Vector3.Distance(thisTransform.position, target.position);
+            return Vector3.Distance(thisTransform.position, target.position); //ska kanske vara mot healthmidpoint
         }
         else return 0;
     }
@@ -806,6 +813,78 @@ public class AgentBase : AIBase {
                 agent.SetDestination(pos);
             }
         }
+    }
+
+    public virtual bool LineOfSight() //has LOS to t?
+    {
+        RaycastHit hitLOS;
+        //RaycastHit[] hitsLOS;
+        Vector3 vectorToT = targetHealth.middlePoint - healthS.middlePoint; //hämta mittpunkten istället
+
+        //List<Transform> potBlockers = new List<Transform>();
+
+        //hitsLOS = Physics.RaycastAll(thisTransform.position, vectorToT, attackRange * 1.2f, layerMaskLOSCheck);
+
+        //for(int i = 0; i < hitsLOS.Length; i++)
+        //{
+        //    if (hitsLOS[i].collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+        //    {
+        //        potBlockers.Add(hitsLOS[i].collider.transform);
+        //    }
+        //}
+        //return false;
+
+        //if(Physics.SphereCast(thisTransform.position, losWidthCheck, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) 
+        if (!isFriendlyTarget)
+        {
+            if (Physics.Raycast(healthS.middlePoint, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyExcluded)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+                {
+                    return true;
+                }
+            }
+        }
+        else //friendly target
+        {
+            if (Physics.Raycast(healthS.middlePoint, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+                {
+                    //Debug.Log(hitLOS.collider.transform.name);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public virtual bool LineOfSight(Transform t) //has LOS to t?
+    {
+        RaycastHit hitLOS;
+        Vector3 vectorToT = t.GetComponent<Health>().middlePoint - healthS.middlePoint; //hämta mittpunkten istället
+
+        if (!IsFriendly(target))
+        {
+            if (Physics.Raycast(healthS.middlePoint, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.transform == t)
+                {
+                    return true;
+                }
+            }
+        }
+        else //target är friendly -> då får jag använda ett annat layer så jag hittar denne
+        {
+            if (Physics.Raycast(healthS.middlePoint, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyExcluded)) //nu kommer friendlys oxå kunna blocka denne, tänk på det
+            {
+                if (hitLOS.collider.transform == t)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
 

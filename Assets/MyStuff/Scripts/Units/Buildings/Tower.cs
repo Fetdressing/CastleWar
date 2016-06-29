@@ -36,7 +36,7 @@ public class Tower : BuildingBase {
 
     public LayerMask layerMaskLOSCheck;
     [HideInInspector]
-    public LayerMask layerMaskLOSCheckFriendlyIncluded; //samma som layerMaskLOSCheck fast MED sin egen layer
+    public LayerMask layerMaskLOSCheckFriendlyExcluded; //samma som layerMaskLOSCheck fast MED sin egen layer
 
     [HideInInspector]
     public List<Transform> targetList = new List<Transform>();
@@ -47,6 +47,8 @@ public class Tower : BuildingBase {
     public Health targetHealth;
     [HideInInspector]
     public AIBase targetBase;
+    [HideInInspector]
+    public bool isFriendlyTarget;
 
     public override void Init()
     {
@@ -55,13 +57,15 @@ public class Tower : BuildingBase {
 
         for (int i = 0; i < friendlyLayers.Count; i++)
         {
-            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //ta bort friendly layers
+            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //lägg till friendly layers
         }
         for (int i = 0; i < enemyLayers.Length; i++)
         {
-            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(enemyLayers[i])); //ta bort friendly layers
+            layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer(enemyLayers[i]));
+            layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(enemyLayers[i])); //lägg till friendly layers
         }
         layerMaskLOSCheck |= (1 << LayerMask.NameToLayer("Terrain"));
+        layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer("Terrain"));
 
         InitializeStats();
         Reset();
@@ -120,11 +124,10 @@ public class Tower : BuildingBase {
 
     void Update() //kan använda en corutine istället med attackspeeden som yield
     {
-        targetDistance = GetDistanceToTransform(target);
-
         if(target != null)
         {
-            if(AttackTarget() == false)
+            targetDistance = GetDistanceToTransform(target);
+            if (AttackTarget() == false)
             {
                 //reset target för det går inte ha kvar det targetet
                 target = null;
@@ -144,21 +147,28 @@ public class Tower : BuildingBase {
     {
         target = t;
         targetHealth = target.GetComponent<Health>();
-        targetBase = target.GetComponent<AIBase>();
+        if (target.GetComponent<AIBase>() != null)
+        {
+            targetBase = target.GetComponent<AIBase>();
+        }
+        targetDistance = GetDistanceToTransform(target);
+
+        isFriendlyTarget = IsFriendly(t);
     }
 
     public virtual bool AttackTarget()
     {
+        bool los;
+        los = LineOfSight();
+
         bool targetValid = true;
-        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive() || targetDistance > attackRange || targetDistance < minimumTargetDistance)
+        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive() || targetDistance > attackRange || targetDistance < minimumTargetDistance || !los)
         {
             targetValid = false;
             return targetValid;
         }
 
         float targetDistanceuS = (targetDistance - targetHealth.unitSize);
-        bool los;
-        los = LineOfSight();
 
         if (attackRange > targetDistanceuS) //kolla så att target står framför mig oxå
         {
@@ -213,16 +223,64 @@ public class Tower : BuildingBase {
 
     public virtual void SearchTarget()
     {
+        Transform[] potTargets = ScanEnemies(attackRange);
+        if (potTargets == null)
+        {
+            return;
+        }
 
+        for(int i = 0; i < potTargets.Length; i++)
+        {
+            float tDistance = GetDistanceToTransform(potTargets[i]);
+            if(tDistance < attackRange && tDistance > minimumTargetDistance)
+            {
+                bool los = LineOfSight(potTargets[i]);
+                if(los)
+                {
+                    NewTarget(potTargets[i]);
+                    return;
+                }
+            }
+        }
     }
 
 
     public bool LineOfSight()
     {
         RaycastHit hitLOS;
-        Vector3 vectorToT = targetHealth.middlePoint - thisTransform.position; //hämta mittpunkten istället
+        Vector3 vectorToT = targetHealth.middlePoint - shooter.position; //hämta mittpunkten istället
+        //hade behövt ignorera sig själv
+        if (!isFriendlyTarget)
+        {
+            if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheckFriendlyExcluded)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+                {
+                    //Debug.Log(hitLOS.collider.transform.name);
+                    return true;
+                }
+            }
+        }
+        else //friendly target
+        {
+            if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+            {
+                if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
+                {
+                    //Debug.Log(hitLOS.collider.transform.name);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-        if (Physics.Raycast(thisTransform.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
+    public bool LineOfSight(Transform t)
+    {
+        RaycastHit hitLOS;
+        Vector3 vectorToT = t.GetComponent<Health>().middlePoint - shooter.position; //hämta mittpunkten istället
+
+        if (Physics.Raycast(shooter.position, vectorToT, out hitLOS, Mathf.Infinity, layerMaskLOSCheck)) //ett layar som ignorerar allt förutom units o terräng
         {
             if (hitLOS.collider.gameObject.layer != LayerMask.NameToLayer("Terrain"))
             {
@@ -231,7 +289,6 @@ public class Tower : BuildingBase {
         }
         return false;
     }
-
 
     public override void AttackUnit(Transform t, bool friendlyFire)
     {

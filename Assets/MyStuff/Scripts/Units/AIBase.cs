@@ -196,7 +196,6 @@ public abstract class AIBase : MonoBehaviour {
             if (tLayer == friendlyLayers[i])
             {
                 return true;
-                break;
             }
         }
 

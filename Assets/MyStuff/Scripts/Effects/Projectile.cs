@@ -44,8 +44,9 @@ public class Projectile : MonoBehaviour {
         //ta bort explosions objekt
     }
 	
-    public void Fire(Transform target, Vector3 aimPos, int damage, int lifeTime, bool notifyattacked, bool ff)
+    public void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff)
     {
+        StopAllCoroutines();
         ToggleActive(true);
         thisTransform.LookAt(aimPos);
         targetE = target;
@@ -59,13 +60,22 @@ public class Projectile : MonoBehaviour {
         StartCoroutine(LifeTime(lifeTime));
     }
 
-    IEnumerator LifeTime(int time)
+    IEnumerator LifeTime(float time)
     {
         if(homing)
         {
-            while(thisObject.activeSelf == true && (startAliveTime + time) > Time.time && targetE.gameObject.activeSelf == true)
+            bool lostTarget = false;
+            while(thisObject.activeSelf == true && (startAliveTime + time) > Time.time)
             {
-                thisTransform.LookAt(targetE.position);
+                if (targetE.gameObject.activeSelf == false)
+                {
+                    lostTarget = true;
+                }
+                if (lostTarget == false)
+                {
+                    thisTransform.LookAt(targetE.position);
+                }
+
                 thisRigidbody.AddForce(thisTransform.forward * shootForce, ForceMode.Impulse);
                 if (thisRigidbody.velocity.sqrMagnitude > maxVelocity)
                 {
