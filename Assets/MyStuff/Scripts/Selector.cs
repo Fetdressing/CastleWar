@@ -5,9 +5,16 @@ using UnityEngine.UI;
 
 public class Selector : MonoBehaviour {
     private Transform thisTransform;
+    public string playerTeam = "Team1";
+    [HideInInspector]
+    public LayerMask playerLayer;
 
-    private RaycastHit mouseHit;
-    public LayerMask selectLayerMask = -1;
+    [HideInInspector]
+    public RaycastHit mouseHit;
+    public LayerMask selectLayerMask = -1; //vad som ska träffas som target
+    public LayerMask mouseHitLayerMask; //vad som ska träffas som mark
+    [HideInInspector]
+    public Vector3 mouseHitPos = Vector3.zero;
     //private int selMask;
 
     public GameObject uiDisplayer;
@@ -53,6 +60,7 @@ public class Selector : MonoBehaviour {
     public virtual void Init()
     {
         thisTransform = this.transform;
+        playerLayer = LayerMask.NameToLayer(playerTeam);
 
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
 
@@ -103,7 +111,7 @@ public class Selector : MonoBehaviour {
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        if (Physics.Raycast(ray, out mouseHit, Mathf.Infinity))
+        if (Physics.Raycast(ray, out mouseHit, Mathf.Infinity, mouseHitLayerMask))
         {
             pos = mouseHit.point;
             return true;
@@ -375,7 +383,7 @@ public class Selector : MonoBehaviour {
 
     void GetMouseInput()
     {
-        Vector3 mouseHitPos = Vector3.zero;
+        //mouseHitPos = Vector3.zero;
         Transform mouseInput = GetMouseTarget();
         bool mouseHitValid = GetMousePosition(ref mouseHitPos);
 
