@@ -1,8 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Selector))]
 public class Builder : MonoBehaviour {
+    public GameObject uiBuilderCanvas;
+    public GameObject buildingPanel;
+    public GameObject buildingBottom;
+
     public int startResources = 100;
     private int currResources;
     private Selector selector; //för att hämta input positions osv
@@ -29,6 +34,8 @@ public class Builder : MonoBehaviour {
         {
             buildings[i].placementShowObj = Instantiate(buildings[i].placementObject);
         }
+        ChangeBuildingIndex(1);
+        GenerateBuildingUI();
     }
 
     // Update is called once per frame
@@ -65,7 +72,7 @@ public class Builder : MonoBehaviour {
         }
         else
         {
-            if (currBuildingSel.placementShowObj.activeSelf == true)
+            if (currBuildingSel.placementShowObj != null && currBuildingSel.placementShowObj.activeSelf == true)
             {
                 currBuildingSel.placementShowObj.SetActive(false);
             }
@@ -136,5 +143,15 @@ public class Builder : MonoBehaviour {
         public Sprite uiImage;
         public int cost;
         //public float buildingPlacementSize;
+    }
+
+
+    void GenerateBuildingUI()
+    {
+        for(int i = 0; i < 9; i++)
+        {
+            GameObject tempB = Instantiate(buildingBottom.gameObject);
+            tempB.transform.SetParent(buildingPanel.transform, false); //positionera dem på nått nice sett!
+        }
     }
 }

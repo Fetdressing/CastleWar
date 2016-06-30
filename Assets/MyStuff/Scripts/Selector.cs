@@ -17,16 +17,16 @@ public class Selector : MonoBehaviour {
     public Vector3 mouseHitPos = Vector3.zero;
     //private int selMask;
 
-    public GameObject uiDisplayer;
-
     private List<Transform> targets = new List<Transform>();
     private List<Health> targetHealths = new List<Health>(); //för att kunna hämta unitsizes
 
     //selectionBox
-    public GameObject selectionCanvas;
+    //public GameObject selectionBoxCanvas;
     public RectTransform selectionBox;
     private Vector2 initialSelectionBoxAnchor = Vector2.zero;
     //selectionBox
+
+    public GameObject unitInfoCanvas;
 
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
@@ -83,11 +83,11 @@ public class Selector : MonoBehaviour {
 
         if (targets.Count >= 1)
         {
-            uiDisplayer.SetActive(true);
+            unitInfoCanvas.SetActive(true);
         }
         else
         {
-            uiDisplayer.SetActive(false);
+            unitInfoCanvas.SetActive(false);
         }
         GetMoveState(); //behöver vara sist
     }
