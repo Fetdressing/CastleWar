@@ -13,6 +13,7 @@ public class Selector : MonoBehaviour {
     public GameObject uiDisplayer;
 
     private List<Transform> targets = new List<Transform>();
+    private List<Health> targetHealths = new List<Health>(); //för att kunna hämta unitsizes
 
     //selectionBox
     public GameObject selectionCanvas;
@@ -23,7 +24,7 @@ public class Selector : MonoBehaviour {
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
 
-    public float movePositionsMult = 3; // hur långt ifrån de ska ställa sig från varandra
+    private float movePositionsMult = 3; // hur långt ifrån de ska ställa sig från varandra
 
     //cursor
     [Header("Cursor")]
@@ -38,13 +39,24 @@ public class Selector : MonoBehaviour {
     private int groundMarkerPoolSize = 7;
     private int roundRobinIndex = 0; //för groundmarkern
 
+    public Material attackSelMat; //materialet när man orderar attack på unit
     // Use this for initialization
     void Start () {
+        Init();
+    }
+	
+	// Update is called once per frame
+	void Update () {
+        SelectorUpdate();
+    }
+
+    public virtual void Init()
+    {
         thisTransform = this.transform;
 
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
 
-        for(int i = 0; i < groundMarkerPoolSize; i++)
+        for (int i = 0; i < groundMarkerPoolSize; i++)
         {
             GameObject temp = GameObject.Instantiate(groundMarkerObject.gameObject);
             temp.SetActive(false);
@@ -52,9 +64,9 @@ public class Selector : MonoBehaviour {
         }
         //selMask = selectLayerMask.value;
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    public void SelectorUpdate()
+    {
         SelectionBox();
         CheckTargetsAlive();
 
@@ -103,7 +115,7 @@ public class Selector : MonoBehaviour {
     {
         for(int i = 0; i < targets.Count; i++)
         {
-            if(targets[i] == null || targets[i].gameObject.activeSelf == false)
+            if(targets[i] == null || targets[i].gameObject.activeSelf == false || !targetHealths[i].IsAlive())
             {
                 RemoveTarget(i);
             }
@@ -124,8 +136,10 @@ public class Selector : MonoBehaviour {
 
         if (exists == false)
         {
-            newTarget.GetComponent<Health>().ToggleSelMarker(true);
+            Health tempHealth = newTarget.GetComponent<Health>();
+            tempHealth.ToggleSelMarker(true);
             targets.Add(newTarget);
+            targetHealths.Add(tempHealth);
         }
     }
 
@@ -136,6 +150,7 @@ public class Selector : MonoBehaviour {
             targets[i].GetComponent<Health>().ToggleSelMarker(false);
         }
         targets.RemoveAt(i);
+        targetHealths.RemoveAt(i);
     }
 
     void ClearTargets()
@@ -145,6 +160,7 @@ public class Selector : MonoBehaviour {
             targets[i].GetComponent<Health>().ToggleSelMarker(false);            
         }
         targets.Clear();
+        targetHealths.Clear();
     }
 
     void CommandToPos(Vector3 pos)
@@ -169,7 +185,7 @@ public class Selector : MonoBehaviour {
             List<Vector3> movePositions = new List<Vector3>();
             if(targets.Count > 2) //använd bara box pattern när det är fler än 2
             {
-                movePositions = GetBoxPattern(targets, pos);
+                movePositions = GetBoxPattern(targets, targetHealths, pos);
             }
             else
             {
@@ -212,7 +228,7 @@ public class Selector : MonoBehaviour {
         List<Vector3> movePositions = new List<Vector3>();
         if (targets.Count > 2) //använd bara box pattern när det är fler än 2
         {
-            movePositions = GetBoxPattern(targets, pos);
+            movePositions = GetBoxPattern(targets, targetHealths, pos);
         }
         else
         {
@@ -251,6 +267,7 @@ public class Selector : MonoBehaviour {
     void OrderAttackUnit(Transform t, bool friendfire)
     {
         PlaceGroundMarker(t.position + new Vector3(0, 0.2f, 0));
+        t.GetComponent<Health>().ApplyMaterial(attackSelMat, 0.5f);
         if (Input.GetButton("Add"))
         {
             for (int i = 0; i < targets.Count; i++)
@@ -420,7 +437,7 @@ public class Selector : MonoBehaviour {
     }
 
 
-    List<Vector3> GetBoxPattern(List<Transform> t, Vector3 posi) //special case för när den bara är 1 eller 2!!!
+    List<Vector3> GetBoxPattern(List<Transform> t, List<Health> ht, Vector3 posi) //special case för när den bara är 1 eller 2!!!
     {
         //int cols = 5;
         List<Vector3> movePositions = new List<Vector3>();
@@ -435,7 +452,7 @@ public class Selector : MonoBehaviour {
                 pY++;
                 pX = -2;
             }
-            Vector3 movePosTemp = new Vector3(posi.x + (pX * movePositionsMult), posi.y, posi.z + (pY * movePositionsMult));
+            Vector3 movePosTemp = new Vector3(posi.x + (pX * ht[pI].unitSize * movePositionsMult), posi.y, posi.z + (pY * ht[pI].unitSize * movePositionsMult)); //*movePositionsMult så den ska vara i lämpligt mått
             movePositions.Add(movePosTemp);
             pX++;
             pI++;

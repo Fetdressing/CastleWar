@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
     private Transform thisTransform;
+    private Renderer thisRenderer;
+    private Material thisMaterial;
     public float unitSize = 1;
 
     [HideInInspector]
@@ -47,6 +49,8 @@ public class Health : MonoBehaviour {
     public void Init()
     {
         thisTransform = this.transform;
+        thisRenderer = thisTransform.GetComponent<Renderer>();
+        thisMaterial = thisRenderer.material;
         mainCamera = Camera.main;
 
         maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
@@ -66,6 +70,8 @@ public class Health : MonoBehaviour {
         AddHealth(1); //bara så barsen ska fixas
 
         ToggleSelMarker(false);
+
+        thisRenderer.material = thisMaterial;
     }
 	
 	// Update is called once per frame
@@ -166,5 +172,17 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
     public void ToggleSelMarker(bool b)
     {
         selectionMarkerObject.SetActive(b);
+    }
+
+    public void ApplyMaterial(Material m, float time)
+    {
+        StartCoroutine(MarkMaterial(m, time));
+    }
+
+    IEnumerator MarkMaterial(Material m, float time)
+    {
+        thisRenderer.material = m;
+        yield return new WaitForSeconds(time);
+        thisRenderer.material = thisMaterial;
     }
 }
