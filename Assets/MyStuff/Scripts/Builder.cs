@@ -3,8 +3,8 @@ using System.Collections;
 
 [RequireComponent(typeof(Selector))]
 public class Builder : MonoBehaviour {
-    int startResources = 100;
-    int currResources;
+    public int startResources = 100;
+    private int currResources;
     private Selector selector; //för att hämta input positions osv
     public LayerMask placementLayerMask; //används när man testar att sätta ut byggnader
 
@@ -12,13 +12,17 @@ public class Builder : MonoBehaviour {
     public Material validPlacementMat;
 
     public Building[] buildings;
-    
+    private int currBuildingIndex = 0;
+    private Building currBuildingSel;
+
 	void Start () {
         Init();
 	}
 
     public void Init()
     {
+        currResources = startResources;
+
         selector = this.transform.GetComponent<Selector>();
 
         for(int i = 0; i < buildings.Length; i++)
@@ -30,15 +34,41 @@ public class Builder : MonoBehaviour {
     // Update is called once per frame
     void Update ()
     {
-        buildings[0].placementShowObj.transform.position = selector.mouseHitPos;
-
-        if(IsViablePlacement(buildings[0], selector.mouseHitPos))
+        if(Input.GetKeyDown(KeyCode.UpArrow))
         {
-            buildings[0].placementShowObj.GetComponent<Renderer>().material = validPlacementMat;
+            ChangeBuildingIndex(currBuildingIndex+1);
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            ChangeBuildingIndex(currBuildingIndex-1);
+        }
+
+        if (currBuildingIndex < buildings.Length)
+        {
+            currBuildingSel = buildings[currBuildingIndex];
+
+            if (currBuildingSel.placementShowObj.activeSelf == false)
+            {
+                currBuildingSel.placementShowObj.SetActive(true);
+            }
+
+            currBuildingSel.placementShowObj.transform.position = selector.mouseHitPos;
+
+            if (IsViablePlacement(currBuildingSel, selector.mouseHitPos))
+            {
+                currBuildingSel.placementShowObj.GetComponent<Renderer>().material = validPlacementMat;
+            }
+            else
+            {
+                currBuildingSel.placementShowObj.GetComponent<Renderer>().material = invalidPlacementMat;
+            }
         }
         else
         {
-            buildings[0].placementShowObj.GetComponent<Renderer>().material = invalidPlacementMat;
+            if (currBuildingSel.placementShowObj.activeSelf == true)
+            {
+                currBuildingSel.placementShowObj.SetActive(false);
+            }
         }
     }
 
@@ -61,7 +91,20 @@ public class Builder : MonoBehaviour {
             }
         }
         Bounds boundBox = b.placementObject.GetComponent<Renderer>().bounds; //gör denna checken oxå somehow!
+        //float largestExtent = Mathf.Max(boundBox.extents.y, Mathf.Max(boundBox.extents.x, boundBox.extents.z));
 
+        Collider[] hitColliders = Physics.OverlapBox(middlePoint, boundBox.extents, Quaternion.identity, placementLayerMask);
+        for(int i = 0; i < hitColliders.Length; i++)
+        {
+            if (hitColliders[i].gameObject.layer != LayerMask.NameToLayer("Terrain"))
+            {
+                return false;
+            }
+            if (hitColliders[i].gameObject.tag != "Ground")
+            {
+                return false;
+            }
+        }
 
         return true;
     }
@@ -70,6 +113,17 @@ public class Builder : MonoBehaviour {
     {
         GameObject tempB = Instantiate(b.spawnObject);
         tempB.layer = selector.playerLayer;
+    }
+
+
+    public void ChangeBuildingIndex(int i)
+    {
+        if (i < 0)
+        {
+            i = 0;
+        }
+        currBuildingIndex = i;
+        //Debug.Log(i.ToString());
     }
 
     [System.Serializable]

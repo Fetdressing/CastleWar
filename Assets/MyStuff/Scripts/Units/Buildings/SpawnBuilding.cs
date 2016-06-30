@@ -128,6 +128,18 @@ public class SpawnBuilding : BuildingBase {
         }
     }
 
+    public override void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire) //den ska ju bara kunna attackera units så denna behöver moddas
+    {
+        AttackMove(pos);
+        //Command c = new Command(nextState, pos, tar, friendlyfire);
+        //if (nextCommando.Count > 5) //vill inte göra denna lista hur lång som helst
+        //{
+        //    nextCommando[nextCommando.Count - 1] = c; //släng på den på sista platsen
+        //    return;
+        //}
+        //nextCommando.Add(c);
+    }
+
 }
 
 public struct Unit

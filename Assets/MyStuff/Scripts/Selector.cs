@@ -187,6 +187,7 @@ public class Selector : MonoBehaviour {
 
     void OrderMove(Vector3 pos)
     {
+        Vector3 originPos = pos;
         PlaceGroundMarker(pos + new Vector3(0, 0.2f, 0));
         if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
@@ -203,13 +204,21 @@ public class Selector : MonoBehaviour {
                 }
             }
 
+
             if (Input.GetButton("Add")) //om add så lägg till kommandot i listan
             {
                 for (int i = 0; i < targets.Count; i++)
                 {
                     if (targets[i].GetComponent<AIBase>() != null)
                     {
-                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, targets[i].transform, false);
+                        if (targets[i].GetComponent<SpawnBuilding>() != null)
+                        {
+                            targets[i].GetComponent<AIBase>().AddCommandToList(originPos, AIBase.UnitState.Moving, targets[i].transform, false);
+                        }
+                        else
+                        {
+                            targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, targets[i].transform, false);
+                        }
                     }
                 }
             }
@@ -220,7 +229,15 @@ public class Selector : MonoBehaviour {
                     if (targets[i].GetComponent<AIBase>() != null)
                     {
                         targets[i].GetComponent<AIBase>().ClearCommands();
-                        targets[i].GetComponent<AIBase>().Move(movePositions[i]);
+
+                        if (targets[i].GetComponent<SpawnBuilding>() != null)
+                        {
+                            targets[i].GetComponent<AIBase>().Move(originPos); //kör på origin för building rallypoint
+                        }
+                        else
+                        {
+                            targets[i].GetComponent<AIBase>().Move(movePositions[i]);
+                        }
                     }
                 }
             }
@@ -231,6 +248,7 @@ public class Selector : MonoBehaviour {
 
     void OrderAttackMove(Vector3 pos)
     {
+        Vector3 originPos = pos;
         PlaceGroundMarker(pos + new Vector3(0, 0.2f, 0));
 
         List<Vector3> movePositions = new List<Vector3>();
@@ -246,13 +264,21 @@ public class Selector : MonoBehaviour {
             }
         }
 
+
         if (Input.GetButton("Add"))
         {
             for (int i = 0; i < targets.Count; i++)
             {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
-                    targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, targets[i].transform, false); //skicka sig själv som target så inget fuckar
+                    if (targets[i].GetComponent<SpawnBuilding>() != null)
+                    {
+                        targets[i].GetComponent<AIBase>().AddCommandToList(originPos, AIBase.UnitState.AttackMoving, targets[i].transform, false);
+                    }
+                    else
+                    {
+                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, targets[i].transform, false); //skicka sig själv som target så inget fuckar
+                    }
                 }
             }
         }
@@ -263,7 +289,15 @@ public class Selector : MonoBehaviour {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
                     targets[i].GetComponent<AIBase>().ClearCommands();
-                    targets[i].GetComponent<AIBase>().AttackMove(movePositions[i]);
+
+                    if (targets[i].GetComponent<SpawnBuilding>() != null) //kör på origin för building rallypoint
+                    {
+                        targets[i].GetComponent<AIBase>().AttackMove(originPos);
+                    }
+                    else
+                    {
+                        targets[i].GetComponent<AIBase>().AttackMove(movePositions[i]);
+                    }
                 }
             }
         }
