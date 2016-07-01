@@ -35,7 +35,7 @@ public class SpawnBuilding : BuildingBase {
 
     void Awake()
     {
-        Init();
+        //Init();
     }
 
     void CreateObjectPool()
