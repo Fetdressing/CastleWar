@@ -35,7 +35,7 @@ public class Tower : BuildingBase {
     //stats****
 
     public LayerMask layerMaskLOSCheck;
-    [HideInInspector]
+    //[HideInInspector]
     public LayerMask layerMaskLOSCheckFriendlyExcluded; //samma som layerMaskLOSCheck fast MED sin egen layer
 
     [HideInInspector]
@@ -55,6 +55,9 @@ public class Tower : BuildingBase {
         base.Init();
         CreateObjectPool();
 
+        layerMaskLOSCheck = (1 << LayerMask.NameToLayer("Terrain"));
+        layerMaskLOSCheckFriendlyExcluded = (1 << LayerMask.NameToLayer("Terrain"));
+
         for (int i = 0; i < friendlyLayers.Count; i++)
         {
             layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //lägg till friendly layers
@@ -64,8 +67,8 @@ public class Tower : BuildingBase {
             layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer(enemyLayers[i]));
             layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(enemyLayers[i])); //lägg till friendly layers
         }
-        layerMaskLOSCheck |= (1 << LayerMask.NameToLayer("Terrain"));
-        layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer("Terrain"));
+        //layerMaskLOSCheck |= (1 << LayerMask.NameToLayer("Terrain"));
+        //layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer("Terrain"));
 
         InitializeStats();
         Reset();

@@ -137,7 +137,7 @@ public class Projectile : MonoBehaviour {
             return;
         }
 
-        for (int i = 0; i < friendlyLayers.Count; i++) //så man inte träffar sig själv
+        for (int i = 0; i < friendlyLayers.Count; i++) //attackerar en allierad
         {
             if (collidingUnit.gameObject.layer == LayerMask.NameToLayer(friendlyLayers[i]))
             {

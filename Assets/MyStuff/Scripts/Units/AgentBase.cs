@@ -193,7 +193,7 @@ public class AgentBase : AIBase {
                 }
             }
         }
-        if (attackRange * 0.7f < (targetDistance-targetHealth.unitSize)) //marginal med jue
+        if (attackRange * 0.8f < (targetDistance-targetHealth.unitSize)) //marginal med jue
         {
             SetDestination(target.position);
         }
@@ -214,15 +214,20 @@ public class AgentBase : AIBase {
     {
         base.Attacked(attacker);
 
-        if(attacker.GetComponent<AIBase>().GetNrAttackers() > nrAcceptedAttackersOnTarget || targetBase.GetNrAttackers() < (int)(nrAcceptedAttackersOnTarget)) //pallar inte bry mig om den redan har massa targets
+        if(attacker.GetComponent<AIBase>().GetNrAttackers() > nrAcceptedAttackersOnTarget) //pallar inte bry mig om den redan har massa targets
         { //har target dock väldigt få attackers på sig så kan jag oxå stanna
+            return;
+        }
+
+        if(target != null && targetBase != null && targetBase.GetNrAttackers() < (int)(nrAcceptedAttackersOnTarget)) //det target jag har nu är nog inte så fel
+        {
             return;
         }
 
         if (state != UnitState.AttackingUnit && state != UnitState.Moving && attacker != null)
         {
             bool validTarget = true;
-            for (int i = 0; i < friendlyLayers.Count; i++) //kolla så att man inte råkas göra en friendly till target
+            for (int i = 0; i < friendlyLayers.Count; i++) //kolla så att man inte råkar göra en friendly till target
             {
                 if (LayerMask.LayerToName(attacker.gameObject.layer) == friendlyLayers[i])
                 {
@@ -230,7 +235,6 @@ public class AgentBase : AIBase {
                     break;
                 }
             }
-
             if (attacker.gameObject.layer == thisTransform.gameObject.layer)
             {
                 validTarget = false;
@@ -359,6 +363,7 @@ public class AgentBase : AIBase {
                 //SetDestination(movePos);
             }
         }
+
     }
 
     public override void AttackUnit(Transform t, bool friendlyFire)
@@ -482,7 +487,7 @@ public class AgentBase : AIBase {
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
             {
-                NewTarget(ClosestTransform(tempTargets));
+                NewTarget(GetBestTarget(tempTargets));
             }
             else
             {
@@ -598,7 +603,7 @@ public class AgentBase : AIBase {
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
             {
-                NewTarget(ClosestTransform(tempTargets));
+                NewTarget(GetBestTarget(tempTargets));
                 startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin investigation efter den jagat
                 //AddCommandToList(startPos2, UnitState.Moving); //dessa blir mega stackade!!!!!!!!!!!!!!
                 //AddCommandToList(movePos, UnitState.Investigating); //fortsätt där den slutade

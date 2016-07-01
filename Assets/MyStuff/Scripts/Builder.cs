@@ -9,6 +9,7 @@ public class Builder : MonoBehaviour {
     public GameObject uiBuilderCanvas;
     public GameObject buildingPanel;
 
+    public Text resourceDisplayer;
     public int startResources = 100;
     private int currResources;
     private Selector selector; //för att hämta input positions osv
@@ -28,6 +29,7 @@ public class Builder : MonoBehaviour {
     public void Init()
     {
         currResources = startResources;
+        AddResources(0); //updaterar
 
         selector = this.transform.GetComponent<Selector>();
 
@@ -59,9 +61,15 @@ public class Builder : MonoBehaviour {
 
             currBuildingSel.placementShowObj.transform.position = selector.mouseHitPos;
 
+
             if (IsViablePlacement(currBuildingSel, selector.mouseHitPos))
             {
                 currBuildingSel.placementShowObj.GetComponent<Renderer>().material = validPlacementMat;
+
+                if(Input.GetMouseButtonDown(0))
+                {
+                    PlaceBuilding(currBuildingSel, selector.mouseHitPos);
+                }
             }
             else
             {
@@ -116,10 +124,27 @@ public class Builder : MonoBehaviour {
 
     void PlaceBuilding(Building b, Vector3 pos)
     {
-        GameObject tempB = Instantiate(b.spawnObject);
-        tempB.layer = selector.playerLayer;
+        if (AddResources(-b.cost))
+        {
+            GameObject tempB = Instantiate(b.spawnObject);
+            tempB.layer = selector.playerLayer;
+            tempB.transform.position = pos;
+            tempB.GetComponent<AIBase>().Init();
+        }
     }
 
+    bool AddResources(int r) //returnerar ifall den kunde spendera summan
+    {
+        if ((currResources + r) >= 0)
+        {
+            currResources += r;
+            resourceDisplayer.text = currResources.ToString();
+            return true;
+        }
+
+        resourceDisplayer.text = currResources.ToString();
+        return false;
+    }
 
     public void ChangeBuildingIndex(int i)
     {
