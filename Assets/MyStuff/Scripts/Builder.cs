@@ -38,7 +38,7 @@ public class Builder : MonoBehaviour {
             buildings[i].placementShowObj = Instantiate(buildings[i].placementObject);
             buildings[i].index = i; //ge dem sina indexes så att rätt torn väljs till rätt bild
         }
-        ChangeBuildingIndex(1);
+        ChangeBuildingIndex(100000);
         GenerateBuildingUI();
     }
 
@@ -66,9 +66,12 @@ public class Builder : MonoBehaviour {
             {
                 currBuildingSel.placementShowObj.GetComponent<Renderer>().material = validPlacementMat;
 
-                if(Input.GetMouseButtonDown(0))
-                {
-                    PlaceBuilding(currBuildingSel, selector.mouseHitPos);
+                if (!EventSystem.current.IsPointerOverGameObject()) //hovrar jag över ui?
+                { // UI elements getting the hit/hover
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        PlaceBuilding(currBuildingSel, selector.mouseHitPos);
+                    }
                 }
             }
             else
@@ -152,6 +155,10 @@ public class Builder : MonoBehaviour {
         {
             i = 0;
         }
+        for(int it = 0; it < buildings.Length; it++)
+        {
+            buildings[it].placementShowObj.SetActive(false);
+        }
         currBuildingIndex = i;
         //Debug.Log(i.ToString());
     }
@@ -178,8 +185,9 @@ public class Builder : MonoBehaviour {
     {
         for(int i = 0; i < buildings.Length; i++)
         {
-            GameObject tempB = Instantiate(buildings[i].buildingBottom.gameObject);
-            tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(0); });
+            GameObject tempB = Instantiate(buildings[i].buildingBottom.gameObject) as GameObject;
+            int indexB = i;
+            tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
             tempB.transform.SetParent(buildingPanel.transform, false); //positionera dem på nått nice sett!
         }
     }
