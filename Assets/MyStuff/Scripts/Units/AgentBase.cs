@@ -44,6 +44,8 @@ public class AgentBase : AIBase {
     [HideInInspector]
     public float attackRange;
 
+    public int nrAcceptedAttackersOnTarget = 3; //hur många andra som max attackerar mitt target för att jag inte ska vilja ta ett annat target
+
     //stats****
 
     [Header("Other")]
@@ -95,6 +97,7 @@ public class AgentBase : AIBase {
 
     public override void Reset()
     {
+        base.Reset();
         closeToEnd = false;
         ignoreSurrounding = false;
         Guard();
@@ -209,6 +212,13 @@ public class AgentBase : AIBase {
 
     public override void Attacked(Transform attacker) //blev attackerad av någon
     {
+        base.Attacked(attacker);
+
+        if(attacker.GetComponent<AIBase>().GetNrAttackers() > nrAcceptedAttackersOnTarget || targetBase.GetNrAttackers() < (int)(nrAcceptedAttackersOnTarget)) //pallar inte bry mig om den redan har massa targets
+        { //har target dock väldigt få attackers på sig så kan jag oxå stanna
+            return;
+        }
+
         if (state != UnitState.AttackingUnit && state != UnitState.Moving && attacker != null)
         {
             bool validTarget = true;
@@ -229,7 +239,7 @@ public class AgentBase : AIBase {
 
             if (validTarget == true)
             {
-                if (target == null)
+                if (target == null || !isUnitAttackingMe(target)) //attackera hellre det targetet som attackerar mig än det som inte gör de
                 {
                     NewTarget(attacker);
                 }
@@ -516,7 +526,7 @@ public class AgentBase : AIBase {
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
             {
-                NewTarget(ClosestTransform(tempTargets));
+                NewTarget(GetBestTarget(tempTargets));
                 startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin path efter den jagat
             }
             else //inga targets, återvänd till pathen typ
@@ -696,6 +706,26 @@ public class AgentBase : AIBase {
             return t2;
         }
     }
+    public virtual Transform GetBestTarget(Transform[] ts) //om ts är sorterad efter avstånd så kommer den kolla de närmre fienderna först
+    {
+        Transform tTemp = null;
+        for (int i = 0; i < ts.Length; i++)
+        {
+            if (ts[i].GetComponent<AIBase>().GetNrAttackers() < nrAcceptedAttackersOnTarget)
+            {
+                tTemp = ts[i];
+                break;
+            }
+        }
+        if (tTemp == null)
+        {
+            int randomIndex = Random.Range(0, ts.Length);
+            tTemp = ts[randomIndex];
+        }
+
+        return tTemp;
+    }
+
     public virtual bool IsCloseEnoughToPos(Vector3 endPos) //använder tid för att inte försöka för evigt
     {
         //if (!agent.hasPath)
@@ -728,12 +758,16 @@ public class AgentBase : AIBase {
     }
     public virtual Transform CheckForBetterTarget(float d)
     {
+        if(GetNrAttackers() > 0)
+        {
+            return null;
+        }
         Transform[] potTargets = ScanEnemies(attackRange);
         if(potTargets == null)
         {
             return null;
         }
-
+        //SortTransformsByDistance(ref potTargets);
         Transform tTemp = ClosestTransform(potTargets);
 
         if (GetTargetDistance() > GetDistanceToTransform(tTemp))

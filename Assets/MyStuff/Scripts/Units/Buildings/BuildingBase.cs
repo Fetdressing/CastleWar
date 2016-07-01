@@ -11,6 +11,7 @@ public class BuildingBase : AIBase {
 
     public override void Attacked(Transform attacker)
     {
+        base.Attacked(attacker);
         attackedCount++;
         if(attackedCount > 3) //performance bara
         {

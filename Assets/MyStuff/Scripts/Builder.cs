@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Selector))]
 public class Builder : MonoBehaviour {
     public GameObject uiBuilderCanvas;
     public GameObject buildingPanel;
-    public GameObject buildingBottom;
 
     public int startResources = 100;
     private int currResources;
@@ -33,6 +34,7 @@ public class Builder : MonoBehaviour {
         for(int i = 0; i < buildings.Length; i++)
         {
             buildings[i].placementShowObj = Instantiate(buildings[i].placementObject);
+            buildings[i].index = i; //ge dem sina indexes så att rätt torn väljs till rätt bild
         }
         ChangeBuildingIndex(1);
         GenerateBuildingUI();
@@ -41,13 +43,9 @@ public class Builder : MonoBehaviour {
     // Update is called once per frame
     void Update ()
     {
-        if(Input.GetKeyDown(KeyCode.UpArrow))
+        if(Input.GetKeyDown(KeyCode.Escape))
         {
-            ChangeBuildingIndex(currBuildingIndex+1);
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            ChangeBuildingIndex(currBuildingIndex-1);
+            ChangeBuildingIndex(10000);
         }
 
         if (currBuildingIndex < buildings.Length)
@@ -136,21 +134,27 @@ public class Builder : MonoBehaviour {
     [System.Serializable]
     public struct Building
     {
+        [HideInInspector]
+        public int index; //så man kan matcha torn med bild
+
         public GameObject spawnObject;
         public GameObject placementObject;
         [HideInInspector]
         public GameObject placementShowObj;
-        public Sprite uiImage;
         public int cost;
+
+        public Sprite uiImage;
+        public GameObject buildingBottom;
         //public float buildingPlacementSize;
     }
 
 
     void GenerateBuildingUI()
     {
-        for(int i = 0; i < 9; i++)
+        for(int i = 0; i < buildings.Length; i++)
         {
-            GameObject tempB = Instantiate(buildingBottom.gameObject);
+            GameObject tempB = Instantiate(buildings[i].buildingBottom.gameObject);
+            tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(0); });
             tempB.transform.SetParent(buildingPanel.transform, false); //positionera dem på nått nice sett!
         }
     }

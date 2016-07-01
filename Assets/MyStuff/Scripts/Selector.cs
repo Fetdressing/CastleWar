@@ -496,7 +496,12 @@ public class Selector : MonoBehaviour {
             }
             Vector3 movePosTemp = new Vector3(posi.x + (pX * ht[pI].unitSize * movePositionsMult), posi.y, posi.z + (pY * ht[pI].unitSize * movePositionsMult)); //*movePositionsMult så den ska vara i lämpligt mått
             movePositions.Add(movePosTemp);
-            pX++;
+
+            if (t[pI].GetComponent<BuildingBase>() == null) //byggnader ska inte ta plats i formationen
+            {
+                pX++;
+            }
+
             pI++;
         }
 
