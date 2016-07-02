@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
+    public int initializedTimes = 0;
+    [HideInInspector]
     public static long nrAI = 0;
     public long id; //denna går inte att ändras från editor, eller den skrivs över ändå. Bara för att ha koll på den
     [HideInInspector]
@@ -45,6 +47,8 @@ public abstract class AIBase : MonoBehaviour {
 
     public virtual void Init()
     {
+        initializedTimes++;
+
         id = nrAI;
         nrAI++;
         thisTransform = this.transform;

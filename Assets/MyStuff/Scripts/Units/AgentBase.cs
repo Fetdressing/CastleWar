@@ -219,7 +219,7 @@ public class AgentBase : AIBase {
             return;
         }
 
-        if(target != null && targetBase != null && targetBase.GetNrAttackers() < (int)(nrAcceptedAttackersOnTarget)) //det target jag har nu är nog inte så fel
+        if(target != null && targetBase != null && targetBase.GetNrAttackers() < nrAcceptedAttackersOnTarget) //det target jag har nu är nog inte så fel
         {
             return;
         }

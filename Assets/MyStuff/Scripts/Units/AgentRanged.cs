@@ -68,14 +68,6 @@ public class AgentRanged : AgentBase {
     {
         base.Init();
 
-        for(int i = 0; i < projectilePoolSize; i++)
-        {
-            GameObject tempO = Instantiate(projectile.gameObject) as GameObject;
-            tempO.GetComponent<Projectile>().Init(enemyLayers, friendlyLayers, thisTransform);
-            projectilePool.Add(tempO.gameObject);
-        }
-
-
         for (int i = 0; i < friendlyLayers.Count; i++)
         {
             layerMaskLOSCheck |= (1 << LayerMask.NameToLayer(friendlyLayers[i])); //lägg till friendly layers
@@ -88,6 +80,17 @@ public class AgentRanged : AgentBase {
         layerMaskLOSCheck |= (1 << LayerMask.NameToLayer("Terrain"));
         layerMaskLOSCheckFriendlyExcluded |= (1 << LayerMask.NameToLayer("Terrain"));
 
+
+        if (initializedTimes > 1)
+        {
+            return;
+        }
+        for (int i = 0; i < projectilePoolSize; i++)
+        {
+            GameObject tempO = Instantiate(projectile.gameObject) as GameObject;
+            tempO.GetComponent<Projectile>().Init(enemyLayers, friendlyLayers, thisTransform);
+            projectilePool.Add(tempO.gameObject);
+        }
         //layerMaskLOSCheckFriendlyExcluded = layerMaskLOSCheck; //set denna innan så att den får med alla friendly layers
         //for (int i = 0; i < friendlyLayers.Count; i++)
         //{

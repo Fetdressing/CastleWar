@@ -14,8 +14,12 @@ public class SpawnBuilding : BuildingBase {
     public override void Init()
     {
         base.Init();
-        CreateObjectPool();
 
+        if (initializedTimes > 1)
+        {
+            return;
+        }
+        CreateObjectPool();
         StartCoroutine(Spawn());
     }
 
@@ -30,7 +34,7 @@ public class SpawnBuilding : BuildingBase {
     }
 
     void Start () {
-        //Init();
+        Init();
 	}
 
     void Awake()
@@ -39,7 +43,7 @@ public class SpawnBuilding : BuildingBase {
     }
 
     void CreateObjectPool()
-    {
+    {        
         for (int i = 0; i < maxUnitsOut; i++)
         {
             GameObject temp = Instantiate(spawnUnit.gameObject);
