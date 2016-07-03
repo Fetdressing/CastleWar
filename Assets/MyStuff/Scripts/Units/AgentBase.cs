@@ -491,7 +491,7 @@ public class AgentBase : AIBase {
             }
             else
             {
-                if (GetStartPointDistance() > 1.5f) //så att den inte ska jucka
+                if (GetStartPointDistance() > 1.5f || !IsCloseEnoughToPos(startPos)) //så att den inte ska jucka
                 {
                     SetDestination(startPos);
                 }
@@ -596,7 +596,7 @@ public class AgentBase : AIBase {
         }
     }
 
-    public virtual void InvestigatingUpdate() //HÄR ÄR FELET!, se över denna, lite oklart när de ger upp chasen o återvänder hem
+    public virtual void InvestigatingUpdate()
     {
         if (target == null && ignoreSurrounding == false)
         {
@@ -656,7 +656,7 @@ public class AgentBase : AIBase {
                 ignoreSurrounding = false;
                 target = null;
             }
-            else if (IsCloseEnoughToPos(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
+            else if (HasReachedPosition(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
             {
                 //Debug.Log("GO home!");
                 Move(startPos);
