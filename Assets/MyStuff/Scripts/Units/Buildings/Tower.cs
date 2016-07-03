@@ -42,8 +42,6 @@ public class Tower : BuildingBase {
     public List<Transform> targetList = new List<Transform>();
 
     [HideInInspector]
-    public Transform target;
-    [HideInInspector]
     public Health targetHealth;
     [HideInInspector]
     public AIBase targetBase;

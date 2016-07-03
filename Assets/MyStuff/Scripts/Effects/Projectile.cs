@@ -123,7 +123,7 @@ public class Projectile : MonoBehaviour {
 
         if(collidingUnit.gameObject.layer == attackerT.gameObject.layer) //attackera en från samma team
         {
-            if (friendlyFire == true)
+            if (friendlyFire == true && collidingUnit.transform == targetE) //om man attackerar allierad så ska den bara träffa just de targetet
             {
                 collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                 if (notifyAttacked)
@@ -141,7 +141,7 @@ public class Projectile : MonoBehaviour {
         {
             if (collidingUnit.gameObject.layer == LayerMask.NameToLayer(friendlyLayers[i]))
             {
-                if (friendlyFire == true)
+                if (friendlyFire == true && collidingUnit.transform == targetE) //om man attackerar allierad så ska den bara träffa just de targetet
                 {
                     collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
                     if (notifyAttacked)

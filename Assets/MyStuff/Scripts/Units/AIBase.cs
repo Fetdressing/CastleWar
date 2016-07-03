@@ -10,6 +10,8 @@ public abstract class AIBase : MonoBehaviour {
     public long id; //denna går inte att ändras från editor, eller den skrivs över ändå. Bara för att ha koll på den
     [HideInInspector]
     public Transform thisTransform;
+    [HideInInspector]
+    public Transform target;
 
     [HideInInspector]
     public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
@@ -304,7 +306,11 @@ public abstract class AIBase : MonoBehaviour {
             attackerIDs.Add(attackerID);
             //int savedIndex = attackerIDs.Count;
             yield return new WaitForSeconds(5);
-            attackerIDs.Remove(attackerID);
+            //måste kolla ifall den fortfarande attackera mig
+            if (attacker != null && attacker.GetComponent<AIBase>().target != thisTransform)
+            {
+                attackerIDs.Remove(attackerID);
+            }
         }
     }
     public int GetNrAttackers()

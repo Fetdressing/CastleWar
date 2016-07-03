@@ -19,7 +19,6 @@ public class AgentBase : AIBase {
     [HideInInspector]
     public float temporaryAggroDistance = 0; //används när nått target skjuter långt
     //[HideInInspector]public List<Target> potTargets = new List<Target>(); //håller alla targets som kan vara, sen får man kolla vilka som kan nås och vilken aggro de har
-    [HideInInspector]public Transform target;
     [HideInInspector]public AIBase targetBase;
     [HideInInspector]public Health targetHealth;
     [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
@@ -299,6 +298,7 @@ public class AgentBase : AIBase {
     {
         if (!IsActive())
             return;
+        target = null;
         ResetPath();
         state = UnitState.AttackMoving;
         agent.avoidancePriority = 1;
@@ -514,6 +514,7 @@ public class AgentBase : AIBase {
                 if (AttackTarget() == false) //target död?
                 {
                     target = null;
+                    AttackMove(startPos); //hm kan bli knas om den bara flyttar längre o längre ut
                 }
             }
             else
@@ -526,7 +527,7 @@ public class AgentBase : AIBase {
 
     public virtual void AttackMovingUpdate()
     {
-        if (target == null && ignoreSurrounding == false)
+        if (target == null)
         {
             tempTargets = ScanEnemies(aggroDistance);
             if (tempTargets != null && tempTargets.Length != 0)
@@ -540,6 +541,16 @@ public class AgentBase : AIBase {
             }
         }
 
+        if (GetDistanceToPosition(movePos) < 1.5f) //kom fram
+        {
+            ExecuteNextCommand();
+            return;
+        }
+        else if (target == null && IsCloseEnoughToPos(movePos)) //den får inte vara klar bara för att den råkar passera punkten när den jagar ett target
+        {
+            ExecuteNextCommand();
+            return;
+        }
 
         if (target != null)
         {
@@ -552,37 +563,26 @@ public class AgentBase : AIBase {
                 }
             }
 
-            if (GetTargetDistance() < aggroDistance * 1.05f || (startChaseTime + chaseTimeNormal) > Time.time)
+            bool continueChaseTarget = true; //flyttar ju inte på sig efter de dödat target??
+            if (GetTargetDistance() < aggroDistance * 1.05f)
             {
-                //Debug.Log("Attack");
-                if(AttackTarget() == false)
+                if ((startChaseTime + chaseTimeNormal) > Time.time)
                 {
-                    target = null;
+                    if (AttackTarget() == false)
+                    {
+                        target = null;
+                        //AttackMove(movePos);
+                    }
                 }
+                else continueChaseTarget = false;
             }
-            else
+            else continueChaseTarget = false;
+
+            if(continueChaseTarget == false)
             {
                 target = null;
-                SetDestination(startPos2); //återvänd till pathen
-                ignoreSurrounding = true;
+                SetDestination(movePos);
             }
-        }
-
-        if (ignoreSurrounding && GetStartPointDistance2() < attackRange) //kommit tillbaks till pathen -> fortsätt attackmove!
-        {
-            ignoreSurrounding = false;
-        }
-
-
-        if (agent.pathPending) //så agent.remainingDistance funkar
-        { }
-        else if (GetMovePosDistance() < 1.5f || agent.remainingDistance < 1.5f) //kom fram
-        {
-            ExecuteNextCommand();
-        }
-        else if (target == null && IsCloseEnoughToPos(movePos)) //den får inte vara klar bara för att den råkar passera punkten när den jagar ett target
-        {
-            ExecuteNextCommand();
         }
     }
 
@@ -605,16 +605,11 @@ public class AgentBase : AIBase {
             {
                 NewTarget(GetBestTarget(tempTargets));
                 startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin investigation efter den jagat
-                //AddCommandToList(startPos2, UnitState.Moving); //dessa blir mega stackade!!!!!!!!!!!!!!
-                //AddCommandToList(movePos, UnitState.Investigating); //fortsätt där den slutade
             }
-            else
+            else //hittade inget target, så fortsätt med mitt mål
             {
-                if (GetMovePosDistance() > attackRange) //så att den inte ska jucka
-                {
-                    SetDestination(movePos);
-                }
-                else //återvänd hem igen
+                SetDestination(movePos);
+                if(HasReachedPosition(movePos)) //återvänd hem igen för jag kom fram
                 {
                     //Debug.Log("GO home!");
                     Move(startPos);
@@ -633,24 +628,25 @@ public class AgentBase : AIBase {
                 }
             }
 
+            bool continueChaseTarget = true;
             if (GetStartPointDistance2() < investigateDistance) //måste kunna återvända till där den var innan den påbörja pathen
             {
                 if ((startChaseTime + chaseTimeNormal) > Time.time) //denna skulle kunna påbörjas när den går utanför investigateDistance
                 {
                     if (AttackTarget() == false)
                     {
-                        target = null;
+                        continueChaseTarget = false;
                     }
                 }
+                else continueChaseTarget = false;
             }
-            else
+            else continueChaseTarget = false;
+
+            if(continueChaseTarget == false)
             {
                 target = null;
                 SetDestination(startPos2);
-                //Move(startPos2);
                 ignoreSurrounding = true;
-                //ExecuteNextCommand();
-                //SetDestination(startPos);
             }
         }
         else
@@ -658,9 +654,9 @@ public class AgentBase : AIBase {
             if (ignoreSurrounding && IsCloseEnoughToPos(startPos2)) //kommit tillbaks till pathen -> fortsätt investigate!
             {
                 ignoreSurrounding = false;
+                target = null;
             }
-
-            if (IsCloseEnoughToPos(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
+            else if (IsCloseEnoughToPos(movePos)) //så att den inte ska jucka, när jag nått target så dra hem igen!
             {
                 //Debug.Log("GO home!");
                 Move(startPos);
@@ -862,6 +858,23 @@ public class AgentBase : AIBase {
             }
         }
     }
+    public bool HasReachedPosition(Vector3 pos) //krävs att man har en path
+    {
+        agent.SetDestination(pos);
+        if (GetDistanceToPosition(pos) < 1.5f)
+        {
+            return true;
+        }
+        if (agent.pathPending) //så agent.remainingDistance funkar (den är inte klar med o beräkna så vänta lite)
+        {
+            return false;
+        }
+        if (agent.remainingDistance < 1.5f)
+        {
+            return true;
+        }
+        return false;
+    }
 
     public virtual bool LineOfSight() //has LOS to t?
     {
@@ -947,3 +960,74 @@ public struct Target
         aggro = a;
     }
 }
+
+
+//public virtual void AttackMovingUpdate()
+//{
+//    if (target == null && ignoreSurrounding == false)
+//    {
+//        tempTargets = ScanEnemies(aggroDistance);
+//        if (tempTargets != null && tempTargets.Length != 0)
+//        {
+//            NewTarget(GetBestTarget(tempTargets));
+//            startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin path efter den jagat
+//        }
+//        else //inga targets, återvänd till pathen typ
+//        {
+//            SetDestination(movePos);
+//        }
+//    }
+
+
+//    if (target != null)
+//    {
+//        if (GetTargetDistance() > attackRange * 1.5f) //check for closer target
+//        {
+//            Transform potTarget = CheckForBetterTarget(attackRange);
+//            if (potTarget != null)
+//            {
+//                NewTarget(potTarget);
+//            }
+//        }
+
+//        bool continueChaseTarget = true; //flyttar ju inte på sig efter de dödat target??
+//        if (GetTargetDistance() < aggroDistance * 1.05f)
+//        {
+//            if ((startChaseTime + chaseTimeNormal) > Time.time)
+//            {
+//                if (AttackTarget() == false)
+//                {
+//                    target = null;
+//                    //AttackMove(movePos);
+//                }
+//            }
+//            else continueChaseTarget = false;
+//        }
+//        else continueChaseTarget = false;
+
+//        if (continueChaseTarget == false)
+//        {
+//            target = null;
+//            SetDestination(startPos2); //återvänd till pathen
+//            ignoreSurrounding = true;
+//        }
+//    }
+
+//    if (ignoreSurrounding && HasReachedPosition(startPos2) || IsCloseEnoughToPos(startPos2)) //kommit tillbaks till pathen -> fortsätt attackmove!
+//    {
+//        ignoreSurrounding = false;
+//        //AttackMove(movePos);
+//    }
+
+//    if (ignoreSurrounding == false) //så att agent.remainingDistance inte går igång för någon annan position än attackmove positionen
+//    {
+//        if (HasReachedPosition(movePos)) //kom fram
+//        {
+//            ExecuteNextCommand();
+//        }
+//        else if (target == null && IsCloseEnoughToPos(movePos)) //den får inte vara klar bara för att den råkar passera punkten när den jagar ett target
+//        {
+//            ExecuteNextCommand();
+//        }
+//    }
+//}
