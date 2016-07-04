@@ -81,6 +81,16 @@ public class AgentBase : AIBase {
 
     bool ignoreSurrounding = false; //används för att återta en path så att denne inte försöker jaga fiender hela tiden
 
+    [Header("animationH")]
+    public GameObject animationObject;
+    [HideInInspector]
+    public Animation animationH;
+
+    public AnimationClip idle;
+    public AnimationClip run;
+    public float loopAnimSpeed = 0.4f;
+    public AnimationClip[] attackA;
+
     //variables used in different states*****
 
     // Use this for initialization
@@ -108,6 +118,15 @@ public class AgentBase : AIBase {
         agent = thisTransform.GetComponent<NavMeshAgent>();
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
+        agent.angularSpeed = turnRatio * 110;
+
+        if(animationObject != null)
+        {
+            animationH = animationObject.GetComponent<Animation>();
+
+            animationH[run.name].speed = loopAnimSpeed;
+            animationH[idle.name].speed = loopAnimSpeed;
+        }
 
         InitializeStats();
 
@@ -128,6 +147,7 @@ public class AgentBase : AIBase {
 	void Update () {
         if (healthS.IsAlive() && thisTransform.gameObject.activeSelf == true)
         {
+            PlayStateAnimations();
             if (target != null)
             {
                 targetDistance = GetTargetDistance();
@@ -174,6 +194,10 @@ public class AgentBase : AIBase {
         {
             if (attackSpeedTimer <= Time.time)
             {
+                int rAnim = Random.Range(0, attackA.Length);
+                animationH[attackA[0].name].layer = 1;
+                animationH[attackA[0].name].weight = 1;
+                animationH.Play(attackA[0].name);
                 attackSpeedTimer = attackSpeed + Time.time;
                 int damageRoll = Random.Range(damageMIN, damageMAX);
 
@@ -947,6 +971,23 @@ public class AgentBase : AIBase {
 
         return false;
     }
+
+    public void PlayStateAnimations()
+    {
+        if (agent.hasPath == true)
+        {
+            animationH[run.name].weight = 0.2f;
+            animationH[run.name].layer = 10;
+            animationH.CrossFade(run.name);
+        }
+        else
+        {
+            animationH[idle.name].weight = 0.2f;
+            animationH[idle.name].layer = 10;
+            animationH.CrossFade(idle.name);
+        }
+    }
+
 }
 
 public struct Target
@@ -960,7 +1001,6 @@ public struct Target
         aggro = a;
     }
 }
-
 
 //public virtual void AttackMovingUpdate()
 //{

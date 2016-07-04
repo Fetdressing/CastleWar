@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
     private Transform thisTransform;
-    private Renderer thisRenderer;
+    public Renderer thisRenderer;
     private Material thisMaterial;
     public float unitSize = 1;
 
@@ -49,7 +49,10 @@ public class Health : MonoBehaviour {
     public void Init()
     {
         thisTransform = this.transform;
-        thisRenderer = thisTransform.GetComponent<Renderer>();
+        if (thisRenderer == null)
+        {
+            thisRenderer = thisTransform.GetComponent<Renderer>();
+        }
         thisMaterial = thisRenderer.material;
         mainCamera = Camera.main;
 

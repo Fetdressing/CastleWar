@@ -1,0 +1,224 @@
+fileFormatVersion: 2
+guid: 8d29f629b286be84ea08d8e0933653dc
+timeCreated: 1467653554
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Gnoll
+    100002: GnollShield
+    100004: //RootNode
+    100006: GnollSword
+    100008: HeadJ
+    100010: joint1
+    100012: joint10
+    100014: joint12
+    100016: joint13
+    100018: joint14
+    100020: joint16
+    100022: joint17
+    100024: joint18
+    100026: joint20
+    100028: joint21
+    100030: joint22
+    100032: joint24
+    100034: joint25
+    100036: joint3
+    100038: joint4
+    100040: joint6
+    100042: joint8
+    100044: joint9
+    100046: LeftArmJ
+    100048: LeftArmJ 1
+    100050: LeftLegJ
+    100052: RightArmJ
+    100054: RightLegJ
+    100056: Tailj
+    400000: Gnoll
+    400002: GnollShield
+    400004: //RootNode
+    400006: GnollSword
+    400008: HeadJ
+    400010: joint1
+    400012: joint10
+    400014: joint12
+    400016: joint13
+    400018: joint14
+    400020: joint16
+    400022: joint17
+    400024: joint18
+    400026: joint20
+    400028: joint21
+    400030: joint22
+    400032: joint24
+    400034: joint25
+    400036: joint3
+    400038: joint4
+    400040: joint6
+    400042: joint8
+    400044: joint9
+    400046: LeftArmJ
+    400048: LeftArmJ 1
+    400050: LeftLegJ
+    400052: RightArmJ
+    400054: RightLegJ
+    400056: Tailj
+    4300000: Gnoll
+    4300002: GnollSword
+    4300004: GnollShield
+    7400000: GnollShield_Attack1
+    9500000: //RootNode
+    11100000: //RootNode
+    13700000: Gnoll
+    13700002: GnollShield
+    13700004: GnollSword
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 1
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: GnollShield_Attack1
+      takeName: Take 001
+      firstFrame: 11
+      lastFrame: 20
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Gnoll
+        weight: 1
+      - path: GnollShield
+        weight: 1
+      - path: GnollSword
+        weight: 1
+      - path: joint1
+        weight: 1
+      - path: joint1/LeftArmJ
+        weight: 1
+      - path: joint1/LeftArmJ/joint3
+        weight: 1
+      - path: joint1/LeftArmJ/joint3/joint4
+        weight: 1
+      - path: joint1/LeftArmJ/joint3/joint4/HeadJ
+        weight: 1
+      - path: joint1/LeftArmJ/joint3/joint4/HeadJ/joint6
+        weight: 1
+      - path: joint1/LeftArmJ/LeftArmJ 1
+        weight: 1
+      - path: joint1/LeftArmJ/LeftArmJ 1/joint8
+        weight: 1
+      - path: joint1/LeftArmJ/LeftArmJ 1/joint8/joint9
+        weight: 1
+      - path: joint1/LeftArmJ/LeftArmJ 1/joint8/joint9/joint10
+        weight: 1
+      - path: joint1/LeftArmJ/RightArmJ
+        weight: 1
+      - path: joint1/LeftArmJ/RightArmJ/joint12
+        weight: 1
+      - path: joint1/LeftArmJ/RightArmJ/joint12/joint13
+        weight: 1
+      - path: joint1/LeftArmJ/RightArmJ/joint12/joint13/joint14
+        weight: 1
+      - path: joint1/LeftLegJ
+        weight: 1
+      - path: joint1/LeftLegJ/joint20
+        weight: 1
+      - path: joint1/LeftLegJ/joint20/joint21
+        weight: 1
+      - path: joint1/LeftLegJ/joint20/joint21/joint22
+        weight: 1
+      - path: joint1/RightLegJ
+        weight: 1
+      - path: joint1/RightLegJ/joint16
+        weight: 1
+      - path: joint1/RightLegJ/joint16/joint17
+        weight: 1
+      - path: joint1/RightLegJ/joint16/joint17/joint18
+        weight: 1
+      - path: joint1/Tailj
+        weight: 1
+      - path: joint1/Tailj/joint24
+        weight: 1
+      - path: joint1/Tailj/joint24/joint25
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 100
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
