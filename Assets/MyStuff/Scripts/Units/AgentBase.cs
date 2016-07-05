@@ -651,21 +651,20 @@ public class AgentBase : AIBase {
                     NewTarget(potTarget);
                 }
             }
-
+            
             bool continueChaseTarget = true;
-            if (GetStartPointDistance2() < investigateDistance) //måste kunna återvända till där den var innan den påbörja pathen
+            if (AttackTarget() == false)
             {
-                if ((startChaseTime + chaseTimeNormal) > Time.time) //denna skulle kunna påbörjas när den går utanför investigateDistance
-                {
-                    if (AttackTarget() == false)
-                    {
-                        continueChaseTarget = false;
-                    }
-                }
-                else continueChaseTarget = false;
+                continueChaseTarget = false;
             }
-            else continueChaseTarget = false;
-
+            if (GetStartPointDistance2() > investigateDistance) //måste kunna återvända till där den var innan den påbörja pathen
+            {
+                if ((startChaseTime + chaseTimeNormal) < Time.time) //denna skulle kunna påbörjas när den går utanför investigateDistance
+                {
+                    continueChaseTarget = false;
+                }
+            }
+            
             if(continueChaseTarget == false)
             {
                 target = null;
