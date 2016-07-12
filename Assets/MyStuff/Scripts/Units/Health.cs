@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
     private Transform thisTransform;
-    public Renderer thisRenderer;
-    private Material thisMaterial;
+    [HideInInspector]
+    public Renderer[] thisRenderer;
+    private List<Material> thisMaterial = new List<Material>();
     public float unitSize = 1;
 
     [HideInInspector]
@@ -49,11 +51,19 @@ public class Health : MonoBehaviour {
     public void Init()
     {
         thisTransform = this.transform;
-        if (thisRenderer == null)
+        thisRenderer = GetComponentsInChildren<Renderer>();
+        //if (thisRenderer == null)
+        //{
+        //    thisRenderer = thisTransform.GetComponent<Renderer>();
+        //}
+        int i = 0;
+        foreach (Renderer re in thisRenderer)
         {
-            thisRenderer = thisTransform.GetComponent<Renderer>();
+            //Debug.Log(re.material.name);
+            thisMaterial.Add(re.material);
+            i++;
         }
-        thisMaterial = thisRenderer.material;
+        
         mainCamera = Camera.main;
 
         maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
@@ -74,7 +84,10 @@ public class Health : MonoBehaviour {
 
         ToggleSelMarker(false);
 
-        thisRenderer.material = thisMaterial;
+        for(int i = 0; i < thisRenderer.Length; i++)
+        {
+            thisRenderer[i].material = thisMaterial[i];
+        }
     }
 	
 	// Update is called once per frame
@@ -184,8 +197,15 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
 
     IEnumerator MarkMaterial(Material m, float time)
     {
-        thisRenderer.material = m;
+        //thisRenderer.material = m;
+        for (int i = 0; i < thisRenderer.Length; i++)
+        {
+            thisRenderer[i].material = m;
+        }
         yield return new WaitForSeconds(time);
-        thisRenderer.material = thisMaterial;
+        for (int i = 0; i < thisRenderer.Length; i++)
+        {
+            thisRenderer[i].material = thisMaterial[i];
+        }
     }
 }
