@@ -93,6 +93,8 @@ public class AgentBase : AIBase {
     public float attackAnimSpeed = 0.3f;
     public float attack_applyDMG_Time = 0.2f; //när på attack animationen som skadan ska applyas
     [HideInInspector]
+    public float attack_Timer_Begun;
+    [HideInInspector]
     public bool isPerformingAttack = false;
     [HideInInspector]
     public bool hasAppliedDamage = false; //när skadan har skickats till fienden, så att den inte skickas flera gånger under samma animation
@@ -205,9 +207,9 @@ public class AgentBase : AIBase {
 
         if(isPerformingAttack == true) //appliar skadan två gånger? varför??
         {
-            float modTime = animationH[attackA[lastAttackAnimIndex].name].time / animationH[attackA[lastAttackAnimIndex].name].length;
+            //float modTime = animationH[attackA[lastAttackAnimIndex].name].time / animationH[attackA[lastAttackAnimIndex].name].length; //denna blir felet
             //Debug.Log(animationH[attackA[lastAttackAnimIndex].name].time.ToString());
-            if (attack_applyDMG_Time <= animationH[attackA[lastAttackAnimIndex].name].time * 10 || animationH[attackA[lastAttackAnimIndex].name].time >= animationH[attackA[lastAttackAnimIndex].name].length) //kolla ifall skadan ska applyas
+            if (attack_applyDMG_Time*0.1f <= (Time.time - attack_Timer_Begun)) //kolla ifall skadan ska applyas
             { // * 10 så den är i sekunder
                 if (hasAppliedDamage == false)
                 {
@@ -229,8 +231,9 @@ public class AgentBase : AIBase {
                     targetBase.Attacked(thisTransform); //notera att jag attackerat honom!
                 }
             }
-            if(modTime >= 0.9f) //kolla ifall animationen nästan är klar
+            if(hasAppliedDamage == true) //kolla ifall animationen nästan är klar och så att den har gjort skada
             {
+                //Debug.Log(animationH[attackA[lastAttackAnimIndex].name].time.ToString());
                 isPerformingAttack = false;
             }
         }
@@ -246,8 +249,10 @@ public class AgentBase : AIBase {
                 lastAttackAnimIndex = Random.Range(0, attackA.Length);
                 //animationH[attackA[lastAttackAnimIndex].name].layer = 1;
                 //animationH[attackA[lastAttackAnimIndex].name].weight = 1;
+                animationH[attackA[lastAttackAnimIndex].name].time = 0.0f;
                 animationH.Play(attackA[lastAttackAnimIndex].name);
-                attackSpeedTimer = attackSpeed + Time.time;               
+                attackSpeedTimer = attackSpeed + Time.time;
+                attack_Timer_Begun = Time.time;        
             }
         }
         if (attackRange * 0.8f < (targetDistance-targetHealth.unitSize)) //marginal med jue
