@@ -58,7 +58,7 @@ public class AgentBase : AIBase {
     //almost reach target**
 
     //look angle threshhold, hur mycket den måste titta på fienden för att kunna attackera
-    private float lookAngleThreshhold = 25;
+    private float lookAngleThreshhold = 15;
     public float turnRatio = 2;
 
     public LayerMask layerMaskLOSCheck;
@@ -90,6 +90,14 @@ public class AgentBase : AIBase {
     public AnimationClip run;
     public float loopAnimSpeed = 0.4f;
     public AnimationClip[] attackA;
+    public float attackAnimSpeed = 0.3f;
+    public float attack_applyDMG_Time = 0.2f; //när på attack animationen som skadan ska applyas
+    [HideInInspector]
+    public bool isPerformingAttack = false;
+    [HideInInspector]
+    public bool hasAppliedDamage = false; //när skadan har skickats till fienden, så att den inte skickas flera gånger under samma animation
+    [HideInInspector]
+    public int lastAttackAnimIndex; //den animationen i listan som senast spelades
 
     //variables used in different states*****
 
@@ -110,6 +118,9 @@ public class AgentBase : AIBase {
         closeToEnd = false;
         ignoreSurrounding = false;
         Guard();
+
+        isPerformingAttack = false;
+        hasAppliedDamage = false;
     }
 
     public override void Init()
@@ -126,6 +137,10 @@ public class AgentBase : AIBase {
 
             animationH[run.name].speed = loopAnimSpeed;
             animationH[idle.name].speed = loopAnimSpeed;
+            for (int i = 0; i < attackA.Length; i++)
+            {
+                animationH[attackA[i].name].speed = attackAnimSpeed;
+            }
         }
 
         InitializeStats();
@@ -188,32 +203,51 @@ public class AgentBase : AIBase {
             return targetAlive;
         }
 
-        bool isFacingTarget = IsFacingTransform(target);
-
-        if (attackRange > (targetDistance-targetHealth.unitSize) && isFacingTarget) //kolla så att target står framför mig oxå
+        if(isPerformingAttack == true) //appliar skadan två gånger? varför??
         {
-            if (attackSpeedTimer <= Time.time)
-            {
-                int rAnim = Random.Range(0, attackA.Length);
-                animationH[attackA[0].name].layer = 1;
-                animationH[attackA[0].name].weight = 1;
-                animationH.Play(attackA[0].name);
-                attackSpeedTimer = attackSpeed + Time.time;
-                int damageRoll = Random.Range(damageMIN, damageMAX);
+            float modTime = animationH[attackA[lastAttackAnimIndex].name].time / animationH[attackA[lastAttackAnimIndex].name].length;
+            //Debug.Log(animationH[attackA[lastAttackAnimIndex].name].time.ToString());
+            if (attack_applyDMG_Time <= animationH[attackA[lastAttackAnimIndex].name].time * 10 || animationH[attackA[lastAttackAnimIndex].name].time >= animationH[attackA[lastAttackAnimIndex].name].length) //kolla ifall skadan ska applyas
+            { // * 10 så den är i sekunder
+                if (hasAppliedDamage == false)
+                {
+                    hasAppliedDamage = true;
+                    int damageRoll = Random.Range(damageMIN, damageMAX);
 
-                if (targetHealth.AddHealth(-damageRoll)) //target överlevde attacken
-                {
-                    targetAlive = true;
-                }
-                else //target dog
-                {
-                    targetAlive = false;
+                    if (targetHealth.AddHealth(-damageRoll)) //target överlevde attacken
+                    {
+                        targetAlive = true;
+                    }
+                    else //target dog
+                    {
+                        targetAlive = false;
+                    }
                 }
 
                 if (targetBase != null)
                 {
                     targetBase.Attacked(thisTransform); //notera att jag attackerat honom!
                 }
+            }
+            if(modTime >= 0.9f) //kolla ifall animationen nästan är klar
+            {
+                isPerformingAttack = false;
+            }
+        }
+
+        bool isFacingTarget = IsFacingTransform(target);
+
+        if (attackRange > (targetDistance-targetHealth.unitSize) && isFacingTarget && isPerformingAttack == false) //kolla så att target står framför mig oxå
+        {
+            if (attackSpeedTimer <= Time.time)
+            {
+                isPerformingAttack = true; //påbörja attacken
+                hasAppliedDamage = false;
+                lastAttackAnimIndex = Random.Range(0, attackA.Length);
+                //animationH[attackA[lastAttackAnimIndex].name].layer = 1;
+                //animationH[attackA[lastAttackAnimIndex].name].weight = 1;
+                animationH.Play(attackA[lastAttackAnimIndex].name);
+                attackSpeedTimer = attackSpeed + Time.time;               
             }
         }
         if (attackRange * 0.8f < (targetDistance-targetHealth.unitSize)) //marginal med jue

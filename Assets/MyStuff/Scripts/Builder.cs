@@ -191,4 +191,12 @@ public class Builder : MonoBehaviour {
             tempB.transform.SetParent(buildingPanel.transform, false); //positionera dem på nått nice sett!
         }
     }
+
+    public void ReportDeadUnit(Transform deadUnit, int resourceWorth)
+    {
+        if(selector.playerTeam != LayerMask.LayerToName(deadUnit.gameObject.layer))
+        {
+            AddResources(resourceWorth);
+        }
+    }
 }

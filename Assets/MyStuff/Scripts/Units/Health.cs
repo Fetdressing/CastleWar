@@ -37,6 +37,7 @@ public class Health : MonoBehaviour {
     public GameObject selectionMarkerObject;
 
     public bool destroyOnDeath = false;
+    public int resourceWorth = 5;
 
     // Use this for initialization
  //   void Start () {
@@ -152,6 +153,7 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
 
     public void Die()
     {
+        GameObject.FindGameObjectWithTag("PlayerHandler").GetComponent<Builder>().ReportDeadUnit(thisTransform, resourceWorth);
         if(destroyOnDeath == true)
         {
             if (thisTransform.GetComponent<AIBase>() != null)
