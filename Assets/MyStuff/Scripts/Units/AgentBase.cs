@@ -5,6 +5,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(AgentStats))]
+[RequireComponent(typeof(AudioSource))]
 public class AgentBase : AIBase {
     [HideInInspector]
     public UnitState state;
@@ -12,6 +13,7 @@ public class AgentBase : AIBase {
     [HideInInspector]public Health healthS;
     [HideInInspector]public AgentStats statsS;
     [HideInInspector]public NavMeshAgent agent;
+    [HideInInspector]public AudioSource audioSource;
 
     public float aggroDistance = 20;
     [HideInInspector]
@@ -81,7 +83,7 @@ public class AgentBase : AIBase {
 
     bool ignoreSurrounding = false; //används för att återta en path så att denne inte försöker jaga fiender hela tiden
 
-    [Header("animationH")]
+    [Header("Animation")]
     public GameObject animationObject;
     [HideInInspector]
     public Animation animationH;
@@ -90,7 +92,7 @@ public class AgentBase : AIBase {
     public AnimationClip run;
     public float loopAnimSpeed = 0.4f;
     public AnimationClip[] attackA;
-    public float attackAnimSpeed = 0.3f;
+    public float attackAnimSpeed = 0.3f; //speed of animation
     public float attack_applyDMG_Time = 0.2f; //när på attack animationen som skadan ska applyas
     [HideInInspector]
     public float attack_Timer_Begun;
@@ -100,6 +102,9 @@ public class AgentBase : AIBase {
     public bool hasAppliedDamage = false; //när skadan har skickats till fienden, så att den inte skickas flera gånger under samma animation
     [HideInInspector]
     public int lastAttackAnimIndex; //den animationen i listan som senast spelades
+
+    [Header("Audio")]
+    public AudioClip[] attackSounds;
 
     //variables used in different states*****
 
@@ -131,6 +136,8 @@ public class AgentBase : AIBase {
         agent = thisTransform.GetComponent<NavMeshAgent>();
         healthS = thisTransform.GetComponent<Health>();
         statsS = thisTransform.GetComponent<AgentStats>();
+        audioSource = thisTransform.GetComponent<AudioSource>();
+
         agent.angularSpeed = turnRatio * 110;
 
         if(animationObject != null)
@@ -209,10 +216,17 @@ public class AgentBase : AIBase {
         {
             //float modTime = animationH[attackA[lastAttackAnimIndex].name].time / animationH[attackA[lastAttackAnimIndex].name].length; //denna blir felet
             //Debug.Log(animationH[attackA[lastAttackAnimIndex].name].time.ToString());
-            if (attack_applyDMG_Time*0.1f <= (Time.time - attack_Timer_Begun)) //kolla ifall skadan ska applyas
+            if (attack_applyDMG_Time <= (Time.time - attack_Timer_Begun)) //kolla ifall skadan ska applyas
             { // * 10 så den är i sekunder
                 if (hasAppliedDamage == false)
                 {
+
+                    if (attackSounds.Length > 0)
+                    {
+                        int randomSound = Random.Range(0, attackSounds.Length);
+                        audioSource.PlayOneShot(attackSounds[randomSound]);
+                    }
+
                     hasAppliedDamage = true;
                     int damageRoll = Random.Range(damageMIN, damageMAX);
 
@@ -234,7 +248,7 @@ public class AgentBase : AIBase {
             if(hasAppliedDamage == true) //kolla ifall animationen nästan är klar och så att den har gjort skada
             {
                 //Debug.Log(animationH[attackA[lastAttackAnimIndex].name].time.ToString());
-                isPerformingAttack = false;
+                isPerformingAttack = false; //jag vill inte snubben ska missa damage för att denne är för långsam med sin animation
             }
         }
 
