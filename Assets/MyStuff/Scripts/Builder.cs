@@ -216,6 +216,12 @@ public class Builder : MonoBehaviour {
             GameObject tempB = Instantiate(structures[i].buildingBottom.gameObject) as GameObject;
             int indexB = i;
             tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
+
+            if (tempB.GetComponent<Image>().sprite != null)
+            {
+                tempB.GetComponent<Image>().sprite = structures[i].uiImage;
+            }
+
             tempB.transform.SetParent(structurePanel.transform, false); //positionera dem på nått nice sett!
         }
 
@@ -224,6 +230,12 @@ public class Builder : MonoBehaviour {
             GameObject tempB = Instantiate(towers[i].buildingBottom.gameObject) as GameObject;
             int indexB = i;
             tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
+
+            if (tempB.GetComponent<Image>().sprite != null)
+            {
+                tempB.GetComponent<Image>().sprite = towers[i].uiImage;
+            }
+
             tempB.transform.SetParent(towerPanel.transform, false); //positionera dem på nått nice sett!
         }
 
@@ -232,6 +244,12 @@ public class Builder : MonoBehaviour {
             GameObject tempB = Instantiate(specials[i].buildingBottom.gameObject) as GameObject;
             int indexB = i;
             tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
+
+            if (tempB.GetComponent<Image>().sprite != null)
+            {
+                tempB.GetComponent<Image>().sprite = specials[i].uiImage;
+            }
+
             tempB.transform.SetParent(specialPanel.transform, false); //positionera dem på nått nice sett!
         }
     }
