@@ -146,15 +146,22 @@ public class Tower : BuildingBase {
 
     public void NewTarget(Transform t)
     {
-        target = t;
-        targetHealth = target.GetComponent<Health>();
-        if (target.GetComponent<AIBase>() != null)
+        if (t != null)
         {
-            targetBase = target.GetComponent<AIBase>();
-        }
-        targetDistance = GetDistanceToTransform(target);
+            target = t;
+            targetHealth = target.GetComponent<Health>();
+            if (target.GetComponent<AIBase>() != null)
+            {
+                targetBase = target.GetComponent<AIBase>();
+            }
+            targetDistance = GetDistanceToTransform(target);
 
-        isFriendlyTarget = IsFriendly(t);
+            isFriendlyTarget = IsFriendly(t);
+        }
+        else
+        {
+            ExecuteNextCommand();
+        }
     }
 
     public virtual bool AttackTarget()
@@ -319,8 +326,9 @@ public class Tower : BuildingBase {
         //base.ExecuteNextCommand();
         if(targetList.Count > 0)
         {
-            NewTarget(targetList[0]);
+            Transform tempT = targetList[0];
             targetList.RemoveAt(0);
+            NewTarget(tempT);
             return true;
         }
         return false;

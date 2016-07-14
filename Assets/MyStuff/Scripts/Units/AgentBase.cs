@@ -577,7 +577,7 @@ public class AgentBase : AIBase {
 
         if (target != null)
         {
-            if (GetTargetDistance() > attackRange * 1.5f) //check for closer target
+            if (GetTargetDistance() > attackRange * 1.3f) //check for closer target
             {
                 Transform potTarget = CheckForBetterTarget(attackRange);
                 if (potTarget != null)
@@ -631,7 +631,7 @@ public class AgentBase : AIBase {
 
         if (target != null)
         {
-            if(GetTargetDistance() > attackRange * 1.5f) //check for closer target
+            if(GetTargetDistance() > attackRange * 1.3f) //check for closer target
             {
                 Transform potTarget = CheckForBetterTarget(attackRange);
                 if(potTarget != null)
@@ -845,11 +845,11 @@ public class AgentBase : AIBase {
             return null;
         }
         //SortTransformsByDistance(ref potTargets);
-        Transform tTemp = ClosestTransform(potTargets);
+        //Transform tTemp = ClosestTransform(potTargets); den är redan närmst på plats 0 i potTargets
 
-        if (GetTargetDistance() > GetDistanceToTransform(tTemp))
+        if (GetTargetDistance() > GetDistanceToTransform(potTargets[0]))
         {
-            return tTemp;
+            return potTargets[0];
         }
         return null;
     }

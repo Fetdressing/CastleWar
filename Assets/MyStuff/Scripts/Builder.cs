@@ -7,7 +7,11 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(Selector))]
 public class Builder : MonoBehaviour {
     public GameObject uiBuilderCanvas;
-    public GameObject buildingPanel;
+
+    //different building types
+    public GameObject structurePanel;
+    public GameObject towerPanel;
+    public GameObject specialPanel;
 
     public Text resourceDisplayer;
     public int startResources = 100;
@@ -18,7 +22,11 @@ public class Builder : MonoBehaviour {
     public Material invalidPlacementMat;
     public Material validPlacementMat;
 
-    public Building[] buildings;
+    private Building[] currentTypeBuildings; //den som är selectade av de undre
+    public Building[] structures;
+    public Building[] towers;
+    public Building[] specials;
+
     private int currBuildingIndex = 0;
     private Building currBuildingSel;
 
@@ -33,13 +41,11 @@ public class Builder : MonoBehaviour {
 
         selector = this.transform.GetComponent<Selector>();
 
-        for(int i = 0; i < buildings.Length; i++)
-        {
-            buildings[i].placementShowObj = Instantiate(buildings[i].placementObject);
-            buildings[i].index = i; //ge dem sina indexes så att rätt torn väljs till rätt bild
-        }
+
+        InstantiatePlacementShowObjects();
         ChangeBuildingIndex(100000);
         GenerateBuildingUI();
+        ChangeBuildingPanel(1); //set default panelen igång
     }
 
     // Update is called once per frame
@@ -50,9 +56,23 @@ public class Builder : MonoBehaviour {
             ChangeBuildingIndex(10000);
         }
 
-        if (currBuildingIndex < buildings.Length)
+
+        if(structurePanel.activeSelf == true) //hitta den typen som är vald just nu
         {
-            currBuildingSel = buildings[currBuildingIndex];
+            currentTypeBuildings = structures;
+        }
+        else if(towerPanel.activeSelf == true)
+        {
+            currentTypeBuildings = towers;
+        }
+        else if(specialPanel.activeSelf == true)
+        {
+            currentTypeBuildings = specials;
+        }
+
+        if (currBuildingIndex < currentTypeBuildings.Length)
+        {
+            currBuildingSel = currentTypeBuildings[currBuildingIndex];
 
             if (currBuildingSel.placementShowObj.activeSelf == false)
             {
@@ -155,9 +175,17 @@ public class Builder : MonoBehaviour {
         {
             i = 0;
         }
-        for(int it = 0; it < buildings.Length; it++)
+        for(int it = 0; it < structures.Length; it++)
         {
-            buildings[it].placementShowObj.SetActive(false);
+            structures[it].placementShowObj.SetActive(false);
+        }
+        for (int it = 0; it < towers.Length; it++)
+        {
+            towers[it].placementShowObj.SetActive(false);
+        }
+        for (int it = 0; it < specials.Length; it++)
+        {
+            specials[it].placementShowObj.SetActive(false);
         }
         currBuildingIndex = i;
         //Debug.Log(i.ToString());
@@ -183,12 +211,77 @@ public class Builder : MonoBehaviour {
 
     void GenerateBuildingUI()
     {
-        for(int i = 0; i < buildings.Length; i++)
+        for(int i = 0; i < structures.Length; i++)
         {
-            GameObject tempB = Instantiate(buildings[i].buildingBottom.gameObject) as GameObject;
+            GameObject tempB = Instantiate(structures[i].buildingBottom.gameObject) as GameObject;
             int indexB = i;
             tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
-            tempB.transform.SetParent(buildingPanel.transform, false); //positionera dem på nått nice sett!
+            tempB.transform.SetParent(structurePanel.transform, false); //positionera dem på nått nice sett!
+        }
+
+        for (int i = 0; i < towers.Length; i++)
+        {
+            GameObject tempB = Instantiate(towers[i].buildingBottom.gameObject) as GameObject;
+            int indexB = i;
+            tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
+            tempB.transform.SetParent(towerPanel.transform, false); //positionera dem på nått nice sett!
+        }
+
+        for (int i = 0; i < specials.Length; i++)
+        {
+            GameObject tempB = Instantiate(specials[i].buildingBottom.gameObject) as GameObject;
+            int indexB = i;
+            tempB.GetComponent<Button>().onClick.AddListener(() => { ChangeBuildingIndex(indexB); });
+            tempB.transform.SetParent(specialPanel.transform, false); //positionera dem på nått nice sett!
+        }
+    }
+
+    void InstantiatePlacementShowObjects()
+    {
+        for (int i = 0; i < structures.Length; i++)
+        {
+            structures[i].placementShowObj = Instantiate(structures[i].placementObject);
+            structures[i].index = i; //ge dem sina indexes så att rätt torn väljs till rätt bild
+        }
+
+        for (int i = 0; i < towers.Length; i++)
+        {
+            towers[i].placementShowObj = Instantiate(towers[i].placementObject);
+            towers[i].index = i; //ge dem sina indexes så att rätt torn väljs till rätt bild
+        }
+
+        for (int i = 0; i < specials.Length; i++)
+        {
+            specials[i].placementShowObj = Instantiate(specials[i].placementObject);
+            specials[i].index = i; //ge dem sina indexes så att rätt torn väljs till rätt bild
+        }
+    }
+
+    public void ChangeBuildingPanel(int i)
+    {
+        ChangeBuildingIndex(10000); //så den av-aktiverar den gamla panelens towerplacementobject
+        switch (i)
+        {
+            case 1:
+                structurePanel.SetActive(true);
+                towerPanel.SetActive(false);
+                specialPanel.SetActive(false);
+                break;
+            case 2:
+                structurePanel.SetActive(false);
+                towerPanel.SetActive(true);
+                specialPanel.SetActive(false);
+                break;
+            case 3:
+                structurePanel.SetActive(false);
+                towerPanel.SetActive(false);
+                specialPanel.SetActive(true);
+                break;
+            default:
+                structurePanel.SetActive(true);
+                towerPanel.SetActive(false);
+                specialPanel.SetActive(false);
+                break;
         }
     }
 
