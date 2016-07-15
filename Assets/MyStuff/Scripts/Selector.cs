@@ -26,7 +26,12 @@ public class Selector : MonoBehaviour {
     private Vector2 initialSelectionBoxAnchor = Vector2.zero;
     //selectionBox
 
+    //UI
     public GameObject unitInfoCanvas;
+    public Text currHealthText;
+    public Text maxHealthText;
+    public Text armorText;
+    public Text hpRegText;
 
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
@@ -90,6 +95,7 @@ public class Selector : MonoBehaviour {
             unitInfoCanvas.SetActive(false);
         }
         GetMoveState(); //behöver vara sist
+        UpdateUnitInfo();
     }
 
     Transform GetMouseTarget()
@@ -132,22 +138,25 @@ public class Selector : MonoBehaviour {
 
     void AddTarget(Transform newTarget)
     {
-        bool exists = false; //kolla så att den inte redan är med i listan
-        for (int i = 0; i < targets.Count; i++)
+        if (newTarget != null)
         {
-            //Debug.Log(targets[i].ToString());
-            if(newTarget == targets[i])
+            bool exists = false; //kolla så att den inte redan är med i listan
+            for (int i = 0; i < targets.Count; i++)
             {
-                exists = true;
+                //Debug.Log(targets[i].ToString());
+                if (newTarget == targets[i])
+                {
+                    exists = true;
+                }
             }
-        }
 
-        if (exists == false)
-        {
-            Health tempHealth = newTarget.GetComponent<Health>();
-            tempHealth.ToggleSelMarker(true);
-            targets.Add(newTarget);
-            targetHealths.Add(tempHealth);
+            if (exists == false)
+            {
+                Health tempHealth = newTarget.GetComponent<Health>();
+                tempHealth.ToggleSelMarker(true);
+                targets.Add(newTarget);
+                targetHealths.Add(tempHealth);
+            }
         }
     }
 
@@ -528,6 +537,26 @@ public class Selector : MonoBehaviour {
         if(roundRobinIndex >= groundMarkerPoolSize)
         {
             roundRobinIndex = 0;
+        }
+    }
+
+    void UpdateUnitInfo()
+    {
+        if (targets.Count > 0)
+        {
+            currHealthText.text = targetHealths[0].GetCurrHealth().ToString();
+            maxHealthText.text = " / " + targetHealths[0].maxHealth.ToString();
+
+            armorText.text = targetHealths[0].armor.ToString();
+            hpRegText.text = targetHealths[0].healthRegAmount.ToString();
+        }
+        else
+        {
+            currHealthText.text = "N/A";
+            maxHealthText.text = " / N/A";
+
+            armorText.text = " N/A";
+            hpRegText.text = " N/A";
         }
     }
 }

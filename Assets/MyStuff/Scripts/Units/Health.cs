@@ -22,7 +22,7 @@ public class Health : MonoBehaviour {
     public int startHealthRegAmount = 1;
     [HideInInspector]
     public int healthRegAmount;
-    public float healthRegIntervall = 1.5f;
+    private float healthRegIntervall = 0.8f;
     private float healthRegTimer = 0.0f;
 
     public int armor = 3;
