@@ -10,15 +10,6 @@ public class Tower : BuildingBase {
     public int projectilePoolSize = 15;
     public Transform shooter;
 
-    //stats****
-    [Header("Stats")]
-    public int startDamageMIN = 3;
-    public int startDamageMAX = 6;
-    [HideInInspector]
-    public int damageMIN;
-    [HideInInspector]
-    public int damageMAX;
-
     public float startAttackSpeed = 1.2f;
     [HideInInspector]
     public float attackSpeed; //public så att agentStats kan påverka den

@@ -19,6 +19,7 @@ public class Selector : MonoBehaviour {
 
     private List<Transform> targets = new List<Transform>();
     private List<Health> targetHealths = new List<Health>(); //för att kunna hämta unitsizes
+    private List<AIBase> targetAIBases = new List<AIBase>();
 
     //selectionBox
     //public GameObject selectionBoxCanvas;
@@ -32,6 +33,9 @@ public class Selector : MonoBehaviour {
     public Text maxHealthText;
     public Text armorText;
     public Text hpRegText;
+    public Text minDamageText;
+    public Text maxDamageText;
+    public Image unitPortrait;
 
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
@@ -154,8 +158,15 @@ public class Selector : MonoBehaviour {
             {
                 Health tempHealth = newTarget.GetComponent<Health>();
                 tempHealth.ToggleSelMarker(true);
+
+                AIBase tempAIBase = null;
+                if(newTarget.GetComponent<AIBase>() != null)
+                {
+                    tempAIBase = newTarget.GetComponent<AIBase>();
+                }
                 targets.Add(newTarget);
                 targetHealths.Add(tempHealth);
+                targetAIBases.Add(tempAIBase); //måste addas även om den är null
             }
         }
     }
@@ -168,6 +179,7 @@ public class Selector : MonoBehaviour {
         }
         targets.RemoveAt(i);
         targetHealths.RemoveAt(i);
+        targetAIBases.RemoveAt(i);
     }
 
     void ClearTargets()
@@ -178,6 +190,7 @@ public class Selector : MonoBehaviour {
         }
         targets.Clear();
         targetHealths.Clear();
+        targetAIBases.Clear();
     }
 
     void CommandToPos(Vector3 pos)
@@ -465,6 +478,11 @@ public class Selector : MonoBehaviour {
                 OrderMove(mouseHitPos); //have target enemys aswell in here?
             }
         }
+
+        if(Input.GetButtonDown("Cancel"))
+        {
+            ClearTargets();
+        }
     }
 
     void GetMoveState()
@@ -544,16 +562,36 @@ public class Selector : MonoBehaviour {
     {
         if (targets.Count > 0)
         {
+            if(targetHealths[0].unitSprite != null)
+            {
+                unitPortrait.sprite = targetHealths[0].unitSprite;
+            }
+            else
+            {
+                unitPortrait.sprite = null;
+            }
+
             currHealthText.text = targetHealths[0].GetCurrHealth().ToString();
-            maxHealthText.text = " / " + targetHealths[0].maxHealth.ToString();
+            maxHealthText.text = "/" + targetHealths[0].maxHealth.ToString();
 
             armorText.text = targetHealths[0].armor.ToString();
             hpRegText.text = targetHealths[0].healthRegAmount.ToString();
+
+            if(targetAIBases[0] != null)
+            {
+                minDamageText.text = targetAIBases[0].damageMIN.ToString();
+                maxDamageText.text = targetAIBases[0].damageMAX.ToString();
+            }
+            else
+            {
+                minDamageText.text = "N/A";
+                maxDamageText.text = "/" + "N/A";
+            }
         }
         else
         {
             currHealthText.text = "N/A";
-            maxHealthText.text = " / N/A";
+            maxHealthText.text = " N/A";
 
             armorText.text = " N/A";
             hpRegText.text = " N/A";

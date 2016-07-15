@@ -47,6 +47,15 @@ public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
     public List<long> attackerIDs = new List<long>(); //används för o mecka target tex
 
+    //stats****
+    [Header("Stats")]
+    public int startDamageMIN = 3;
+    public int startDamageMAX = 6;
+    [HideInInspector]
+    public int damageMIN;
+    [HideInInspector]
+    public int damageMAX;
+
     public virtual void Init()
     {
         initializedTimes++;

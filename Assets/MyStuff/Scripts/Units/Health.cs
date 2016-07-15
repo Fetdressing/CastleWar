@@ -9,6 +9,7 @@ public class Health : MonoBehaviour {
     public Renderer[] thisRenderer;
     private List<Material> thisMaterial = new List<Material>();
     public float unitSize = 1;
+    public Sprite unitSprite;
 
     [HideInInspector]
     public Vector3 middlePoint; //var dennas mittpunkt ligger
