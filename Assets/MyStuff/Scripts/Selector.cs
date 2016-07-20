@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 public class Selector : MonoBehaviour {
     private Transform thisTransform;
-    public string playerTeam = "Team1";
+    private TeamHandler teamHandler;
+    [HideInInspector]
+    public string playerTeam;
     [HideInInspector]
     public LayerMask playerLayer;
 
@@ -57,9 +59,6 @@ public class Selector : MonoBehaviour {
 
     public Material attackSelMat; //materialet när man orderar attack på unit
     // Use this for initialization
-    void Start () {
-        Init();
-    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -69,6 +68,8 @@ public class Selector : MonoBehaviour {
     public virtual void Init()
     {
         thisTransform = this.transform;
+        teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
+        playerTeam = teamHandler.playerTeam;
         playerLayer = LayerMask.NameToLayer(playerTeam);
 
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);

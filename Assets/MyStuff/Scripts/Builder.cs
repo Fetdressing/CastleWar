@@ -30,10 +30,6 @@ public class Builder : MonoBehaviour {
     private int currBuildingIndex = 0;
     private Building currBuildingSel;
 
-	void Start () {
-        Init();
-	}
-
     public void Init()
     {
         currResources = startResources;

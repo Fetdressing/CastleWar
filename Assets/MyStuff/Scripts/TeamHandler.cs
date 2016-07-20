@@ -3,12 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class TeamHandler : MonoBehaviour {
+    public int playerTeamIndex = 0; //det indexet i teams-listan
+    [HideInInspector]
+    public string playerTeam = "";
     public Team[] teams;
-
-    // Use this for initialization
-    void Start () {
-	
-	}
+    
+    public void Init()
+    {
+        playerTeam = teams[playerTeamIndex].thisLayer;
+    }
 
     public bool GetFriendsAndFoes(string layer, ref List<string> friendlys, ref string[] enemies)
     {
@@ -34,12 +37,18 @@ public class TeamHandler : MonoBehaviour {
         return success;
     }
 
-    [System.Serializable]
-    public struct Team
+    public Team GetPlayerTeam()
     {
-        public string thisLayer;
-        public string[] friendlyTeams;
-        public string[] enemyTeams;
-
+        return teams[playerTeamIndex];
     }
+
+}
+
+[System.Serializable]
+public struct Team
+{
+    public string thisLayer;
+    public string[] friendlyTeams;
+    public string[] enemyTeams;
+
 }
