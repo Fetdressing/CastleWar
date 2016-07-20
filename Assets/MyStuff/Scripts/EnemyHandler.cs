@@ -10,7 +10,7 @@ public class EnemyHandler : MonoBehaviour {
     GameObject[] registeredEnemies;
     AIBase[] registeredEnemiesAIBase;
 
-    public void Init()
+    public void Init() //gör stöd för att kunna lägga in speciella events, typ skicka massa skit vid minut 10
     {
         teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         StartCoroutine(EnemyUpdate());
@@ -24,6 +24,7 @@ public class EnemyHandler : MonoBehaviour {
             RegisterEnemies();
             for(int i = 0; i < registeredEnemiesAIBase.Length; i++)
             {
+                
                 registeredEnemiesAIBase[i].AttackMove(enemyTargetPoints[0].position);
             }
             yield return new WaitForSeconds(15);
