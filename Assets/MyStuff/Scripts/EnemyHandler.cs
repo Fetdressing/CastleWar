@@ -40,10 +40,13 @@ public class EnemyHandler : MonoBehaviour {
             enemyLayers.Add(LayerMask.NameToLayer(enemyTeams[i]));
         }
         registeredEnemies = FindGameObjectsWithLayer(enemyLayers);
-        registeredEnemiesAIBase = new AIBase[registeredEnemies.Length];
-        for (int i = 0; i < registeredEnemies.Length; i++)
+        if (registeredEnemies.Length > 0)
         {
-            registeredEnemiesAIBase[i] = registeredEnemies[i].GetComponent<AIBase>();
+            registeredEnemiesAIBase = new AIBase[registeredEnemies.Length];
+            for (int i = 0; i < registeredEnemies.Length; i++)
+            {
+                registeredEnemiesAIBase[i] = registeredEnemies[i].GetComponent<AIBase>();
+            }
         }
     }
 
