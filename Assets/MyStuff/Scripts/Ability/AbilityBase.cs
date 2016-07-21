@@ -12,8 +12,10 @@ public class AbilityBase : MonoBehaviour{
     public enum ValidTargets { Allied, Enemy, Both };
     public ValidTargets validTargets = ValidTargets.Enemy;
 
-    LayerMask enemyLayermask;
-    LayerMask friendlyLayermask;
+    [HideInInspector]
+    public LayerMask enemyLayermask;
+    [HideInInspector]
+    public LayerMask friendlyLayermask;
 
     public string name;
     [HideInInspector]
@@ -23,20 +25,38 @@ public class AbilityBase : MonoBehaviour{
     [HideInInspector]
     public float cooldown_Timer = 0.0f;
 
-    public virtual void InitAbility(Transform caster, LayerMask enemyLmask, LayerMask friendlyLmask)
+    [HideInInspector]
+    public bool isInit = false;
+
+    public virtual void InitAbility(Transform caster)
     {
         thisTransform = this.transform;
-        enemyLayermask = enemyLmask;
-        friendlyLayermask = friendlyLmask;
+
         if(teamHandler == null) //så den inte behöver hämtas flera gånger
         {
             teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         }
+
+        string[] eLayers = new string[0];
+        List<string> fLayers = new List<string>();
+        teamHandler.GetFriendsAndFoes(LayerMask.LayerToName(caster.gameObject.layer), ref fLayers, ref eLayers);
+
+        for (int i = 0; i < eLayers.Length; i++)
+        {
+            enemyLayermask |= (1 << LayerMask.NameToLayer(eLayers[i]));
+        }
+
+        for (int i = 0; i < fLayers.Count; i++)
+        {
+            friendlyLayermask |= (1 << LayerMask.NameToLayer(fLayers[i]));
+        }
+
+        isInit = true;
     }
 
     public virtual void ApplyEffect()
     {
-
+        if (isInit == false) return;
     }
 
     public virtual Transform[] ScanTargets(float aD)

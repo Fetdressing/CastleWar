@@ -7,7 +7,7 @@ public class PassiveAbility : AbilityBase {
     //{
     //    base.InitAbility(caster);
 
-    //    //StartCoroutine(PassiveUpdate());        
+    //    //StartCoroutine(PassiveUpdate());
     //}
 
     //IEnumerator PassiveUpdate()

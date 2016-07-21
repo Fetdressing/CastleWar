@@ -34,12 +34,18 @@ public class UnitSpellHandler : MonoBehaviour {
 
 
     public float intervalTime = 0.5f;
+
+    bool isInit = false;
     void Start () {
         //Init();
 	}
 	
     public void Init()
     {
+        if (isInit == true)
+            return;
+        isInit = true;
+
         thisTransform = this.transform;
         AIBase = thisTransform.GetComponent<AIBase>();
         health = thisTransform.GetComponent<Health>();
@@ -92,6 +98,7 @@ public class UnitSpellHandler : MonoBehaviour {
         {
             castAbilities.Add(temp.GetComponent<CastAbility>());
         }
+        tempType.InitAbility(thisTransform);
     }
 
     IEnumerator AbilityInterval()
