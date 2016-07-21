@@ -45,7 +45,6 @@ public class AbilityManager : MonoBehaviour {
                 return i;
             }
         }
-        Debug.Log("Hittade ej!!!!");
         return -100000;
     }
 

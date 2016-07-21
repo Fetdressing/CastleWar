@@ -21,7 +21,7 @@ public class AgentRanged : AgentBase {
 
     void Awake()
     {
-        Init();
+        //Init();
     }
 	
 	// Update is called once per frame

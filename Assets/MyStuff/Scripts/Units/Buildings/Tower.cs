@@ -101,7 +101,7 @@ public class Tower : BuildingBase {
 
     void Awake()
     {
-        Init();
+        //Init();
     }
 
     void Update() //kan använda en corutine istället med attackspeeden som yield

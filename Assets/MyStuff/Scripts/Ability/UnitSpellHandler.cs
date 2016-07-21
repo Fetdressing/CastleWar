@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class UnitSpellHandler : MonoBehaviour {
     private Transform thisTransform;
-    private AgentBase agentBase;
+    private AIBase AIBase;
     private Health health;
     private static AbilityManager abilityManager;
 
@@ -32,11 +32,14 @@ public class UnitSpellHandler : MonoBehaviour {
     [HideInInspector]
     public bool isCasting = false;
     void Start () {
-        Init();
+        //Init();
 	}
 	
     public void Init()
     {
+        thisTransform = this.transform;
+        AIBase = thisTransform.GetComponent<AIBase>();
+        health = thisTransform.GetComponent<Health>();
         if (abilityManager == null)
         {
             abilityManager = GameObject.FindGameObjectWithTag("AbilityManager").GetComponent<AbilityManager>();
@@ -49,7 +52,7 @@ public class UnitSpellHandler : MonoBehaviour {
 
         for(int i = 0; i < abilityIndexes.Count; i++)
         {
-            InitAbility(i); //kan ju inte bara init denna coz det är ett kinda abstrakt värde, init ska ske på denna unitspellhandlern själv
+            InitAbility(abilityIndexes[i]); //kan ju inte bara init denna coz det är ett kinda abstrakt värde, init ska ske på denna unitspellhandlern själv
         }
         Reset();
     }
@@ -61,7 +64,8 @@ public class UnitSpellHandler : MonoBehaviour {
 
     public void InitAbility(int index)
     {
-        GameObject temp = Instantiate(abilityManager.allAbilities[index], thisTransform.position, Quaternion.identity) as GameObject; //instantiera spellen, sen sköter den resten
+        //Debug.Log(abilityManager.allAbilities[0].gameObject.name);
+        GameObject temp = Instantiate(abilityManager.allAbilities[0].gameObject, thisTransform.position, Quaternion.identity) as GameObject; //instantiera spellen, sen sköter den resten
         temp.transform.SetParent(thisTransform);
 
         AbilityBase tempType = temp.GetComponent<AbilityBase>();

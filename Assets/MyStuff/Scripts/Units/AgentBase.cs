@@ -90,7 +90,7 @@ public class AgentBase : AIBase {
     // Use this for initialization
     void Start()
     { //får jag dubbla starts?
-        Init();
+        //Init();
     }
 
     void Awake()

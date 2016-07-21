@@ -34,7 +34,7 @@ public class SpawnBuilding : BuildingBase {
     }
 
     void Start () {
-        Init();
+        //Init();
 	}
 
     void Awake()
@@ -53,7 +53,9 @@ public class SpawnBuilding : BuildingBase {
 
             temp.layer = thisTransform.gameObject.layer;
             //agentBase.GetFriendsAndFoes();
+            unitHealth.Init();
             agentBase.Init();
+            unitSpellHandler.Init();
             //temp.transform.parent = thisTransform;
             temp.SetActive(false);
 

@@ -149,6 +149,11 @@ public class Builder : MonoBehaviour {
             tempB.layer = selector.playerLayer;
             tempB.transform.position = pos;
             tempB.GetComponent<AIBase>().Init();
+            tempB.GetComponent<Health>().Init();
+            if (tempB.GetComponent<UnitSpellHandler>() != null)
+            {
+                tempB.GetComponent<UnitSpellHandler>().Init();
+            }
         }
     }
 

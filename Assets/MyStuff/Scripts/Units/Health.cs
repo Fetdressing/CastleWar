@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
+    private int initializedTimes = 0;
     [HideInInspector]
     public UnitSpellHandler unitSpellHandler;
     private Transform thisTransform;
@@ -49,11 +50,12 @@ public class Health : MonoBehaviour {
 
     void Awake()
     {
-        Init();
+        //Init();
     }
 
     public void Init()
     {
+        initializedTimes++;
         thisTransform = this.transform;
         thisRenderer = GetComponentsInChildren<Renderer>();
 
@@ -102,6 +104,10 @@ public class Health : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        if(initializedTimes == 0)
+        {
+            return;
+        }
         middlePoint = new Vector3(thisTransform.position.x, thisTransform.position.y + middlePointOffsetY, thisTransform.position.z);
 
         uiCanvas.LookAt(uiCanvas.position + mainCamera.transform.rotation * Vector3.forward,

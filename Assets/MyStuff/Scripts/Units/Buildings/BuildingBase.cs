@@ -6,7 +6,7 @@ public class BuildingBase : AIBase {
     public int attackedCount = 1000000000; //så den inte kallar på hjälp hela tiden
 	// Use this for initialization
 	void Start () {
-        Init();
+        //Init();
 	}
 
     public override void Attacked(Transform attacker)
