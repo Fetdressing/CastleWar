@@ -61,7 +61,7 @@ public class UnitSpellHandler : MonoBehaviour {
 
     public void InitAbility(int index)
     {
-        GameObject temp = Instantiate(abilityManager.allAbilities[index], thisTransform.position, Quaternion.identity) as GameObject;
+        GameObject temp = Instantiate(abilityManager.allAbilities[index], thisTransform.position, Quaternion.identity) as GameObject; //instantiera spellen, sen sköter den resten
         temp.transform.SetParent(thisTransform);
 
         AbilityBase tempType = temp.GetComponent<AbilityBase>();
