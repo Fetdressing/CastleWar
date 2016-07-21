@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
+    [HideInInspector]
+    public UnitSpellHandler unitSpellHandler;
     private Transform thisTransform;
     [HideInInspector]
     public Renderer[] thisRenderer;
@@ -54,6 +56,11 @@ public class Health : MonoBehaviour {
     {
         thisTransform = this.transform;
         thisRenderer = GetComponentsInChildren<Renderer>();
+
+        if(thisTransform.GetComponent<UnitSpellHandler>() != null)
+        {
+            unitSpellHandler = thisTransform.GetComponent<UnitSpellHandler>();
+        }
         //if (thisRenderer == null)
         //{
         //    thisRenderer = thisTransform.GetComponent<Renderer>();
@@ -121,6 +128,11 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
     {
         if(h < 0) //ifall det är damage
         {
+            if(unitSpellHandler != null)
+            {
+                unitSpellHandler.RegisterDamage(h);
+            }
+
             h += armor; //ta bort damage med armor
             if(h >= 0)
             {
@@ -129,7 +141,12 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         }
         else //healing
         {
-            if(isHealable == false)
+            if (unitSpellHandler != null)
+            {
+                unitSpellHandler.RegisterHealing(h);
+            }
+
+            if (isHealable == false)
             {
                 h = 0;
             }

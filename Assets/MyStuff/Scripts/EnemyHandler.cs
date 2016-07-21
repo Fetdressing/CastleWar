@@ -6,6 +6,7 @@ public class EnemyHandler : MonoBehaviour {
     TeamHandler teamHandler;
 
     public Transform[] enemyTargetPoints;
+    public int splitTargetIndex = 3; //hur ofta den ska köra en ny random på targetPositioner för listan av units
 
     GameObject[] registeredEnemies;
     AIBase[] registeredEnemiesAIBase;
@@ -24,8 +25,20 @@ public class EnemyHandler : MonoBehaviour {
             RegisterEnemies();
             for(int i = 0; i < registeredEnemiesAIBase.Length; i++)
             {
-                
-                registeredEnemiesAIBase[i].AttackMove(enemyTargetPoints[0].position);
+                int tPointIndex = 0;
+                if(i % (registeredEnemiesAIBase.Length / splitTargetIndex) == 0)
+                {
+                    int tries = 0; //så den inte ska försöka förevigt
+                    do
+                    {
+                        tPointIndex = Random.Range(0, enemyTargetPoints.Length);
+                        tries++;
+                    } while (enemyTargetPoints[tPointIndex] != null && tries < (splitTargetIndex * 3));
+                }
+                if (enemyTargetPoints[tPointIndex] != null)
+                {
+                    registeredEnemiesAIBase[i].AttackMove(enemyTargetPoints[tPointIndex].position);
+                }
             }
             yield return new WaitForSeconds(15);
         }
@@ -40,7 +53,7 @@ public class EnemyHandler : MonoBehaviour {
             enemyLayers.Add(LayerMask.NameToLayer(enemyTeams[i]));
         }
         registeredEnemies = FindGameObjectsWithLayer(enemyLayers);
-        if (registeredEnemies.Length > 0)
+        if (registeredEnemies != null)
         {
             registeredEnemiesAIBase = new AIBase[registeredEnemies.Length];
             for (int i = 0; i < registeredEnemies.Length; i++)

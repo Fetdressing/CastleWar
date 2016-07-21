@@ -26,19 +26,7 @@ public class AgentBase : AIBase {
     [HideInInspector]public float targetDistance; //så jag inte behöver räkna om denna på flera ställen
     [HideInInspector]public bool isFriendlyTarget;
 
-    public float startAttackSpeed = 1.2f;
-    [HideInInspector]
-    public float attackSpeed; //public så att agentStats kan påverka den
-    [HideInInspector]
-    public float attackSpeedTimer = 0.0f;
-
-    public float startAttackRange = 4;
-    [HideInInspector]
-    public float attackRange;
-
     public int nrAcceptedAttackersOnTarget = 3; //hur många andra som max attackerar mitt target för att jag inte ska vilja ta ett annat target
-
-    //stats****
 
     [Header("Other")]
     //variables used in different states*****
@@ -221,6 +209,7 @@ public class AgentBase : AIBase {
                     hasAppliedDamage = true;
                     int damageRoll = Random.Range(damageMIN, damageMAX);
 
+                    unitSpellHandler.RegisterAttack();
                     if (targetHealth.AddHealth(-damageRoll)) //target överlevde attacken
                     {
                         targetAlive = true;

@@ -10,16 +10,6 @@ public class Tower : BuildingBase {
     public int projectilePoolSize = 15;
     public Transform shooter;
 
-    public float startAttackSpeed = 1.2f;
-    [HideInInspector]
-    public float attackSpeed; //public så att agentStats kan påverka den
-    [HideInInspector]
-    public float attackSpeedTimer = 0.0f;
-
-    public float startAttackRange = 30;
-    [HideInInspector]
-    public float attackRange;
-
     public float minimumTargetDistance = 5;
     [HideInInspector]
     public float targetDistance;
@@ -174,6 +164,7 @@ public class Tower : BuildingBase {
             {
                 if (los)
                 {
+                    unitSpellHandler.RegisterAttack();
                     attackSpeedTimer = attackSpeed + Time.time;
                     int damageRoll = Random.Range(damageMIN, damageMAX);
                     Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable

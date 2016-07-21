@@ -2,7 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(UnitSpellHandler))]
 public abstract class AIBase : MonoBehaviour {
+    [HideInInspector]
+    public UnitSpellHandler unitSpellHandler;
+
     [HideInInspector]
     public int initializedTimes = 0;
     [HideInInspector]
@@ -56,6 +60,20 @@ public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
     public int damageMAX;
 
+    public float startAttackSpeed = 1.2f;
+    [HideInInspector]
+    public float attackSpeed; //public så att agentStats kan påverka den
+    [HideInInspector]
+    public float attackSpeedTimer = 0.0f;
+
+    public float startAttackRange = 30;
+    [HideInInspector]
+    public float attackRange;
+
+    public float startSpellRange = 30;
+    [HideInInspector]
+    public float spellRange;
+
     public virtual void Init()
     {
         initializedTimes++;
@@ -63,6 +81,7 @@ public abstract class AIBase : MonoBehaviour {
         id = nrAI;
         nrAI++;
         thisTransform = this.transform;
+        unitSpellHandler = thisTransform.GetComponent<UnitSpellHandler>();
         GetFriendsAndFoes();
         ClearCommands();
         attackerIDs.Clear();

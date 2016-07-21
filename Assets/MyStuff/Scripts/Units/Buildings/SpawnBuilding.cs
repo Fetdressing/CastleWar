@@ -49,6 +49,7 @@ public class SpawnBuilding : BuildingBase {
             GameObject temp = Instantiate(spawnUnit.gameObject);
             AgentBase agentBase = temp.GetComponent<AgentBase>();
             Health unitHealth = temp.GetComponent<Health>();
+            UnitSpellHandler unitSpellHandler = temp.GetComponent<UnitSpellHandler>();
 
             temp.layer = thisTransform.gameObject.layer;
             //agentBase.GetFriendsAndFoes();
@@ -56,7 +57,7 @@ public class SpawnBuilding : BuildingBase {
             //temp.transform.parent = thisTransform;
             temp.SetActive(false);
 
-            Unit tempUnit = new Unit(temp, agentBase, unitHealth);
+            Unit tempUnit = new Unit(temp, agentBase, unitHealth, unitSpellHandler);
             unitPool.Add(tempUnit);
 
             //GameObject temp = Instantiate(spawnUnit.gameObject);
@@ -93,6 +94,7 @@ public class SpawnBuilding : BuildingBase {
                 unitPool[i].obj.SetActive(true);
                 unitPool[i].agentB.Reset();
                 unitPool[i].health.Reset();
+                unitPool[i].unitSpellH.Reset();
                 if(rallyPointTransform != null)
                 {
                     unitPool[i].agentB.AttackMove(rallyPointTransform.position);
@@ -151,11 +153,13 @@ public struct Unit
     public GameObject obj;
     public AgentBase agentB;
     public Health health;
+    public UnitSpellHandler unitSpellH;
 
-    public Unit(GameObject unitObject, AgentBase unitAgentBase, Health unitHealth)
+    public Unit(GameObject unitObject, AgentBase unitAgentBase, Health unitHealth, UnitSpellHandler unitSpellHandler)
     {
         obj = unitObject;
         agentB = unitAgentBase;
         health = unitHealth;
+        unitSpellH = unitSpellHandler;
     }
 }
