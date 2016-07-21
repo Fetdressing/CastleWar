@@ -7,10 +7,18 @@ public class TeamHandler : MonoBehaviour {
     [HideInInspector]
     public string playerTeam = "";
     public Team[] teams;
-    
+
+    //[HideInInspector]
+    public LayerMask layermaskAllTeams;
+
     public void Init()
     {
         playerTeam = teams[playerTeamIndex].thisLayer;
+
+        for (int i = 0; i < teams.Length; i++)
+        {
+            layermaskAllTeams |= (1 << LayerMask.NameToLayer(teams[i].thisLayer));
+        }
     }
 
     public bool GetFriendsAndFoes(string layer, ref List<string> friendlys, ref string[] enemies)

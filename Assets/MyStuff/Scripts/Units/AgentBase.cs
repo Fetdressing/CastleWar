@@ -69,7 +69,8 @@ public class AgentBase : AIBase {
 
     public AnimationClip idle;
     public AnimationClip run;
-    public float loopAnimSpeed = 0.4f;
+    public float loopRunAnimSpeed = 0.4f;
+    public float loopIdleAnimSpeed = 0.4f;
     public AnimationClip[] attackA;
     public float attackAnimSpeed = 0.3f; //speed of animation
     public float attack_applyDMG_Time = 0.2f; //när på attack animationen som skadan ska applyas
@@ -123,8 +124,8 @@ public class AgentBase : AIBase {
         {
             animationH = animationObject.GetComponent<Animation>();
 
-            animationH[run.name].speed = loopAnimSpeed;
-            animationH[idle.name].speed = loopAnimSpeed;
+            animationH[run.name].speed = loopRunAnimSpeed;
+            animationH[idle.name].speed = loopIdleAnimSpeed;
             for (int i = 0; i < attackA.Length; i++)
             {
                 animationH[attackA[i].name].speed = attackAnimSpeed;

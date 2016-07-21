@@ -23,21 +23,24 @@ public class EnemyHandler : MonoBehaviour {
         {
             //order move för fiender
             RegisterEnemies();
-            for(int i = 0; i < registeredEnemiesAIBase.Length; i++)
+            if ((registeredEnemiesAIBase.Length / splitTargetIndex) > 0)
             {
-                int tPointIndex = 0;
-                if(i % (registeredEnemiesAIBase.Length / splitTargetIndex) == 0)
+                for (int i = 0; i < registeredEnemiesAIBase.Length; i++)
                 {
-                    int tries = 0; //så den inte ska försöka förevigt
-                    do
+                    int tPointIndex = 0;
+                    if (i % (registeredEnemiesAIBase.Length / splitTargetIndex) == 0)
                     {
-                        tPointIndex = Random.Range(0, enemyTargetPoints.Length);
-                        tries++;
-                    } while (enemyTargetPoints[tPointIndex] != null && tries < (splitTargetIndex * 3));
-                }
-                if (enemyTargetPoints[tPointIndex] != null)
-                {
-                    registeredEnemiesAIBase[i].AttackMove(enemyTargetPoints[tPointIndex].position);
+                        int tries = 0; //så den inte ska försöka förevigt
+                        do
+                        {
+                            tPointIndex = Random.Range(0, enemyTargetPoints.Length);
+                            tries++;
+                        } while (enemyTargetPoints[tPointIndex] != null && tries < (splitTargetIndex * 3));
+                    }
+                    if (enemyTargetPoints[tPointIndex] != null)
+                    {
+                        registeredEnemiesAIBase[i].AttackMove(enemyTargetPoints[tPointIndex].position);
+                    }
                 }
             }
             yield return new WaitForSeconds(15);

@@ -31,6 +31,9 @@ public class UnitSpellHandler : MonoBehaviour {
 
     [HideInInspector]
     public bool isCasting = false;
+
+
+    public float intervalTime = 0.5f;
     void Start () {
         //Init();
 	}
@@ -59,7 +62,9 @@ public class UnitSpellHandler : MonoBehaviour {
 
     public void Reset()
     {
+        StopAllCoroutines();
         isCasting = false;
+        StartCoroutine(AbilityInterval());
     }
 
     public void InitAbility(int index)
@@ -86,6 +91,18 @@ public class UnitSpellHandler : MonoBehaviour {
         else if (tempType is CastAbility)
         {
             castAbilities.Add(temp.GetComponent<CastAbility>());
+        }
+    }
+
+    IEnumerator AbilityInterval()
+    {
+        while(this != null)
+        {
+            for(int i = 0; i < passiveAbilities.Count; i++)
+            {
+                passiveAbilities[i].ApplyEffect();
+            }
+            yield return new WaitForSeconds(intervalTime);
         }
     }
 
