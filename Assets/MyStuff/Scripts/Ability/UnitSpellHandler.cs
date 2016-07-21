@@ -32,7 +32,6 @@ public class UnitSpellHandler : MonoBehaviour {
     [HideInInspector]
     public bool isCasting = false;
 
-
     public float intervalTime = 0.5f;
 
     bool isInit = false;
@@ -85,18 +84,22 @@ public class UnitSpellHandler : MonoBehaviour {
         if (tempType is PassiveAbility)
         {
             passiveAbilities.Add(temp.GetComponent<PassiveAbility>());
+            temp.transform.position = auraPosition.position;
         }
         else if (tempType is OnHitAbility)
         {
             onHitAbilities.Add(temp.GetComponent<OnHitAbility>());
+            temp.transform.position = onHitPosition.position;
         }
         else if (tempType is OnAttackAbility)
         {
             onAttackAbilities.Add(temp.GetComponent<OnAttackAbility>());
+            temp.transform.position = onAttackPosition.position;
         }
         else if (tempType is CastAbility)
         {
             castAbilities.Add(temp.GetComponent<CastAbility>());
+            temp.transform.position = castPosition.position;
         }
         tempType.InitAbility(thisTransform);
     }

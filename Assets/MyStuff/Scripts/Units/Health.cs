@@ -43,6 +43,7 @@ public class Health : MonoBehaviour {
     public bool destroyOnDeath = false;
     public int resourceWorth = 5;
 
+    List<string> activeBuffs = new List<string>();
     // Use this for initialization
  //   void Start () {
  //       Init();
@@ -55,6 +56,7 @@ public class Health : MonoBehaviour {
 
     public void Init()
     {
+        activeBuffs.Clear();
         initializedTimes++;
         thisTransform = this.transform;
         thisRenderer = GetComponentsInChildren<Renderer>();
@@ -86,6 +88,7 @@ public class Health : MonoBehaviour {
     }
     public void Reset()
     {
+        activeBuffs.Clear();
         maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
         currHealth = maxHealth;
 
@@ -120,15 +123,59 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         else
         {
             uiHealth.SetActive(true);
+        }
 
-            if(healthRegTimer < Time.time)
+        if (healthRegTimer < Time.time)
+        {
+            healthRegTimer = Time.time + healthRegIntervall;
+            AddHealthTrue(healthRegAmount);
+        }
+
+    }
+
+    public bool AddHealthTrue(int h)
+    {
+        if (h < 0) //ifall det är damage
+        {
+            if (unitSpellHandler != null)
             {
-                healthRegTimer = Time.time + healthRegIntervall;
-                AddHealth(healthRegAmount);
+                unitSpellHandler.RegisterDamage(h);
+            }
+
+            if (h >= 0)
+            {
+                h = -1; //den ska ju inte heala! och minst 1 i damage
+            }
+        }
+        else //healing
+        {
+            if (unitSpellHandler != null)
+            {
+                unitSpellHandler.RegisterHealing(h);
+            }
+
+            if (isHealable == false)
+            {
+                h = 0;
             }
         }
 
-	}
+        currHealth += h;
+
+        if (currHealth > maxHealth)
+        {
+            currHealth = maxHealth;
+        }
+        else if (currHealth <= 0)
+        {
+            healthBar.fillAmount = (float)currHealth / (float)maxHealth;
+            Die();
+            return false; //target dog
+            //die
+        }
+        healthBar.fillAmount = (float)currHealth / (float)maxHealth;
+        return true; //target vid liv
+    }
 
     public bool AddHealth(int h)
     {
@@ -233,5 +280,37 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         {
             thisRenderer[i].material = thisMaterial[i];
         }
+    }
+
+    public void ApplyBuffHealthReg(int reg, float dur, Transform applier, string buffName)
+    {
+        string bName = applier.name + buffName;
+        if (BuffAlreadyApplied(bName))
+            return;
+        StartCoroutine(BuffHealthReg(reg, dur, bName));
+    }
+
+    IEnumerator BuffHealthReg(int reg, float dur, string buffName)
+    {
+        if (BuffAlreadyApplied(buffName))
+            yield return null;
+
+        activeBuffs.Add(buffName);
+        healthRegAmount += reg;
+        yield return new WaitForSeconds(dur);
+        healthRegAmount -= reg;
+        activeBuffs.Remove(buffName);
+    }
+
+    bool BuffAlreadyApplied(string buffName)
+    {
+        for(int i = 0; i < activeBuffs.Count; i++)
+        {
+            if(buffName == activeBuffs[i])
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -7,6 +7,10 @@ public class AbilityBase : MonoBehaviour{
     [HideInInspector]
     public Transform thisTransform;
     [HideInInspector]
+    public Transform casterT;
+    [HideInInspector]
+    public string casterIDName;
+    [HideInInspector]
     public static TeamHandler teamHandler;
 
     public enum ValidTargets { Allied, Enemy, Both };
@@ -18,12 +22,12 @@ public class AbilityBase : MonoBehaviour{
     public LayerMask friendlyLayermask;
 
     public string name;
-    [HideInInspector]
-    public float aoe = 0;
+    public float aoe = 10;
     public int fatigueCost = 10;
     public float cooldown = 1.0f;
     [HideInInspector]
     public float cooldown_Timer = 0.0f;
+    public float duration = 2.0f;
 
     [HideInInspector]
     public bool isInit = false;
@@ -31,8 +35,10 @@ public class AbilityBase : MonoBehaviour{
     public virtual void InitAbility(Transform caster)
     {
         thisTransform = this.transform;
+        casterT = caster;
+        casterIDName = casterT.name + casterT.GetComponent<AIBase>().id.ToString();
 
-        if(teamHandler == null) //så den inte behöver hämtas flera gånger
+        if (teamHandler == null) //så den inte behöver hämtas flera gånger
         {
             teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         }
@@ -89,7 +95,7 @@ public class AbilityBase : MonoBehaviour{
             {
                 hits[i] = hitColliders[i].transform;
             }
-            SortTransformsByDistance(ref hits); //index 0 kommer hamna närmst
+            //SortTransformsByDistance(ref hits); //index 0 kommer hamna närmst
 
             return hits;
         }

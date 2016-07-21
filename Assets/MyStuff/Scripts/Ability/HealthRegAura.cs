@@ -9,9 +9,11 @@ public class HealthRegAura : PassiveAbility {
         if (isInit == false) return;
         base.ApplyEffect();
         Transform[] targets = ScanTargets(aoe);
+        if (targets == null)
+            return;
         for(int i = 0; i < targets.Length; i++)
         {
-            targets[i].GetComponent<Health>().AddHealth(regAmount);
+            targets[i].GetComponent<Health>().ApplyBuffHealthReg(regAmount, duration, casterT, casterIDName+name);
         }
     }
 }
