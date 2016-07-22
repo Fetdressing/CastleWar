@@ -1013,6 +1013,7 @@ public class AgentBase : AIBase {
         {
             animationH[run.name].weight = 0.2f;
             animationH[run.name].layer = 10;
+            animationH[run.name].speed = loopRunAnimSpeed * ((float)movementSpeed / (float)startMovementSpeed);
             animationH.CrossFade(run.name);
         }
         else
