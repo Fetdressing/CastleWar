@@ -26,10 +26,16 @@ public class AgentRanged : AgentBase {
 	
 	// Update is called once per frame
 	void Update () {
+        if (!healthS.IsAlive() && thisTransform.gameObject.activeSelf == false)
+            return;
+
+        UpdateEssentials();
+
         if (target != null)
         {
             targetDistance = GetTargetDistance();
         }
+
         switch (state)
         {
             case UnitState.Guarding:

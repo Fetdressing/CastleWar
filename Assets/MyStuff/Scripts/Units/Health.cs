@@ -319,6 +319,16 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
                     return;
                 BuffStat(ref aiBase.damage, incomingBuff);
                 break;
+            case StatType.DamageSpread:
+                if (aiBase == null)
+                    return;
+                BuffStat(ref aiBase.damageSpread, incomingBuff);
+                break;
+            case StatType.MovementSpeed:
+                if (aiBase == null)
+                    return;
+                BuffStat(ref aiBase.movementSpeed, incomingBuff);
+                break;
         }
 
     }
@@ -356,6 +366,12 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
                 break;
             case StatType.Damage:
                 aiBase.damage += -tempBuff.amount;
+                break;
+            case StatType.DamageSpread:
+                aiBase.damageSpread += -tempBuff.amount;
+                break;
+            case StatType.MovementSpeed:
+                aiBase.movementSpeed += -tempBuff.amount;
                 break;
         }
         buffs.Remove(name);

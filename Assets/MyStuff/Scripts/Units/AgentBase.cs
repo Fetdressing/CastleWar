@@ -135,39 +135,52 @@ public class AgentBase : AIBase {
         InitializeStats();
 
         //Reset(); inte här
-    }	
-	// Update is called once per frame
-	void Update () {
-        if (healthS.IsAlive() && thisTransform.gameObject.activeSelf == true)
+    }
+    public override void InitializeStats()
+    {
+        base.InitializeStats();
+        agent.speed = movementSpeed;
+    }
+    // Update is called once per frame
+    void Update () {
+        if (!healthS.IsAlive() && thisTransform.gameObject.activeSelf == false)
+            return;
+        
+        UpdateEssentials();
+        PlayStateAnimations();
+        if (target != null)
         {
-            PlayStateAnimations();
-            if (target != null)
-            {
-                targetDistance = GetTargetDistance();
-            }
-            //Debug.Log(state.ToString());
-            switch (state)
-            {
-                case UnitState.Guarding:
-                    GuardingUpdate();
-                    break;
-
-                case UnitState.AttackMoving:
-                    AttackMovingUpdate();
-                    break;
-
-                case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
-                    MovingUpdate();
-                    break;
-                case UnitState.Investigating:
-                    InvestigatingUpdate();
-                    break;
-                case UnitState.AttackingUnit:
-                    AttackUnitUpdate();
-                    break;
-            }
+            targetDistance = GetTargetDistance();
         }
+        //Debug.Log(state.ToString());
+        switch (state)
+        {
+            case UnitState.Guarding:
+                GuardingUpdate();
+                break;
+
+            case UnitState.AttackMoving:
+                AttackMovingUpdate();
+                break;
+
+            case UnitState.Moving: //nått som kollar ifall jag kommit fram och isåfall vill jag nog vakta
+                MovingUpdate();
+                break;
+            case UnitState.Investigating:
+                InvestigatingUpdate();
+                break;
+            case UnitState.AttackingUnit:
+                AttackUnitUpdate();
+                break;
+        }
+        
 	}
+
+    public override void UpdateEssentials()
+    {
+        base.UpdateEssentials();
+        UpdateMoveSpeed();
+    }
 
     public virtual bool AttackTarget()
     {
@@ -1010,6 +1023,10 @@ public class AgentBase : AIBase {
         }
     }
 
+    public override void UpdateMoveSpeed()
+    {
+        agent.speed = movementSpeed;
+    }
 }
 
 public struct Target

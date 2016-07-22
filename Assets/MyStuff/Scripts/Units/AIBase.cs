@@ -53,6 +53,10 @@ public abstract class AIBase : MonoBehaviour {
 
     //stats****
     [Header("Stats")]
+    public int startMovementSpeed = 10;
+    [HideInInspector]
+    public int movementSpeed;
+
     public int startDamageSpread = 3;
     public int startDamageDamage = 6;
     [HideInInspector]
@@ -90,6 +94,7 @@ public abstract class AIBase : MonoBehaviour {
     public virtual void Reset()
     {
         attackerIDs.Clear();
+        InitializeStats();
     }
 
     public virtual void Dealloc() { }
@@ -152,6 +157,8 @@ public abstract class AIBase : MonoBehaviour {
     }
     public virtual void InitializeStats() //ha med andra påverkande faktorer här sedan
     {
+        movementSpeed = startMovementSpeed;
+
         damage = startDamageDamage;
         damageSpread = startDamageSpread;
 
@@ -354,11 +361,11 @@ public abstract class AIBase : MonoBehaviour {
     {
         return attackerIDs.Count;
     }
+
     public virtual int RollDamage()
     {
         return Random.Range(damage - damageSpread, damage + damageSpread);
     }
-
     public int GetMinDamage()
     {
         return damage - damageSpread;
@@ -368,4 +375,6 @@ public abstract class AIBase : MonoBehaviour {
         return damage + damageSpread;
     }
 
+    public virtual void UpdateEssentials() { }
+    public virtual void UpdateMoveSpeed(){}
 }
