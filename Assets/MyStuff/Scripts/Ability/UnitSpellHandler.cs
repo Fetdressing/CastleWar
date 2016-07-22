@@ -8,7 +8,7 @@ public class UnitSpellHandler : MonoBehaviour {
     private Health health;
     private static AbilityManager abilityManager;
 
-    public string[] abilityNames;
+    public string[] abilityNames; //de kommer i denna ordningen antar jag
     [HideInInspector]
     public List<int> abilityIndexes = new List<int>();
 
@@ -62,7 +62,14 @@ public class UnitSpellHandler : MonoBehaviour {
         {
             InitAbility(abilityIndexes[i]); //kan ju inte bara init denna coz det är ett kinda abstrakt värde, init ska ske på denna unitspellhandlern själv
         }
+        LoadAbilitySprites();
         Reset();
+    }
+
+    public void LoadAbilitySprites()
+    {
+        abilityManager.GetAbilitySprite(1);
+        Debug.Log("FIXA MED SPRITES!!");
     }
 
     public void Reset()

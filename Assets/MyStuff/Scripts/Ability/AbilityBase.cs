@@ -21,6 +21,7 @@ public class AbilityBase : MonoBehaviour{
     [HideInInspector]
     public LayerMask friendlyLayermask;
 
+    public Sprite abilitySprite;
     public string name;
     public float aoe = 10;
     public int fatigueCost = 10;

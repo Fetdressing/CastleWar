@@ -48,6 +48,11 @@ public class AbilityManager : MonoBehaviour {
         return -100000;
     }
 
+    public Sprite GetAbilitySprite(int abiIndex)
+    {
+        return allAbilities[abiIndex].GetComponent<AbilityBase>().abilitySprite;
+    }
+
     public void PerformAbility(Vector3 initPoint, Transform target, int abilityIndex, float value, float aoe, LayerMask targetLayerMask) //cast range får ligga i själva agentscriptet
     {
         if(allAbilities[abilityIndex] is PassiveAbility)
