@@ -580,8 +580,8 @@ public class Selector : MonoBehaviour {
 
             if(targetAIBases[0] != null)
             {
-                minDamageText.text = targetAIBases[0].damageMIN.ToString();
-                maxDamageText.text = targetAIBases[0].damageMAX.ToString();
+                minDamageText.text = targetAIBases[0].GetMinDamage().ToString();
+                maxDamageText.text = targetAIBases[0].GetMaxDamage().ToString();
             }
             else
             {

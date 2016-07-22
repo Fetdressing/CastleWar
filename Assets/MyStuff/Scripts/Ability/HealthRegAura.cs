@@ -13,7 +13,8 @@ public class HealthRegAura : PassiveAbility {
             return;
         for(int i = 0; i < targets.Length; i++)
         {
-            targets[i].GetComponent<Health>().ApplyBuffHealthReg(regAmount, duration, casterT, casterIDName+name);
+            //targets[i].GetComponent<Health>().ApplyBuffHealthReg(regAmount, duration, casterT, casterIDName+name);
+            targets[i].GetComponent<Health>().ApplyBuff(StatType.HealthReg, casterIDName + name ,regAmount, duration, casterT, true);
         }
     }
 }

@@ -130,7 +130,7 @@ public class AgentRanged : AgentBase {
                 if(los)
                 {
                     attackSpeedTimer = attackSpeed + Time.time;
-                    int damageRoll = Random.Range(damageMIN, damageMAX);
+                    int damageRoll = RollDamage();
                     Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
                 }
             }

@@ -53,12 +53,12 @@ public abstract class AIBase : MonoBehaviour {
 
     //stats****
     [Header("Stats")]
-    public int startDamageMIN = 3;
-    public int startDamageMAX = 6;
+    public int startDamageSpread = 3;
+    public int startDamageDamage = 6;
     [HideInInspector]
-    public int damageMIN;
+    public int damageSpread;
     [HideInInspector]
-    public int damageMAX;
+    public int damage;
 
     public float startAttackSpeed = 1.2f;
     [HideInInspector]
@@ -149,6 +149,15 @@ public abstract class AIBase : MonoBehaviour {
             }
         }
 
+    }
+    public virtual void InitializeStats() //ha med andra påverkande faktorer här sedan
+    {
+        damage = startDamageDamage;
+        damageSpread = startDamageSpread;
+
+        attackSpeed = startAttackSpeed;
+
+        attackRange = startAttackRange;
     }
 
 
@@ -345,4 +354,18 @@ public abstract class AIBase : MonoBehaviour {
     {
         return attackerIDs.Count;
     }
+    public virtual int RollDamage()
+    {
+        return Random.Range(damage - damageSpread, damage + damageSpread);
+    }
+
+    public int GetMinDamage()
+    {
+        return damage - damageSpread;
+    }
+    public int GetMaxDamage()
+    {
+        return damage + damageSpread;
+    }
+
 }

@@ -135,18 +135,7 @@ public class AgentBase : AIBase {
         InitializeStats();
 
         //Reset(); inte här
-    }
-
-    public virtual void InitializeStats() //ha med andra påverkande faktorer här sedan
-    {
-        damageMIN = startDamageMIN;
-        damageMAX = startDamageMAX;
-
-        attackSpeed = startAttackSpeed;
-
-        attackRange = startAttackRange;
-    }
-	
+    }	
 	// Update is called once per frame
 	void Update () {
         if (healthS.IsAlive() && thisTransform.gameObject.activeSelf == true)
@@ -208,7 +197,7 @@ public class AgentBase : AIBase {
                     }
 
                     hasAppliedDamage = true;
-                    int damageRoll = Random.Range(damageMIN, damageMAX);
+                    int damageRoll = RollDamage();
 
                     unitSpellHandler.RegisterAttack();
                     if (targetHealth.AddHealth(-damageRoll)) //target överlevde attacken

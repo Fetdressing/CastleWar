@@ -53,16 +53,6 @@ public class Tower : BuildingBase {
         Reset();
     }
 
-    public virtual void InitializeStats() //ha med andra påverkande faktorer här sedan
-    {
-        damageMIN = startDamageMIN;
-        damageMAX = startDamageMAX;
-
-        attackSpeed = startAttackSpeed;
-
-        attackRange = startAttackRange;
-    }
-
     void CreateObjectPool()
     {
         for (int i = 0; i < projectilePoolSize; i++)
@@ -166,7 +156,7 @@ public class Tower : BuildingBase {
                 {
                     unitSpellHandler.RegisterAttack();
                     attackSpeedTimer = attackSpeed + Time.time;
-                    int damageRoll = Random.Range(damageMIN, damageMAX);
+                    int damageRoll = RollDamage();
                     Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
                 }
             }

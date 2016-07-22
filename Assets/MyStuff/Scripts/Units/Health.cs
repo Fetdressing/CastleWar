@@ -7,6 +7,8 @@ public class Health : MonoBehaviour {
     private int initializedTimes = 0;
     [HideInInspector]
     public UnitSpellHandler unitSpellHandler;
+    [HideInInspector]
+    public AIBase aiBase;
     private Transform thisTransform;
     [HideInInspector]
     public Renderer[] thisRenderer;
@@ -29,7 +31,9 @@ public class Health : MonoBehaviour {
     private float healthRegIntervall = 0.8f;
     private float healthRegTimer = 0.0f;
 
-    public int armor = 3;
+    public int startArmor = 3;
+    [HideInInspector]
+    public int armor;
 
     public bool isHealable = true;
 
@@ -43,11 +47,12 @@ public class Health : MonoBehaviour {
     public bool destroyOnDeath = false;
     public int resourceWorth = 5;
 
-    List<string> activeBuffs = new List<string>();
+    //List<string> activeBuffs = new List<string>();
+    Dictionary<string, Buff> buffs = new Dictionary<string, Buff>();
     // Use this for initialization
- //   void Start () {
- //       Init();
-	//}
+    //   void Start () {
+    //       Init();
+    //}
 
     void Awake()
     {
@@ -56,7 +61,6 @@ public class Health : MonoBehaviour {
 
     public void Init()
     {
-        activeBuffs.Clear();
         initializedTimes++;
         thisTransform = this.transform;
         thisRenderer = GetComponentsInChildren<Renderer>();
@@ -64,6 +68,11 @@ public class Health : MonoBehaviour {
         if(thisTransform.GetComponent<UnitSpellHandler>() != null)
         {
             unitSpellHandler = thisTransform.GetComponent<UnitSpellHandler>();
+        }
+
+        if (thisTransform.GetComponent<AIBase>() != null)
+        {
+            aiBase = thisTransform.GetComponent<AIBase>();
         }
         //if (thisRenderer == null)
         //{
@@ -88,9 +97,11 @@ public class Health : MonoBehaviour {
     }
     public void Reset()
     {
-        activeBuffs.Clear();
+        //activeBuffs.Clear();
+        buffs.Clear();
         maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
         currHealth = maxHealth;
+        armor = startArmor;
 
         healthRegAmount = startHealthRegAmount;
 
@@ -282,35 +293,115 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         }
     }
 
-    public void ApplyBuffHealthReg(int reg, float dur, Transform applier, string buffName)
+    public void ApplyBuff(StatType statType, string buffName, int amount, float dur, Transform applier, bool doesStack)
     {
         string bName = applier.name + buffName;
-        if (BuffAlreadyApplied(bName))
-            return;
-        StartCoroutine(BuffHealthReg(reg, dur, bName));
-    }
 
-    IEnumerator BuffHealthReg(int reg, float dur, string buffName)
-    {
-        if (BuffAlreadyApplied(buffName))
-            yield return null;
-
-        activeBuffs.Add(buffName);
-        healthRegAmount += reg;
-        yield return new WaitForSeconds(dur);
-        healthRegAmount -= reg;
-        activeBuffs.Remove(buffName);
-    }
-
-    bool BuffAlreadyApplied(string buffName)
-    {
-        for(int i = 0; i < activeBuffs.Count; i++)
+        Buff incomingBuff = new Buff(bName, statType, amount, dur, applier, doesStack);
+        if(BuffAlreadyApplied(incomingBuff))
         {
-            if(buffName == activeBuffs[i])
-            {
-                return true;
-            }
+            return;
         }
-        return false;
+
+        switch (statType)
+        {
+            case StatType.HealthReg:                
+                BuffStat(ref healthRegAmount, incomingBuff);
+                break;
+            case StatType.Health:
+                BuffStat(ref maxHealth, incomingBuff);
+                break;
+            case StatType.Armor:
+                BuffStat(ref armor, incomingBuff);
+                break;
+            case StatType.Damage:
+                if (aiBase == null)
+                    return;
+                BuffStat(ref aiBase.damage, incomingBuff);
+                break;
+        }
+
+    }
+    public void BuffStat(ref int stat, Buff b)
+    {
+        buffs.Add(b.name, b);
+        stat += b.amount;
+        StartCoroutine(BuffLifeTime(b.name, b));
+    }
+
+    public IEnumerator BuffLifeTime(string name , Buff b)
+    {
+        yield return new WaitForSeconds(b.duration);
+        BuffEnded(name);
+    }
+
+    public void BuffEnded(string name)
+    {
+        Buff tempBuff;
+        if(!buffs.TryGetValue(name, out tempBuff))
+        {
+            Debug.Log("LYCKADES INTE HÄMTA VÄRDET, BUFFEN FANNS EJ!!");
+        }
+
+        switch (tempBuff.statType)
+        {
+            case StatType.HealthReg:
+                healthRegAmount += -tempBuff.amount; //inversed amount för att ta bort igen
+                break;
+            case StatType.Health:
+                maxHealth += -tempBuff.amount;
+                break;
+            case StatType.Armor:
+                armor += -tempBuff.amount;
+                break;
+            case StatType.Damage:
+                aiBase.damage += -tempBuff.amount;
+                break;
+        }
+        buffs.Remove(name);
+    }
+
+    public bool BuffAlreadyApplied(Buff b)
+    {
+        Buff tempB;
+        if (buffs.TryGetValue(b.name, out tempB)) //finns det någon med samma namn?
+        {
+            return true; //fanns redan
+        }
+        else return false;
+
+        //for(int i = 0; i < buffs.Count; i++)
+        //{
+        //    if(b == buffs[i])
+        //    {
+        //        return true;
+        //    }
+        //}
+        //return false;
+    }
+
+}
+
+public enum StatType { Health, HealthReg, Armor, Damage, DamageSpread, MovementSpeed, AttackSpeed };
+
+public class Buff
+{
+    public string name;
+    public StatType statType;
+    public int amount;
+    public float duration;
+    public Transform applier;
+    public bool doesStack;
+
+    public bool hasEnded;
+
+    public Buff(string nameC, StatType statTypeC, int amountC, float durationC, Transform applierC, bool doesStackC)
+    {
+        name = nameC;
+        statType = statTypeC;
+        amount = amountC;
+        duration = durationC;
+        applier = applierC;
+        doesStack = doesStackC;
     }
 }
