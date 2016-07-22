@@ -68,7 +68,7 @@ public class UnitSpellHandler : MonoBehaviour {
 
     public void LoadAbilitySprites()
     {
-        abilityManager.GetAbilitySprite(1);
+        //abilityManager.GetAbilitySprite(1);
         Debug.Log("FIXA MED SPRITES!!");
     }
 

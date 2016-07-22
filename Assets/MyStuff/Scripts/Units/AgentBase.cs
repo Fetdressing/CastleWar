@@ -143,6 +143,9 @@ public class AgentBase : AIBase {
     }
     // Update is called once per frame
     void Update () {
+        if (initializedTimes == 0)
+            return;
+
         if (!healthS.IsAlive() && thisTransform.gameObject.activeSelf == false)
             return;
         

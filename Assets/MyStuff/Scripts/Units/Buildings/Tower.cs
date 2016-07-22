@@ -96,7 +96,10 @@ public class Tower : BuildingBase {
 
     void Update() //kan använda en corutine istället med attackspeeden som yield
     {
-        if(target != null)
+        if (initializedTimes == 0)
+            return;
+
+        if (target != null)
         {
             targetDistance = GetDistanceToTransform(target);
             if (AttackTarget() == false)
