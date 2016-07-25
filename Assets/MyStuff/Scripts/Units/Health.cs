@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
+    public int unitID = 0;
     private int initializedTimes = 0;
     [HideInInspector]
     public UnitSpellHandler unitSpellHandler;

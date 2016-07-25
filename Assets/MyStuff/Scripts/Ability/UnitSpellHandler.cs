@@ -22,6 +22,8 @@ public class UnitSpellHandler : MonoBehaviour {
     public List<OnAttackAbility> onAttackAbilities = new List<OnAttackAbility>();
     [HideInInspector]
     public List<CastAbility> castAbilities = new List<CastAbility>();
+    [HideInInspector]
+    public List<AbilityBase> allAbilities = new List<AbilityBase>();
 
     //vart de skall utgå ifrån, fäst spellen vid deras position
     public Transform auraPosition;
@@ -108,6 +110,7 @@ public class UnitSpellHandler : MonoBehaviour {
             castAbilities.Add(temp.GetComponent<CastAbility>());
             temp.transform.position = castPosition.position;
         }
+        allAbilities.Add(tempType); //lägg till den i den sammansatta listan
         tempType.InitAbility(thisTransform);
     }
 
@@ -123,7 +126,7 @@ public class UnitSpellHandler : MonoBehaviour {
         }
     }
 
-    public void CastSpell() //man får kanske skicka in ett index
+    public void CastSpell(int i) //man får kanske skicka in ett index
     {
 
     }

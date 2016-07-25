@@ -22,6 +22,7 @@ public class Selector : MonoBehaviour {
     private List<Transform> targets = new List<Transform>();
     private List<Health> targetHealths = new List<Health>(); //för att kunna hämta unitsizes
     private List<AIBase> targetAIBases = new List<AIBase>();
+    private List<List<TargetInGroup>> targetGroups = new List<List<TargetInGroup>>(); //sorterade i grupper efter unit type
 
     //selectionBox
     //public GameObject selectionBoxCanvas;
@@ -38,6 +39,9 @@ public class Selector : MonoBehaviour {
     public Text minDamageText;
     public Text maxDamageText;
     public Image unitPortrait;
+
+    public Button[] spellButtons = new Button[4];
+    private int selectedSpellIndex = -1000;
 
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
@@ -165,9 +169,37 @@ public class Selector : MonoBehaviour {
                 {
                     tempAIBase = newTarget.GetComponent<AIBase>();
                 }
+                int targetListID = targets.Count; //kan vara större eller mindre
                 targets.Add(newTarget);
                 targetHealths.Add(tempHealth);
                 targetAIBases.Add(tempAIBase); //måste addas även om den är null
+
+                //lägg till det i en grupp, men kolla först om gruppen finns
+                bool groupExists = false;
+                int existingID = 0;
+                TargetInGroup tempTiG = new TargetInGroup();
+                tempTiG.target = newTarget;
+                tempTiG.targetListIndex = targetListID; //behövs för att hitta den i den grupperade listan sedan
+                tempTiG.health = tempHealth; //health innehåller unitID
+                for (int i = 0; i < targetGroups.Count; i++)
+                {
+                    if (tempHealth.unitID == targetGroups[i][0].health.unitID) //finns redan
+                    {
+                        groupExists = true;
+                        existingID = i;
+                        break;
+                    }
+                }
+                if (groupExists)
+                {
+                    targetGroups[existingID].Add(tempTiG); //lägg till den i korrekt grupp
+                }
+                else
+                {
+                    List<TargetInGroup> tempList = new List<TargetInGroup>(); //skapa en ny för det fanns inga av liknande units
+                    tempList.Add(tempTiG);
+                    targetGroups.Add(tempList);
+                }
             }
         }
     }
@@ -178,9 +210,26 @@ public class Selector : MonoBehaviour {
         {
             targets[i].GetComponent<Health>().ToggleSelMarker(false);
         }
+        int unitID = targetHealths[i].unitID;
         targets.RemoveAt(i);
         targetHealths.RemoveAt(i);
         targetAIBases.RemoveAt(i);
+
+        for(int y = 0; y < targetGroups.Count; y++)
+        {
+            if(targetGroups[y][0].health.unitID == unitID) //hitta listan som innehåller samma sorts units som den jag vill ta bort
+            {
+                for(int k = 0; k < targetGroups[y].Count; k++)
+                {
+                    if(targetGroups[y][k].targetListIndex == i) //sen kan jag bara leta efter det nedsparade indexet (y)
+                    {
+                        targetGroups[y].RemoveAt(k);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
     }
 
     void ClearTargets()
@@ -192,6 +241,12 @@ public class Selector : MonoBehaviour {
         targets.Clear();
         targetHealths.Clear();
         targetAIBases.Clear();
+        
+        for(int i = 0; i < targetGroups.Count; i++)
+        {
+            targetGroups[i].Clear();
+        }
+        targetGroups.Clear();
     }
 
     void CommandToPos(Vector3 pos)
@@ -215,6 +270,11 @@ public class Selector : MonoBehaviour {
         if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
             List<Vector3> movePositions = new List<Vector3>();
+            //List<Transform> tempList = new List<Transform>();
+            //for(int i = 0; i < targetGroups[0].Count; i++)
+            //{
+            //    tempList.Add(targetGroups[0][i].target);
+            //}
             if(targets.Count > 2) //använd bara box pattern när det är fler än 2
             {
                 movePositions = GetBoxPattern(targets, targetHealths, pos);
@@ -483,6 +543,25 @@ public class Selector : MonoBehaviour {
         if(Input.GetButtonDown("Cancel"))
         {
             ClearTargets();
+            selectedSpellIndex = -1000;
+        }
+
+        if(Input.GetButtonDown("Spell1"))
+        {
+            Debug.Log("Spells är skoj!");
+            selectedSpellIndex = 0;
+        }
+        else if(Input.GetButtonDown("Spell2"))
+        {
+            selectedSpellIndex = 1;
+        }
+        else if (Input.GetButtonDown("Spell3"))
+        {
+            selectedSpellIndex = 2;
+        }
+        else if (Input.GetButtonDown("Spell4"))
+        {
+            selectedSpellIndex = 3;
         }
     }
 
@@ -597,5 +676,12 @@ public class Selector : MonoBehaviour {
             armorText.text = " N/A";
             hpRegText.text = " N/A";
         }
+    }
+
+    class TargetInGroup //används för att hålla koll på grupperingslistan bara
+    {
+        public Transform target;
+        public int targetListIndex;
+        public Health health;
     }
 }
