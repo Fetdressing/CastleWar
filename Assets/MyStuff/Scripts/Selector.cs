@@ -22,8 +22,10 @@ public class Selector : MonoBehaviour {
     private List<Transform> targets = new List<Transform>();
     private List<Health> targetHealths = new List<Health>(); //för att kunna hämta unitsizes
     private List<AIBase> targetAIBases = new List<AIBase>();
-    private List<List<TargetInGroup>> targetGroups = new List<List<TargetInGroup>>(); //sorterade i grupper efter unit type
 
+    private List<List<TargetInGroup>> targetGroups = new List<List<TargetInGroup>>(); //sorterade i grupper efter unit type
+    private int currTargetGroupIndex = 0;
+    private List<Transform> currTargetGroup = new List<Transform>();
     //selectionBox
     //public GameObject selectionBoxCanvas;
     public RectTransform selectionBox;
@@ -84,6 +86,7 @@ public class Selector : MonoBehaviour {
             temp.SetActive(false);
             groundMarkerPool.Add(temp.transform);
         }
+        currTargetGroupIndex = 0;
         //selMask = selectLayerMask.value;
     }
 
@@ -105,6 +108,7 @@ public class Selector : MonoBehaviour {
         }
         GetMoveState(); //behöver vara sist
         UpdateUnitInfo();
+        UpdateCurrTargetGroup();
     }
 
     Transform GetMouseTarget()
@@ -270,12 +274,8 @@ public class Selector : MonoBehaviour {
         if (moveState == MoveState.Move) //annars ska den bara avmarkera den andra statet, som typ attack
         {
             List<Vector3> movePositions = new List<Vector3>();
-            //List<Transform> tempList = new List<Transform>();
-            //for(int i = 0; i < targetGroups[0].Count; i++)
-            //{
-            //    tempList.Add(targetGroups[0][i].target);
-            //}
-            if(targets.Count > 2) //använd bara box pattern när det är fler än 2
+
+            if (targets.Count > 2) //använd bara box pattern när det är fler än 2
             {
                 movePositions = GetBoxPattern(targets, targetHealths, pos);
             }
@@ -418,6 +418,11 @@ public class Selector : MonoBehaviour {
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
     }
 
+    void OrderCastSpell(Vector3 pos)
+    {
+        Debug.Log("PEWPEW SPELL!");
+    }
+
     void SelectionBox()
     {
         // Click somewhere in the Game View.
@@ -506,7 +511,11 @@ public class Selector : MonoBehaviour {
 
         if (Input.GetButtonDown("Fire1")) //attack unit om man har MoveState.Attack och ifall mouseInput != null!!!!!!!!!!!!!!!!!!!!!!!
         {
-            if (moveState == MoveState.Attack && mouseInput != null)
+            if(selectedSpellIndex >= 0 && mouseHitValid) //spell redo
+            {
+                OrderCastSpell(mouseHitPos);
+            }
+            else if (moveState == MoveState.Attack && mouseInput != null)
             {
                 OrderAttackUnit(mouseInput, true);
             }
@@ -546,22 +555,27 @@ public class Selector : MonoBehaviour {
             selectedSpellIndex = -1000;
         }
 
-        if(Input.GetButtonDown("Spell1"))
+        if(Input.GetButtonDown("Spell1")) //Q
         {
             Debug.Log("Spells är skoj!");
             selectedSpellIndex = 0;
         }
-        else if(Input.GetButtonDown("Spell2"))
+        else if(Input.GetButtonDown("Spell2")) //W
         {
             selectedSpellIndex = 1;
         }
-        else if (Input.GetButtonDown("Spell3"))
+        else if (Input.GetButtonDown("Spell3")) //E
         {
             selectedSpellIndex = 2;
         }
-        else if (Input.GetButtonDown("Spell4"))
+        else if (Input.GetButtonDown("Spell4")) //R
         {
             selectedSpellIndex = 3;
+        }
+
+        if(Input.GetButtonDown("Next")) //tab
+        {
+            GetNextTargetGroupIndex();
         }
     }
 
@@ -675,6 +689,29 @@ public class Selector : MonoBehaviour {
 
             armorText.text = " N/A";
             hpRegText.text = " N/A";
+        }
+    }
+
+
+    void GetNextTargetGroupIndex()
+    {
+        currTargetGroupIndex++;
+        if(currTargetGroupIndex > targetGroups.Count-1)
+        {
+            currTargetGroupIndex = 0;
+        }
+        UpdateCurrTargetGroup();
+        //Debug.Log(currTargetGroupIndex.ToString());
+    }
+    void UpdateCurrTargetGroup()
+    {
+        currTargetGroup.Clear();
+        if (targetGroups.Count > currTargetGroupIndex) //kolla så indexet finns
+        {
+            for (int i = 0; i < targetGroups[currTargetGroupIndex].Count; i++)
+            {
+                currTargetGroup.Add(targetGroups[currTargetGroupIndex][i].target);
+            }
         }
     }
 
