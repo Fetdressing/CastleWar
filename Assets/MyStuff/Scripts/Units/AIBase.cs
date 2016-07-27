@@ -27,7 +27,7 @@ public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
     public LayerMask enemyOnly;
 
-    public enum UnitState { AttackMoving, Moving, Guarding, Investigating, AttackingUnit };
+    public enum UnitState { AttackMoving, Moving, Guarding, Investigating, AttackingUnit, CastingSpell };
 
     public struct Command
     {
@@ -35,13 +35,15 @@ public abstract class AIBase : MonoBehaviour {
         public Vector3 positionToExecute; //använd sedan thisTransform.position för start ofc
         public Transform target;
         public bool friendlyFire;
+        public int spellIndex;
 
-        public Command(UnitState uS, Vector3 pos, Transform t, bool ff)
+        public Command(UnitState uS, Vector3 pos, Transform t, bool ff, int spellindex)
         {
             stateToExecute = uS;
             positionToExecute = pos;
             target = t;
             friendlyFire = ff;
+            spellIndex = spellindex;
         }
     }
 
@@ -74,9 +76,11 @@ public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
     public float attackRange;
 
-    public float startSpellRange = 30;
+    //public float startSpellRange = 30;
+    //[HideInInspector]
+    //public float spellRange;
     [HideInInspector]
-    public float spellRange;
+    public int currSpellIndex = 0;
 
     public virtual void Init()
     {
@@ -178,12 +182,21 @@ public abstract class AIBase : MonoBehaviour {
 
     public virtual void Investigate(Vector3 pos) { }
 
+    public virtual void PerformSpell(Vector3 pos, int spellIndex)
+    {
+        currSpellIndex = spellIndex;
+    }
+
     public virtual void AttackUnit(Transform t, bool friendlyFire) { }
 
+    public virtual bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable)
+    {
+        return true;
+    } //försöker kasta spellen
 
     public virtual void ExecuteNextCommand() { }
 
-    public virtual void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire) { }
+    public virtual void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire, int spellIndex) { }
 
     public virtual void ClearCommands()
     {

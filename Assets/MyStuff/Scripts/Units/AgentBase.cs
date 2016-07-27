@@ -175,6 +175,9 @@ public class AgentBase : AIBase {
             case UnitState.AttackingUnit:
                 AttackUnitUpdate();
                 break;
+            case UnitState.CastingSpell:
+                PerformSpellUpdate();
+                break;
         }
         
 	}
@@ -184,6 +187,12 @@ public class AgentBase : AIBase {
         base.UpdateEssentials();
         UpdateMoveSpeed();
     }
+
+    public override bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable)
+    {
+        unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable);
+        return true;
+    } //försöker kasta spellen
 
     public virtual bool AttackTarget()
     {
@@ -429,6 +438,24 @@ public class AgentBase : AIBase {
 
     }
 
+    public override void PerformSpell(Vector3 pos, int spellIndex)
+    {
+        if (unitSpellHandler == null)
+        {
+            ExecuteNextCommand();
+            return;
+        }
+        base.PerformSpell(pos, spellIndex);
+        if (!IsActive())
+            return;
+        ResetPath();
+        agent.avoidancePriority = 100;
+        startPos = thisTransform.position;
+        movePos = pos;
+        currSpellIndex = spellIndex;
+        state = UnitState.CastingSpell;
+    }
+
     public override void AttackUnit(Transform t, bool friendlyFire)
     {
         if (t != null && t.gameObject.activeSelf == true)
@@ -495,6 +522,9 @@ public class AgentBase : AIBase {
                 case UnitState.AttackingUnit:
                     Guard();
                     break;
+                case UnitState.CastingSpell:
+                    Guard();
+                    break;
             }
         }
         else //finns states som ska köras
@@ -502,6 +532,7 @@ public class AgentBase : AIBase {
             //state = nextCommando[0].stateToExecute;
             Vector3 pos = nextCommando[0].positionToExecute;
             Transform t = nextCommando[0].target;
+            int spellIndex = nextCommando[0].spellIndex;
             bool friendfire = nextCommando[0].friendlyFire;
             switch (nextCommando[0].stateToExecute)
             {
@@ -525,14 +556,18 @@ public class AgentBase : AIBase {
                     nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
                     AttackUnit(t, friendfire);
                     break;
+                case UnitState.CastingSpell:
+                    nextCommando.RemoveAt(0); //ta bort den kommandot som kördes igång :)
+                    PerformSpell(pos, spellIndex);
+                    break;
             }
         }
 
     }
 
-    public override void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire)
+    public override void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire, int spellIndex)
     {
-        Command c = new Command(nextState, pos, tar, friendlyfire);
+        Command c = new Command(nextState, pos, tar, friendlyfire, spellIndex);
         if(nextCommando.Count > 5) //vill inte göra denna lista hur lång som helst
         {
             nextCommando[nextCommando.Count-1] = c; //släng på den på sista platsen
@@ -731,6 +766,24 @@ public class AgentBase : AIBase {
         bool targetAlive = AttackTarget();
 
         if (target == null || targetAlive == false) //kom fram
+        {
+            ExecuteNextCommand();
+        }
+    }
+
+    public virtual void PerformSpellUpdate()
+    {
+        bool isCastable = true;
+        if(CastSpell(movePos, currSpellIndex, ref isCastable)) //lyckades kasta
+        {
+            ExecuteNextCommand();
+        }
+        else
+        {
+            SetDestination(movePos);
+        }
+
+        if(isCastable == false) //cd, passiveability eller liknande
         {
             ExecuteNextCommand();
         }

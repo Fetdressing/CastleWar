@@ -280,7 +280,7 @@ public class Tower : BuildingBase {
         }
     }
 
-    public override void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire) //den ska ju bara kunna attackera units så denna behöver moddas
+    public override void AddCommandToList(Vector3 pos, UnitState nextState, Transform tar, bool friendlyfire, int spellIndex) //den ska ju bara kunna attackera units så denna behöver moddas
     {
         if(tar != null) //betyder att det är "attackunit"
         {

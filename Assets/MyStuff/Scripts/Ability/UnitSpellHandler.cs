@@ -126,9 +126,24 @@ public class UnitSpellHandler : MonoBehaviour {
         }
     }
 
-    public void CastSpell(int i) //man får kanske skicka in ett index
-    {
-
+    public bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable) //man får kanske skicka in ett index
+    { //indexet gäller alla abilities då den ska visa upp alla
+        if (allAbilities[spellIndex].GetComponent<CastAbility>() == null) //kolla så att det är en spell som går att kasta
+        {
+            isCastable = false;
+            return false;
+        }
+        int spellCost = allAbilities[spellIndex].GetComponent<CastAbility>().CastSpell(pos, 100000, ref isCastable);
+        if (spellCost == 0) //gick inte kasta
+        {
+            isCastable = false;
+            return false;
+        }
+        else
+        {
+            //currFatigue -= costFat;
+            return true;
+        }
     }
 
     public void RegisterAttack()

@@ -26,6 +26,7 @@ public class Selector : MonoBehaviour {
     private List<List<TargetInGroup>> targetGroups = new List<List<TargetInGroup>>(); //sorterade i grupper efter unit type
     private int currTargetGroupIndex = 0;
     private List<Transform> currTargetGroup = new List<Transform>();
+    private int targetGroupUnitSpellcasterIndex = 0; //det unitet i targetGroupen som ska kasta spell härnäst
     //selectionBox
     //public GameObject selectionBoxCanvas;
     public RectTransform selectionBox;
@@ -296,11 +297,11 @@ public class Selector : MonoBehaviour {
                     {
                         if (targets[i].GetComponent<SpawnBuilding>() != null)
                         {
-                            targets[i].GetComponent<AIBase>().AddCommandToList(originPos, AIBase.UnitState.Moving, targets[i].transform, false);
+                            targets[i].GetComponent<AIBase>().AddCommandToList(originPos, AIBase.UnitState.Moving, targets[i].transform, false, selectedSpellIndex);
                         }
                         else
                         {
-                            targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, targets[i].transform, false);
+                            targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.Moving, targets[i].transform, false, selectedSpellIndex);
                         }
                     }
                 }
@@ -356,11 +357,11 @@ public class Selector : MonoBehaviour {
                 {
                     if (targets[i].GetComponent<SpawnBuilding>() != null)
                     {
-                        targets[i].GetComponent<AIBase>().AddCommandToList(originPos, AIBase.UnitState.AttackMoving, targets[i].transform, false);
+                        targets[i].GetComponent<AIBase>().AddCommandToList(originPos, AIBase.UnitState.AttackMoving, targets[i].transform, false, selectedSpellIndex);
                     }
                     else
                     {
-                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, targets[i].transform, false); //skicka sig själv som target så inget fuckar
+                        targets[i].GetComponent<AIBase>().AddCommandToList(movePositions[i], AIBase.UnitState.AttackMoving, targets[i].transform, false, selectedSpellIndex); //skicka sig själv som target så inget fuckar
                     }
                 }
             }
@@ -399,7 +400,7 @@ public class Selector : MonoBehaviour {
             {
                 if (targets[i].GetComponent<AIBase>() != null)
                 {
-                    targets[i].GetComponent<AIBase>().AddCommandToList(t.position, AIBase.UnitState.AttackingUnit, t, friendfire);
+                    targets[i].GetComponent<AIBase>().AddCommandToList(t.position, AIBase.UnitState.AttackingUnit, t, friendfire, selectedSpellIndex);
                 }
             }
         }
@@ -418,9 +419,33 @@ public class Selector : MonoBehaviour {
         Cursor.SetCursor(moveCursor, hotspot, cursorMode);
     }
 
-    void OrderCastSpell(Vector3 pos)
+    void OrderCastSpell(Vector3 pos) //behöver ej sätta ett moveState då det endast är en snubbe som kastar spell
     {
-        Debug.Log("PEWPEW SPELL!");
+        if (currTargetGroupIndex > currTargetGroup.Count)
+        {
+            currTargetGroupIndex = 0;
+        }
+
+        if (currTargetGroup.Count == 0) return;
+        if (currTargetGroup[currTargetGroupIndex].GetComponent<UnitSpellHandler>() == null) return;
+
+        if (Input.GetButton("Add")) //om add så lägg till kommandot i listan
+        {
+            if (currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>() != null)
+            {
+                currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.CastingSpell, currTargetGroup[currTargetGroupIndex], false, selectedSpellIndex);
+            }            
+        }
+        else
+        {
+            if (currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>() != null)
+            {
+                currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>().ClearCommands();
+                currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>().PerformSpell(pos, selectedSpellIndex);
+            }
+        }
+        moveState = MoveState.Move;
+        currTargetGroupIndex++;
     }
 
     void SelectionBox()
@@ -557,7 +582,6 @@ public class Selector : MonoBehaviour {
 
         if(Input.GetButtonDown("Spell1")) //Q
         {
-            Debug.Log("Spells är skoj!");
             selectedSpellIndex = 0;
         }
         else if(Input.GetButtonDown("Spell2")) //W
