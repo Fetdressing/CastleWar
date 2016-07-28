@@ -2,6 +2,8 @@
 using System.Collections;
 
 public class CastAbility : AbilityBase {
+    [HideInInspector]
+    public Vector3 targetPosition;
 
     public virtual int CastSpell(Vector3 targetPos, int currFatigue, ref bool isCastable) //returnerar kostnaden av spellen
     {
@@ -16,9 +18,9 @@ public class CastAbility : AbilityBase {
         {
             return 0;
         }
-
+        targetPosition = targetPos;
         cooldown_Timer = Time.time + cooldown;
-        base.ApplyEffect();
+        ApplyEffect();
         return fatigueCost;
     }
 }

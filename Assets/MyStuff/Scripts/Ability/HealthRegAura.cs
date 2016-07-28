@@ -6,7 +6,7 @@ public class HealthRegAura : PassiveAbility {
     // Use this for initialization
     public override void ApplyEffect()
     {
-        if (isInit == false) return;
+        if (initTimes == 0) return;
         base.ApplyEffect();
         Transform[] targets = ScanTargets(aoe);
         if (targets == null)

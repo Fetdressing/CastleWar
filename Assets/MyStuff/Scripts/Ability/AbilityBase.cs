@@ -17,6 +17,10 @@ public class AbilityBase : MonoBehaviour{
     public ValidTargets validTargets = ValidTargets.Enemy;
 
     [HideInInspector]
+    public string[] eLayers;
+    [HideInInspector]
+    public List<string> fLayers;
+    [HideInInspector]
     public LayerMask enemyLayermask;
     [HideInInspector]
     public LayerMask friendlyLayermask;
@@ -32,10 +36,11 @@ public class AbilityBase : MonoBehaviour{
     public float range = 30;
 
     [HideInInspector]
-    public bool isInit = false;
+    public int initTimes = 0;
 
     public virtual void InitAbility(Transform caster)
     {
+        if (initTimes > 0) return;
         thisTransform = this.transform;
         casterT = caster;
         casterIDName = casterT.name + casterT.GetComponent<AIBase>().id.ToString();
@@ -45,8 +50,8 @@ public class AbilityBase : MonoBehaviour{
             teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         }
 
-        string[] eLayers = new string[0];
-        List<string> fLayers = new List<string>();
+        eLayers = new string[0];
+        fLayers = new List<string>();
         teamHandler.GetFriendsAndFoes(LayerMask.LayerToName(caster.gameObject.layer), ref fLayers, ref eLayers);
 
         for (int i = 0; i < eLayers.Length; i++)
@@ -59,12 +64,17 @@ public class AbilityBase : MonoBehaviour{
             friendlyLayermask |= (1 << LayerMask.NameToLayer(fLayers[i]));
         }
 
-        isInit = true;
+        initTimes++;
+    }
+
+    public virtual void Dealloc()
+    {
+
     }
 
     public virtual void ApplyEffect()
     {
-        if (isInit == false) return;
+        if (initTimes == 0) return;
     }
 
     public bool IsReady(int currFatigue) //kollar ifall unitet kan kasta denna spell vid tillfället

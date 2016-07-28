@@ -691,27 +691,30 @@ public class Selector : MonoBehaviour {
 
     void UpdateUnitInfo()
     {
+        if (currTargetGroup.Count == 0) return;
         if (targets.Count > 0)
         {
-            if(targetHealths[0].unitSprite != null)
+            Health selHealth = currTargetGroup[0].GetComponent<Health>();
+            if(selHealth.unitSprite != null)
             {
-                unitPortrait.sprite = targetHealths[0].unitSprite;
+                unitPortrait.sprite = selHealth.unitSprite;
             }
             else
             {
                 unitPortrait.sprite = null;
             }
 
-            currHealthText.text = targetHealths[0].GetCurrHealth().ToString();
-            maxHealthText.text = "/" + targetHealths[0].maxHealth.ToString();
+            currHealthText.text = selHealth.GetCurrHealth().ToString();
+            maxHealthText.text = "/" + selHealth.maxHealth.ToString();
 
-            armorText.text = targetHealths[0].armor.ToString();
-            hpRegText.text = targetHealths[0].healthRegAmount.ToString();
+            armorText.text = selHealth.armor.ToString();
+            hpRegText.text = selHealth.healthRegAmount.ToString();
 
-            if(targetAIBases[0] != null)
+            if(currTargetGroup[0].GetComponent<AIBase>() != null)
             {
-                minDamageText.text = targetAIBases[0].GetMinDamage().ToString();
-                maxDamageText.text = targetAIBases[0].GetMaxDamage().ToString();
+                AIBase selAIBase = currTargetGroup[0].GetComponent<AIBase>();
+                minDamageText.text = selAIBase.GetMinDamage().ToString();
+                maxDamageText.text = selAIBase.GetMaxDamage().ToString();
             }
             else
             {

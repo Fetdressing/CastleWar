@@ -83,8 +83,9 @@ public class UnitSpellHandler : MonoBehaviour {
 
     public void InitAbility(int index)
     {
+        if (index < 0) return;
         //Debug.Log(abilityManager.allAbilities[0].gameObject.name);
-        GameObject temp = Instantiate(abilityManager.allAbilities[0].gameObject, thisTransform.position, Quaternion.identity) as GameObject; //instantiera spellen, sen sköter den resten
+        GameObject temp = Instantiate(abilityManager.allAbilities[index].gameObject, thisTransform.position, Quaternion.identity) as GameObject; //instantiera spellen, sen sköter den resten
         temp.transform.SetParent(thisTransform);
 
         AbilityBase tempType = temp.GetComponent<AbilityBase>();
@@ -191,6 +192,14 @@ public class UnitSpellHandler : MonoBehaviour {
         for (int i = 0; i < onHitAbilities.Count; i++)
         {
             onHitAbilities[i].ApplyEffect();
+        }
+    }
+
+    void OnDestroy()
+    {
+        for(int i = 0; i < allAbilities.Count; i++)
+        {
+            allAbilities[i].Dealloc(); //så pools o stuff tas bort
         }
     }
 }
