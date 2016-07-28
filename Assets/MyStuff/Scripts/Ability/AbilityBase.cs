@@ -67,6 +67,19 @@ public class AbilityBase : MonoBehaviour{
         if (isInit == false) return;
     }
 
+    public bool IsReady(int currFatigue) //kollar ifall unitet kan kasta denna spell vid tillfället
+    {
+        if(currFatigue - fatigueCost < 0)
+        {
+            return false;
+        }
+        if(cooldown_Timer > Time.time)
+        {
+            return false;
+        }
+        return true;
+    }
+
     public virtual Transform[] ScanTargets(float aD)
     {
         LayerMask targetLayerMask;

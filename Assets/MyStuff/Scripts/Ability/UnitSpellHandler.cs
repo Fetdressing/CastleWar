@@ -126,14 +126,14 @@ public class UnitSpellHandler : MonoBehaviour {
         }
     }
 
-    public bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable) //man får kanske skicka in ett index
+    public bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable, int currFatigue) //man får kanske skicka in ett index
     { //indexet gäller alla abilities då den ska visa upp alla
         if (allAbilities[spellIndex].GetComponent<CastAbility>() == null) //kolla så att det är en spell som går att kasta
         {
             isCastable = false;
             return false;
         }
-        int spellCost = allAbilities[spellIndex].GetComponent<CastAbility>().CastSpell(pos, 100000, ref isCastable);
+        int spellCost = allAbilities[spellIndex].GetComponent<CastAbility>().CastSpell(pos, currFatigue, ref isCastable); //returnerar 0 ifall det inte gick
         if (spellCost == 0) //gick inte kasta
         {
             isCastable = false;
@@ -144,6 +144,29 @@ public class UnitSpellHandler : MonoBehaviour {
             //currFatigue -= costFat;
             return true;
         }
+    }
+
+    public bool IsSpellReady(int spellIndex, int currFatigue)
+    {
+        if(!SpellIndexExists(spellIndex))
+        {
+            return false;
+        }
+        return (allAbilities[spellIndex].IsReady(currFatigue));
+    }
+
+    public bool SpellIndexExists(int spellIndex) //ifall det finns en spell på denna plats
+    {
+        if(spellIndex >= allAbilities.Count)
+        {
+            return false;
+        }
+
+        if(allAbilities[spellIndex] == null)
+        {
+            return false;
+        }
+        return true;
     }
 
     public void RegisterAttack()

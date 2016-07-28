@@ -24,7 +24,8 @@ public class Selector : MonoBehaviour {
     private List<AIBase> targetAIBases = new List<AIBase>();
 
     private List<List<TargetInGroup>> targetGroups = new List<List<TargetInGroup>>(); //sorterade i grupper efter unit type
-    private int currTargetGroupIndex = 0;
+    private int currTargetGroupIndex = 0; //indexet till den targetGroupen som ska användas
+
     private List<Transform> currTargetGroup = new List<Transform>();
     private int targetGroupUnitSpellcasterIndex = 0; //det unitet i targetGroupen som ska kasta spell härnäst
     //selectionBox
@@ -421,31 +422,43 @@ public class Selector : MonoBehaviour {
 
     void OrderCastSpell(Vector3 pos) //behöver ej sätta ett moveState då det endast är en snubbe som kastar spell
     {
-        if (currTargetGroupIndex > currTargetGroup.Count)
+        if (targetGroupUnitSpellcasterIndex >= currTargetGroup.Count)
         {
-            currTargetGroupIndex = 0;
+            targetGroupUnitSpellcasterIndex = 0;
         }
 
         if (currTargetGroup.Count == 0) return;
-        if (currTargetGroup[currTargetGroupIndex].GetComponent<UnitSpellHandler>() == null) return;
+        if (currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<UnitSpellHandler>() == null) return; //räcker jag kollar en i gruppen då alla är likadana
+
+        if (currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<UnitSpellHandler>().SpellIndexExists(selectedSpellIndex) == false) return; //finns spellen på detta unit?
+
+        int nrTries = 0;
+        int maxTries = currTargetGroup.Count;
+        while(currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<UnitSpellHandler>().IsSpellReady(selectedSpellIndex, 10000) == false && nrTries < maxTries) //hitta en caster i gruppen som är redo med spellen
+        {
+            GetNextSpellCasterIndex();
+            nrTries++;
+        }
+
+        //Debug.Log(currTargetGroup[targetGroupUnitSpellcasterIndex].name + " " + targetGroupUnitSpellcasterIndex.ToString());
 
         if (Input.GetButton("Add")) //om add så lägg till kommandot i listan
         {
-            if (currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>() != null)
+            if (currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<AIBase>() != null)
             {
-                currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.CastingSpell, currTargetGroup[currTargetGroupIndex], false, selectedSpellIndex);
+                currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<AIBase>().AddCommandToList(pos, AIBase.UnitState.CastingSpell, currTargetGroup[targetGroupUnitSpellcasterIndex], false, selectedSpellIndex);
             }            
         }
         else
         {
-            if (currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>() != null)
+            if (currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<AIBase>() != null)
             {
-                currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>().ClearCommands();
-                currTargetGroup[currTargetGroupIndex].GetComponent<AIBase>().PerformSpell(pos, selectedSpellIndex);
+                currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<AIBase>().ClearCommands();
+                currTargetGroup[targetGroupUnitSpellcasterIndex].GetComponent<AIBase>().PerformSpell(pos, selectedSpellIndex);
             }
         }
         moveState = MoveState.Move;
-        currTargetGroupIndex++;
+        targetGroupUnitSpellcasterIndex++;
     }
 
     void SelectionBox()
@@ -736,6 +749,15 @@ public class Selector : MonoBehaviour {
             {
                 currTargetGroup.Add(targetGroups[currTargetGroupIndex][i].target);
             }
+        }
+    }
+
+    void GetNextSpellCasterIndex()
+    {
+        targetGroupUnitSpellcasterIndex++;
+        if(targetGroupUnitSpellcasterIndex >= currTargetGroup.Count)
+        {
+            targetGroupUnitSpellcasterIndex = 0;
         }
     }
 

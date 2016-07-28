@@ -190,7 +190,7 @@ public class AgentBase : AIBase {
 
     public override bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable)
     {
-        unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable);
+        unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable, 100000);
         return true;
     } //försöker kasta spellen
 
