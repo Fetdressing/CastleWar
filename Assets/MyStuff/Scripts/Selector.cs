@@ -175,11 +175,10 @@ public class Selector : MonoBehaviour {
                 {
                     tempAIBase = newTarget.GetComponent<AIBase>();
                 }
-                int targetListID = targets.Count-1; //kan vara större eller mindre
                 targets.Add(newTarget);
                 targetHealths.Add(tempHealth);
                 targetAIBases.Add(tempAIBase); //måste addas även om den är null
-
+                int targetListID = targets.Count - 1; //kan vara större eller mindre
                 //lägg till det i en grupp, men kolla först om gruppen finns
                 bool groupExists = false;
                 int existingID = 0;
@@ -257,6 +256,7 @@ public class Selector : MonoBehaviour {
         targetGroups.Clear();
         currTargetGroup.Clear();
         UpdateCurrTargetGroup();
+        GetNextTargetGroupIndex(); //för indexet blir wack efter man clearat
     }
 
     void CommandToPos(Vector3 pos)
