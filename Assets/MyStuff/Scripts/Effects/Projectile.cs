@@ -4,28 +4,45 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Projectile : MonoBehaviour {
-    private GameObject thisObject;
-    private Transform thisTransform;
-    private Rigidbody thisRigidbody;
-    private Transform targetE;
+    [HideInInspector] public int initTimes = 0;
 
-    private bool isReady = true; //den vill kanske inte skjuta igen förrens tex dess explosion är klar
+    [HideInInspector] public GameObject thisObject;
+    [HideInInspector] public Transform thisTransform;
+    [HideInInspector] public Rigidbody thisRigidbody;
+    [HideInInspector] public Transform targetE;
+    [HideInInspector]
+    public Vector3 aimPosition;
+
+    [HideInInspector] public bool isReady = true; //den vill kanske inte skjuta igen förrens tex dess explosion är klar
 
     public bool homing = false;
     public bool friendlyFire = false;
 
-    private int damageRoll; //skickas av skjutaren
+    [HideInInspector] public int damageRoll; //skickas av skjutaren
     public float shootForce = 40;
     public float maxVelocity = 0.02f;
+    public float aoeRange = 0;
    
-    private List<string> friendlyLayers;
-    private string[] hitLayers = null;
-    private Transform attackerT;
-    private bool notifyAttacked = false; //denna bestäms av den som skjuter
+    [HideInInspector] public List<string> friendlyLayers;
+    [HideInInspector] public string[] hitLayers = null;
+    [HideInInspector]
+    public LayerMask friendlyLM;
+    [HideInInspector]
+    public LayerMask enemyLM;
+    [HideInInspector]
+    public LayerMask allLM;
 
-    private float startAliveTime = 0.0f; //när den börja leva, kolla mot hur länge den ska leva
-	// Use this for initialization
-	void Awake () {
+    [HideInInspector] public Transform attackerT;
+    [HideInInspector] public bool notifyAttacked = false; //denna bestäms av den som skjuter
+
+    [HideInInspector] public float startAliveTime = 0.0f; //när den börja leva, kolla mot hur länge den ska leva
+
+    public GameObject explosionObj;
+    [HideInInspector]
+    public List<GameObject> explosionPool = new List<GameObject>();
+    public int explosionPoolSize = 2;
+    // Use this for initialization
+    void Awake () {
         thisObject = this.gameObject;
         thisTransform = this.transform;
         thisRigidbody = thisTransform.GetComponent<Rigidbody>();
@@ -33,23 +50,67 @@ public class Projectile : MonoBehaviour {
 
     public void Init(string[] hitlayers, List<string> friendlylayers, Transform attacker) //vilka saker den ska kunna göra skada på
     {
+        if (initTimes != 0) return;
+        initTimes++;
         hitLayers = hitlayers;
         friendlyLayers = friendlylayers;
         attackerT = attacker;
         ToggleActive(false);
+
+        InitLayermasks();
+        InitObjectPool();
+    }
+
+    public void InitLayermasks()
+    {
+        enemyLM = LayerMask.NameToLayer("Nothing"); //inte riktigt säker på varför detta funkar men det gör
+        friendlyLM = LayerMask.NameToLayer("Nothing");
+        allLM = LayerMask.NameToLayer("Nothing");
+
+        enemyLM = ~enemyLM; //inte riktigt säker på varför detta funkar men det gör
+        friendlyLM = ~friendlyLM;
+        allLM = ~allLM;
+
+        for (int i = 0; i < hitLayers.Length; i++)
+        {
+            enemyLM |= (1 << LayerMask.NameToLayer(hitLayers[i]));
+            allLM |= (1 << LayerMask.NameToLayer(hitLayers[i]));
+        }
+        for(int i = 0; i < friendlyLayers.Count; i++)
+        {
+            friendlyLM |= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
+            allLM |= (1 << LayerMask.NameToLayer(friendlyLayers[i]));
+        }
+    }
+
+    public void InitObjectPool()
+    {
+        if (explosionObj == null) return;
+        for (int i = 0; i < explosionPoolSize; i++)
+        {
+            GameObject tempO = Instantiate(explosionObj.gameObject) as GameObject;
+            explosionPool.Add(tempO.gameObject);
+            tempO.SetActive(false);
+        }
     }
 
     public void Dealloc()
     {
         StopAllCoroutines();
         //ta bort explosions objekt
+        if (explosionObj == null) return;
+        for (int i = 0; i < explosionPoolSize; i++)
+        {
+            Destroy(explosionPool[i].gameObject);
+        }
     }
 	
-    public void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff)
+    public virtual void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff)
     {
         StopAllCoroutines();
         ToggleActive(true);
         thisTransform.LookAt(aimPos);
+        aimPosition = aimPos;
         targetE = target;
         thisRigidbody.AddForce(thisTransform.forward * shootForce, ForceMode.Impulse);
 
@@ -109,33 +170,19 @@ public class Projectile : MonoBehaviour {
             {
                 //deal damage och skicka attackerna till AgentBase
                 Hit();
-                collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
-                if(notifyAttacked)
-                {
-                    if (collidingUnit.transform.GetComponent<AIBase>() != null)
-                    {
-                        collidingUnit.transform.GetComponent<AIBase>().Attacked(attackerT);
-                    }
-                }
+                ApplyDamageTransform(collidingUnit.transform);
                 return;
             }
         }
 
-        if(collidingUnit.gameObject.layer == attackerT.gameObject.layer) //attackera en från samma team
-        {
-            if (friendlyFire == true && collidingUnit.transform == targetE) //om man attackerar allierad så ska den bara träffa just de targetet
-            {
-                collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
-                if (notifyAttacked)
-                {
-                    if (collidingUnit.transform.GetComponent<AIBase>() != null)
-                    {
-                        collidingUnit.transform.GetComponent<AIBase>().Attacked(attackerT);
-                    }
-                }
-            }
-            return;
-        }
+        //if(collidingUnit.gameObject.layer == attackerT.gameObject.layer) //attackera en från samma team
+        //{
+        //    if (friendlyFire == true && collidingUnit.transform == targetE) //om man attackerar allierad så ska den bara träffa just de targetet
+        //    {
+        //        ApplyDamageTransform(collidingUnit.transform);
+        //    }
+        //    return;
+        //}
 
         for (int i = 0; i < friendlyLayers.Count; i++) //attackerar en allierad
         {
@@ -143,14 +190,8 @@ public class Projectile : MonoBehaviour {
             {
                 if (friendlyFire == true && collidingUnit.transform == targetE) //om man attackerar allierad så ska den bara träffa just de targetet
                 {
-                    collidingUnit.GetComponent<Health>().AddHealth(-damageRoll);
-                    if (notifyAttacked)
-                    {
-                        if (collidingUnit.transform.GetComponent<AIBase>() != null)
-                        {
-                            collidingUnit.transform.GetComponent<AIBase>().Attacked(attackerT);
-                        }
-                    }
+                    Hit();
+                    ApplyDamageTransform(collidingUnit.transform);
                 }
                 return;
             }
@@ -159,8 +200,27 @@ public class Projectile : MonoBehaviour {
         Hit(); //den träffade terräng annars
     }
 
-    public void Hit() //explosion
+    public virtual void Hit() //explosion
     {
+        DealAOEDamage();
+
+        if (explosionObj != null)
+        {
+            GameObject readyExplosion = null;
+            for (int i = 0; i < explosionPool.Count; i++)
+            {
+                if (explosionPool[i].activeSelf == false)
+                {
+                    readyExplosion = explosionPool[i].gameObject;
+                    break;
+                }
+            }
+            if (readyExplosion != null)
+            {
+                readyExplosion.transform.position = thisTransform.position;
+                readyExplosion.GetComponent<ParticleTimed>().StartParticleSystem();
+            }
+        }
 
         ToggleActive(false);
     }
@@ -187,6 +247,52 @@ public class Projectile : MonoBehaviour {
         else
         {
             return false;
+        }
+    }
+
+    public void ApplyDamageTransform(Transform t)
+    {
+        t.GetComponent<Health>().AddHealth(-damageRoll);
+        if (notifyAttacked)
+        {
+            if (t.transform.GetComponent<AIBase>() != null)
+            {
+                t.transform.GetComponent<AIBase>().Attacked(attackerT);
+            }
+        }
+    }
+
+    public void DealAOEDamage()
+    {
+        if (aoeRange < 0.5f) return;
+
+        LayerMask targetLM;
+        if(friendlyFire == true)
+        {
+            targetLM = allLM;
+        }
+        else
+        {
+            targetLM = enemyLM;
+        }
+
+        Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aoeRange, targetLM);
+        //int i = 0;
+        //while (i < hitColliders.Length)
+        //{
+        //    Debug.Log(hitColliders[i].transform.name);
+        //    i++;
+        //}
+
+        if (hitColliders.Length > 0)
+        {
+            for (int i = 0; i < hitColliders.Length; i++)
+            {
+                ApplyDamageTransform(hitColliders[i].transform);
+            }
+            //SortTransformsByDistance(ref hits); //index 0 kommer hamna närmst
+
+            
         }
     }
 }

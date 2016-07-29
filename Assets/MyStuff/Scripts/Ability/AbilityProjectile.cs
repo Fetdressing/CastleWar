@@ -19,7 +19,7 @@ public class AbilityProjectile : CastAbility {
         for (int i = 0; i < projectilePoolSize; i++)
         {
             GameObject tempO = Instantiate(projectile.gameObject) as GameObject;
-            tempO.GetComponent<Projectile>().Init(eLayers, fLayers, thisTransform);
+            tempO.GetComponent<Projectile>().Init(eLayers, fLayers, caster);
             projectilePool.Add(tempO.gameObject);
         }
     }
