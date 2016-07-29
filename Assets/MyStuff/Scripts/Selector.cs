@@ -100,7 +100,7 @@ public class Selector : MonoBehaviour {
         GetMouseInput();
 
 
-        if (targets.Count >= 1)
+        if (targets.Count != 0 && currTargetGroup.Count != 0) //???????
         {
             unitInfoCanvas.SetActive(true);
         }
@@ -142,7 +142,7 @@ public class Selector : MonoBehaviour {
 
     void CheckTargetsAlive()
     {
-        for(int i = 0; i < targets.Count; i++)
+        for(int i = 0; i < targets.Count; i++) //tömmer sig listan själv?
         {
             if(targets[i] == null || targets[i].gameObject.activeSelf == false || !targetHealths[i].IsAlive())
             {
@@ -175,7 +175,7 @@ public class Selector : MonoBehaviour {
                 {
                     tempAIBase = newTarget.GetComponent<AIBase>();
                 }
-                int targetListID = targets.Count; //kan vara större eller mindre
+                int targetListID = targets.Count-1; //kan vara större eller mindre
                 targets.Add(newTarget);
                 targetHealths.Add(tempHealth);
                 targetAIBases.Add(tempAIBase); //måste addas även om den är null
@@ -212,6 +212,8 @@ public class Selector : MonoBehaviour {
 
     void RemoveTarget(int i) //removes target by index
     {
+        if (targets.Count <= i) return;
+
         if (targets[i] != null)
         {
             targets[i].GetComponent<Health>().ToggleSelMarker(false);
@@ -221,7 +223,7 @@ public class Selector : MonoBehaviour {
         targetHealths.RemoveAt(i);
         targetAIBases.RemoveAt(i);
 
-        for(int y = 0; y < targetGroups.Count; y++)
+        for(int y = 0; y < targetGroups.Count; y++) //felet probably!!!
         {
             if(targetGroups[y][0].health.unitID == unitID) //hitta listan som innehåller samma sorts units som den jag vill ta bort
             {
@@ -253,6 +255,8 @@ public class Selector : MonoBehaviour {
             targetGroups[i].Clear();
         }
         targetGroups.Clear();
+        currTargetGroup.Clear();
+        UpdateCurrTargetGroup();
     }
 
     void CommandToPos(Vector3 pos)
@@ -552,6 +556,7 @@ public class Selector : MonoBehaviour {
             if(selectedSpellIndex >= 0 && mouseHitValid) //spell redo
             {
                 OrderCastSpell(mouseHitPos);
+                selectedSpellIndex = -10000;
             }
             else if (moveState == MoveState.Attack && mouseInput != null)
             {
@@ -576,6 +581,7 @@ public class Selector : MonoBehaviour {
         }
         else if (Input.GetButtonDown("Fire2"))
         {
+            selectedSpellIndex = -1000; //stäng av spell kasten
             if (mouseInput != null) //träffade ett target
             {
                 //order attack
@@ -612,6 +618,7 @@ public class Selector : MonoBehaviour {
 
         if(Input.GetButtonDown("Next")) //tab
         {
+            selectedSpellIndex = -1000;
             GetNextTargetGroupIndex();
         }
     }
@@ -694,7 +701,7 @@ public class Selector : MonoBehaviour {
         if (currTargetGroup.Count == 0) return;
         if (targets.Count > 0)
         {
-            Health selHealth = currTargetGroup[0].GetComponent<Health>();
+            Health selHealth = currTargetGroup[0].GetComponent<Health>(); //!!!!!kanske använda det indexet som spellselected har, dvs visa health för den som kastar spellen!!!!!
             if(selHealth.unitSprite != null)
             {
                 unitPortrait.sprite = selHealth.unitSprite;
@@ -736,7 +743,7 @@ public class Selector : MonoBehaviour {
     void GetNextTargetGroupIndex()
     {
         currTargetGroupIndex++;
-        if(currTargetGroupIndex > targetGroups.Count-1)
+        if(currTargetGroupIndex >= targetGroups.Count)
         {
             currTargetGroupIndex = 0;
         }

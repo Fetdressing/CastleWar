@@ -190,11 +190,14 @@ public class AgentBase : AIBase {
 
     public override bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable)
     {
-        lastAttackAnimIndex = Random.Range(0, attackA.Length);
-        animationH[attackA[lastAttackAnimIndex].name].time = 0.0f;
-        animationH.Play(attackA[lastAttackAnimIndex].name);
-        unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable, 100000);
-        return true;
+        bool success = (unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable, 100000));
+        if(success)
+        {
+            lastAttackAnimIndex = Random.Range(0, attackA.Length);
+            animationH[attackA[lastAttackAnimIndex].name].time = 0.0f;
+            animationH.Play(attackA[lastAttackAnimIndex].name);
+        }
+        return success;
     } //försöker kasta spellen
 
     public virtual bool AttackTarget()
