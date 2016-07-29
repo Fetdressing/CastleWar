@@ -24,11 +24,11 @@ public class ProjectilePosition : Projectile {
     {
         while (thisObject.activeSelf == true && (startAliveTime + time) > Time.time)
         {
-            if(Vector3.Distance(aimPosition, thisTransform.position) < 0.5f)
+            if(Vector3.Distance(aimPosition, thisTransform.position) < 1.5f)
             {
                 Hit();
             }
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.02f);
         }
         Hit();
     }

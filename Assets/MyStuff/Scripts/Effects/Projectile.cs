@@ -202,6 +202,7 @@ public class Projectile : MonoBehaviour {
 
     public virtual void Hit() //explosion
     {
+        StopAllCoroutines();
         DealAOEDamage();
 
         if (explosionObj != null)
