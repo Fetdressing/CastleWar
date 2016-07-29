@@ -46,6 +46,7 @@ public class Selector : MonoBehaviour {
 
     public Button[] spellButtons = new Button[4];
     private int selectedSpellIndex = -1000;
+    public Transform spellCastMarkObject; //följer musen när man har spell redo
 
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
@@ -100,7 +101,7 @@ public class Selector : MonoBehaviour {
         GetMouseInput();
 
 
-        if (targets.Count != 0 && currTargetGroup.Count != 0) //???????
+        if (targets.Count != 0 && currTargetGroup.Count != 0)
         {
             unitInfoCanvas.SetActive(true);
         }
@@ -550,6 +551,15 @@ public class Selector : MonoBehaviour {
         //mouseHitPos = Vector3.zero;
         Transform mouseInput = GetMouseTarget();
         bool mouseHitValid = GetMousePosition(ref mouseHitPos);
+        if(mouseHitValid && selectedSpellIndex >= 0)
+        {
+            spellCastMarkObject.gameObject.SetActive(true);
+        }
+        else
+        {
+            spellCastMarkObject.gameObject.SetActive(false);
+        }
+        spellCastMarkObject.position = mouseHitPos;
 
         if (Input.GetButtonDown("Fire1")) //attack unit om man har MoveState.Attack och ifall mouseInput != null!!!!!!!!!!!!!!!!!!!!!!!
         {
@@ -698,8 +708,8 @@ public class Selector : MonoBehaviour {
 
     void UpdateUnitInfo()
     {
-        if (currTargetGroup.Count == 0) return;
-        if (targets.Count > 0)
+        //if (currTargetGroup.Count == 0) return;
+        if (targets.Count != 0 && currTargetGroup.Count != 0)
         {
             Health selHealth = currTargetGroup[0].GetComponent<Health>(); //!!!!!kanske använda det indexet som spellselected har, dvs visa health för den som kastar spellen!!!!!
             if(selHealth.unitSprite != null)
@@ -736,6 +746,9 @@ public class Selector : MonoBehaviour {
 
             armorText.text = " N/A";
             hpRegText.text = " N/A";
+
+            minDamageText.text = "N/A";
+            maxDamageText.text = "/" + "N/A";
         }
     }
 
