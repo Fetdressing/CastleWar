@@ -551,15 +551,7 @@ public class Selector : MonoBehaviour {
         //mouseHitPos = Vector3.zero;
         Transform mouseInput = GetMouseTarget();
         bool mouseHitValid = GetMousePosition(ref mouseHitPos);
-        if(mouseHitValid && selectedSpellIndex >= 0)
-        {
-            spellCastMarkObject.gameObject.SetActive(true);
-        }
-        else
-        {
-            spellCastMarkObject.gameObject.SetActive(false);
-        }
-        spellCastMarkObject.position = mouseHitPos;
+        UpdateSpellMarker(mouseHitValid, mouseHitPos);
 
         if (Input.GetButtonDown("Fire1")) //attack unit om man har MoveState.Attack och ifall mouseInput != null!!!!!!!!!!!!!!!!!!!!!!!
         {
@@ -704,6 +696,25 @@ public class Selector : MonoBehaviour {
         {
             roundRobinIndex = 0;
         }
+    }
+    void UpdateSpellMarker(bool validPos, Vector3 mousePos)
+    {
+        if (validPos && selectedSpellIndex >= 0 && currTargetGroup.Count != 0)
+        {
+            if (currTargetGroup[0].GetComponent<UnitSpellHandler>() != null && currTargetGroup[0].GetComponent<UnitSpellHandler>().SpellIndexExists(selectedSpellIndex))
+            {
+                spellCastMarkObject.gameObject.SetActive(true);
+            }
+            else
+            {
+                spellCastMarkObject.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            spellCastMarkObject.gameObject.SetActive(false);
+        }
+        spellCastMarkObject.position = mousePos + new Vector3(0, 0.5f, 0);
     }
 
     void UpdateUnitInfo()
