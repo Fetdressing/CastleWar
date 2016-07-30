@@ -27,6 +27,7 @@ public class AbilityBase : MonoBehaviour{
 
     public Sprite abilitySprite;
     public string name;
+    public string tooltip = "Information missing";
     public float aoe = 10;
     public int fatigueCost = 10;
     public float cooldown = 1.0f;

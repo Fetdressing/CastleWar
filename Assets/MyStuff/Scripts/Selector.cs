@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class Selector : MonoBehaviour {
     private Transform thisTransform;
@@ -45,6 +46,7 @@ public class Selector : MonoBehaviour {
     public Image unitPortrait;
 
     public Button[] spellButtons = new Button[4];
+    public GameObject spellTooltipTextObject;
     private int selectedSpellIndex = -1000;
     public Transform spellCastMarkObject; //följer musen när man har spell redo
 
@@ -90,6 +92,7 @@ public class Selector : MonoBehaviour {
             groundMarkerPool.Add(temp.transform);
         }
         currTargetGroupIndex = 0;
+        InitSpellUI();
         //selMask = selectLayerMask.value;
     }
 
@@ -259,6 +262,7 @@ public class Selector : MonoBehaviour {
         UpdateCurrTargetGroup();
         GetNextTargetGroupIndex(); //för indexet blir wack efter man clearat
     }
+
 
     void CommandToPos(Vector3 pos)
     {
@@ -465,6 +469,7 @@ public class Selector : MonoBehaviour {
         moveState = MoveState.Move;
         targetGroupUnitSpellcasterIndex++;
     }
+
 
     void SelectionBox()
     {
@@ -800,5 +805,30 @@ public class Selector : MonoBehaviour {
         public Transform target;
         public int targetListIndex;
         public Health health;
+    }
+
+    public void InitSpellUI()
+    {
+        for(int i = 0; i < spellButtons.Length; i++)
+        {
+            EventTrigger eT = spellButtons[i].gameObject.AddComponent<EventTrigger>() as EventTrigger;
+
+            EventTrigger.Entry entryEnter = new EventTrigger.Entry();
+            entryEnter.eventID = EventTriggerType.PointerEnter;
+            entryEnter.callback.AddListener((eventData) => { this.ToggleToolTipSpell( spellButtons[i].gameObject.GetComponent<Tooltip>().tooltip); });
+
+            EventTrigger.Entry entryLeave = new EventTrigger.Entry();
+            entryLeave.eventID = EventTriggerType.PointerExit;
+            entryLeave.callback.AddListener((eventData) => { this.ToggleToolTipSpell( spellButtons[i].gameObject.GetComponent<Tooltip>().tooltip); });
+
+            eT.triggers.Add(entryEnter);
+            eT.triggers.Add(entryLeave);
+        }
+    }
+
+    public void ToggleToolTipSpell(string tooltip)
+    {
+        //spellTooltipTextObject.SetActive(active);
+        spellTooltipTextObject.GetComponentsInChildren<Transform>()[0].GetComponent<Text>().text = tooltip;
     }
 }

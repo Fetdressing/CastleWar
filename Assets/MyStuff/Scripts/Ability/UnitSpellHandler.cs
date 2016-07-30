@@ -70,6 +70,10 @@ public class UnitSpellHandler : MonoBehaviour {
 
     public void LoadAbilitySprites()
     {
+        for(int i = 0; i < allAbilities.Count; i++)
+        {
+            //allAbilities[i].abilitySprite;
+        }
         //abilityManager.GetAbilitySprite(1);
         Debug.Log("FIXA MED SPRITES!!");
     }
@@ -137,7 +141,6 @@ public class UnitSpellHandler : MonoBehaviour {
         int spellCost = allAbilities[spellIndex].GetComponent<CastAbility>().CastSpell(pos, currFatigue, ref isCastable); //returnerar 0 ifall det inte gick
         if (spellCost == 0) //gick inte kasta
         {
-            isCastable = false;
             return false;
         }
         else
