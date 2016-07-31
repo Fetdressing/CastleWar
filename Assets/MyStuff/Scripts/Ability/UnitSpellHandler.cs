@@ -64,18 +64,7 @@ public class UnitSpellHandler : MonoBehaviour {
         {
             InitAbility(abilityIndexes[i]); //kan ju inte bara init denna coz det är ett kinda abstrakt värde, init ska ske på denna unitspellhandlern själv
         }
-        LoadAbilitySprites();
         Reset();
-    }
-
-    public void LoadAbilitySprites()
-    {
-        for(int i = 0; i < allAbilities.Count; i++)
-        {
-            //allAbilities[i].abilitySprite;
-        }
-        //abilityManager.GetAbilitySprite(1);
-        Debug.Log("FIXA MED SPRITES!!");
     }
 
     public void Reset()
