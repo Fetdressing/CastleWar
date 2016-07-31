@@ -353,6 +353,7 @@ public class AgentBase : AIBase {
 
         targetDistance = GetTargetDistance();
         isFriendlyTarget = IsFriendly(target);
+        isPerformingAttack = false; //så att denna inte kan få iväg en extra attack från förgående target
     }
 
     public virtual void SetTarget(Transform t) //när man order attack, så att den inte allertar allierade
@@ -371,6 +372,7 @@ public class AgentBase : AIBase {
 
         targetDistance = GetTargetDistance();
         isFriendlyTarget = IsFriendly(target);
+        isPerformingAttack = false; //så att denna inte kan få iväg en extra attack från förgående target
     }
 
 

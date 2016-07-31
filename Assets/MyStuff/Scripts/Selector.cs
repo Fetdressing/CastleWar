@@ -75,6 +75,7 @@ public class Selector : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         SelectorUpdate();
+  
     }
 
     public virtual void Init()
@@ -223,6 +224,7 @@ public class Selector : MonoBehaviour {
             targets[i].GetComponent<Health>().ToggleSelMarker(false);
         }
         int unitID = targetHealths[i].unitID;
+        Transform targetTemp = targets[i];
         targets.RemoveAt(i);
         targetHealths.RemoveAt(i);
         targetAIBases.RemoveAt(i);
@@ -233,15 +235,24 @@ public class Selector : MonoBehaviour {
             {
                 for(int k = 0; k < targetGroups[y].Count; k++)
                 {
-                    if(targetGroups[y][k].targetListIndex == i) //sen kan jag bara leta efter det nedsparade indexet (y)
+                    if(targetGroups[y][k].target == targetTemp) //sen kan jag bara leta efter det nedsparade indexet (y), FUNKAR INTE!! i ändras hela tiden förhållande till targets listan!!
                     {
                         targetGroups[y].RemoveAt(k);
+                       
+                        if(targetGroups[y].Count == 0) //om denna grupp är tom så ta bort den!
+                        {
+                            targetGroups.RemoveAt(y);
+
+                            if (currTargetGroupIndex > y)
+                                currTargetGroupIndex--;
+                        }
                         break;
                     }
                 }
                 break;
             }
         }
+        UpdateCurrTargetGroup();
     }
 
     void ClearTargets()
@@ -726,7 +737,7 @@ public class Selector : MonoBehaviour {
     void UpdateUnitInfo()
     {
         //if (currTargetGroup.Count == 0) return;
-        if (targets.Count != 0 && currTargetGroup.Count != 0)
+        if (targets.Count != 0 && currTargetGroup.Count != 0 && currTargetGroup[0] != null)
         {
             Health selHealth = currTargetGroup[0].GetComponent<Health>(); //!!!!!kanske använda det indexet som spellselected har, dvs visa health för den som kastar spellen!!!!!
             if(selHealth.unitSprite != null)
@@ -818,6 +829,11 @@ public class Selector : MonoBehaviour {
             {
                 currTargetGroup.Add(targetGroups[currTargetGroupIndex][i].target);
             }
+        }
+        else if(targetGroups.Count > 0) //indexet finns ej längre men det finns andra att välja på
+        {
+            GetNextTargetGroupIndex();
+            UpdateCurrTargetGroup();
         }
     }
 
