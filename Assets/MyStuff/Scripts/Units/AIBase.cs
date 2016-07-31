@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(UnitSpellHandler))]
 public abstract class AIBase : MonoBehaviour {
-    [HideInInspector]
-    public UnitSpellHandler unitSpellHandler;
 
     [HideInInspector]
     public int initializedTimes = 0;
@@ -80,7 +78,12 @@ public abstract class AIBase : MonoBehaviour {
     //[HideInInspector]
     //public float spellRange;
     [HideInInspector]
+    public UnitSpellHandler unitSpellHandler;
+    [HideInInspector]
+    public int validSpellIndexMax = 0; //spell indexes somm denna unit har som högst, dvs 4 är allra högst (q,w,e,r)
+    [HideInInspector]
     public int currSpellIndex = 0;
+    public bool autocast = false;
 
     public virtual void Init()
     {
@@ -93,6 +96,7 @@ public abstract class AIBase : MonoBehaviour {
         GetFriendsAndFoes();
         ClearCommands();
         attackerIDs.Clear();
+        LoadValidSpellIndexes();
     }
 
     public virtual void Reset()
@@ -171,6 +175,11 @@ public abstract class AIBase : MonoBehaviour {
 
         attackRange = startAttackRange;
     }
+    public void LoadValidSpellIndexes()
+    {
+        if (unitSpellHandler == null) return;
+        validSpellIndexMax = unitSpellHandler.allAbilities.Count;
+    }
 
 
     public virtual void AttackMove(Vector3 pos) { }
@@ -194,6 +203,17 @@ public abstract class AIBase : MonoBehaviour {
     {
         return true;
     } //försöker kasta spellen
+
+    public virtual void AutoCastSpell() //används i typ attack funktionen
+    {
+        if (unitSpellHandler == null) return;
+        if (autocast && validSpellIndexMax > 0)
+        {
+            int randomSpellIndex = Random.Range(0, validSpellIndexMax);
+            bool isCastable = false;
+            unitSpellHandler.CastSpell(target.position, randomSpellIndex, ref isCastable, 10000);
+        }
+    }
 
     public virtual void ExecuteNextCommand() { }
 

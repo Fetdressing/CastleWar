@@ -128,6 +128,8 @@ public class AgentRanged : AgentBase {
             return targetAlive;
         }
 
+        AutoCastSpell();
+
         float targetDistanceuS = (targetDistance - targetHealth.unitSize);
         bool los, isFacingTarget;
         los = LineOfSight();

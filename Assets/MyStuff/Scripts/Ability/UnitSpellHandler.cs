@@ -65,6 +65,7 @@ public class UnitSpellHandler : MonoBehaviour {
             InitAbility(abilityIndexes[i]); //kan ju inte bara init denna coz det är ett kinda abstrakt värde, init ska ske på denna unitspellhandlern själv
         }
         Reset();
+        AIBase.LoadValidSpellIndexes(); //viktigt att denne kallar, AIbase klarar ju inte av det själv :/ men den hinner inte fixa alla abilitylistor innan den vill retrieva annars
     }
 
     public void Reset()

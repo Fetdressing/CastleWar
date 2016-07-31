@@ -212,6 +212,8 @@ public class AgentBase : AIBase {
             return targetAlive;
         }
 
+        AutoCastSpell(); //släng in lite spells oxå förfan!
+
         if(isPerformingAttack == true) //appliar skadan två gånger? varför??
         {
             //float modTime = animationH[attackA[lastAttackAnimIndex].name].time / animationH[attackA[lastAttackAnimIndex].name].length; //denna blir felet
