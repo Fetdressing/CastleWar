@@ -49,6 +49,7 @@ public class Selector : MonoBehaviour {
     public GameObject spellTooltipTextObject;
     private int selectedSpellIndex = -1000;
     public Transform spellCastMarkObject; //följer musen när man har spell redo
+    public Sprite spellMissingSprite; //ifall det inte finns någon spell så används denna spriten istället
 
     enum MoveState { Move, Attack, Patrol };
     private MoveState moveState = MoveState.Move;
@@ -754,6 +755,8 @@ public class Selector : MonoBehaviour {
                 minDamageText.text = "N/A";
                 maxDamageText.text = "/" + "N/A";
             }
+
+            UpdateSpellInfo();
         }
         else
         {
@@ -767,7 +770,34 @@ public class Selector : MonoBehaviour {
             maxDamageText.text = "/" + "N/A";
         }
     }
-
+    void UpdateSpellInfo()
+    {
+        if (currTargetGroup[0].GetComponent<UnitSpellHandler>() != null)
+        {
+            UnitSpellHandler tempUSH = currTargetGroup[0].GetComponent<UnitSpellHandler>();
+            for (int i = 0; i < spellButtons.Length; i++)
+            {
+                if (currTargetGroup[0].GetComponent<UnitSpellHandler>().SpellIndexExists(i))
+                {
+                    spellButtons[i].GetComponent<Tooltip>().tooltip = tempUSH.allAbilities[i].name + "\n" + tempUSH.allAbilities[i].tooltip;
+                    spellButtons[i].GetComponent<Image>().sprite = tempUSH.allAbilities[i].abilitySprite;
+                }
+                else
+                {
+                    spellButtons[i].GetComponent<Tooltip>().tooltip = "";
+                    spellButtons[i].GetComponent<Image>().sprite = spellMissingSprite;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < spellButtons.Length; i++)
+            {
+                spellButtons[i].GetComponent<Tooltip>().tooltip = "";
+                spellButtons[i].GetComponent<Image>().sprite = spellMissingSprite;
+            }
+        }
+    }
 
     void GetNextTargetGroupIndex()
     {
@@ -809,26 +839,43 @@ public class Selector : MonoBehaviour {
 
     public void InitSpellUI()
     {
-        for(int i = 0; i < spellButtons.Length; i++)
+        //unitInfoCanvas.SetActive(true);
+        //for (int i = 0; i < spellButtons.Length; i++)
+        //{
+        //    EventTrigger eT = spellButtons[i].gameObject.GetComponent<EventTrigger>() as EventTrigger;
+
+        //    EventTrigger.Entry entryEnter = new EventTrigger.Entry();
+        //    entryEnter.eventID = EventTriggerType.PointerEnter;
+        //    entryEnter.callback.AddListener((eventData) => { this.ToggleToolTipSpell( spellButtons[i].gameObject.GetComponent<Tooltip>().tooltip); });
+
+        //    EventTrigger.Entry entryLeave = new EventTrigger.Entry();
+        //    entryLeave.eventID = EventTriggerType.PointerExit;
+        //    entryLeave.callback.AddListener((eventData) => { this.ToggleToolTipSpell( spellButtons[i].gameObject.GetComponent<Tooltip>().tooltip); });
+
+        //    eT.triggers[0] = (entryEnter);
+        //    eT.triggers[1] = (entryLeave);
+        //}
+        //unitInfoCanvas.SetActive(false);
+
+        for (int i = 0; i < spellButtons.Length; i++)
         {
-            EventTrigger eT = spellButtons[i].gameObject.AddComponent<EventTrigger>() as EventTrigger;
-
-            EventTrigger.Entry entryEnter = new EventTrigger.Entry();
-            entryEnter.eventID = EventTriggerType.PointerEnter;
-            entryEnter.callback.AddListener((eventData) => { this.ToggleToolTipSpell( spellButtons[i].gameObject.GetComponent<Tooltip>().tooltip); });
-
-            EventTrigger.Entry entryLeave = new EventTrigger.Entry();
-            entryLeave.eventID = EventTriggerType.PointerExit;
-            entryLeave.callback.AddListener((eventData) => { this.ToggleToolTipSpell( spellButtons[i].gameObject.GetComponent<Tooltip>().tooltip); });
-
-            eT.triggers.Add(entryEnter);
-            eT.triggers.Add(entryLeave);
+            spellButtons[i].GetComponent<Tooltip>().index = i;
         }
     }
 
-    public void ToggleToolTipSpell(string tooltip)
+    public string GetSpellToolTip(int index) //kallas från tooltip scriptet
     {
-        //spellTooltipTextObject.SetActive(active);
-        spellTooltipTextObject.GetComponentsInChildren<Transform>()[0].GetComponent<Text>().text = tooltip;
+        return(spellButtons[index].GetComponent<Tooltip>().tooltip);
+    }
+
+    public void ToggleToolTipSpell(string tooltip) //kallas från tooltip scriptet
+    {
+        if(tooltip == "")
+        {
+            spellTooltipTextObject.SetActive(false);
+            return;
+        }
+        spellTooltipTextObject.SetActive(true);
+        spellTooltipTextObject.GetComponentsInChildren<Text>()[0].text = tooltip;
     }
 }

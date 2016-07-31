@@ -65,6 +65,7 @@ public class AbilityBase : MonoBehaviour{
             friendlyLayermask |= (1 << LayerMask.NameToLayer(fLayers[i]));
         }
 
+        ApplyToolTipValues();
         initTimes++;
     }
 
@@ -150,5 +151,9 @@ public class AbilityBase : MonoBehaviour{
         }
 
     }
+
+
+    public virtual void ApplyToolTipValues()
+    { }
 
 }

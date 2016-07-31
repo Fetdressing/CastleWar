@@ -17,4 +17,22 @@ public class HealthRegAura : PassiveAbility {
             targets[i].GetComponent<Health>().ApplyBuff(StatType.HealthReg, casterIDName + name ,regAmount, duration, casterT, true);
         }
     }
+
+    public override void ApplyToolTipValues()
+    {
+        int index = -100;
+        for(int i = 0; i < tooltip.Length; i++)
+        {
+            if(tooltip[i] == '%')
+            {
+                index = i+1;
+                tooltip.Remove(i, 2);
+                break;
+            }
+        }
+        if(index >= 0)
+        {
+            tooltip = tooltip.Insert(index, regAmount.ToString());
+        }
+    }
 }
