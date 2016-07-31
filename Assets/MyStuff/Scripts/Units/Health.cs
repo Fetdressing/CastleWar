@@ -294,9 +294,17 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         }
     }
 
-    public void ApplyBuff(StatType statType, string buffName, int amount, float dur, Transform applier, bool doesStack)
+    public void ApplyBuff(StatType statType, string buffName, int amount, float dur, Transform applier, string applierID, bool doesStack)
     {
-        string bName = applier.name + buffName;
+        string bName;
+        if (doesStack)
+        {
+            bName = applierID + buffName; //en per unit
+        }
+        else
+        {
+            bName = buffName; //endast en av denna buffens namn
+        }
 
         Buff incomingBuff = new Buff(bName, statType, amount, dur, applier, doesStack);
         if(BuffAlreadyApplied(incomingBuff))

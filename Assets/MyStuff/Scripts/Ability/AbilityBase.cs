@@ -36,6 +36,7 @@ public class AbilityBase : MonoBehaviour{
     public float cooldown_Timer = 0.0f;
     public float duration = 2.0f;
     public float range = 30;
+    public bool doesStack = false;
 
     [HideInInspector]
     public int initTimes = 0;

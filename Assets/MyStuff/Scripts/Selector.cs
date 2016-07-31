@@ -860,6 +860,7 @@ public class Selector : MonoBehaviour {
         for (int i = 0; i < spellButtons.Length; i++)
         {
             spellButtons[i].GetComponent<Tooltip>().index = i;
+            //spellButtons[i].GetComponentsInChildren<Text>()[0].text = Input..("Spell" + (i + 1).ToString());
         }
     }
 
