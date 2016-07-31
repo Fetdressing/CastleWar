@@ -97,6 +97,7 @@ public abstract class AIBase : MonoBehaviour {
 
     public virtual void Reset()
     {
+        StopAllCoroutines();
         attackerIDs.Clear();
         InitializeStats();
     }
@@ -355,19 +356,20 @@ public abstract class AIBase : MonoBehaviour {
             {
                 if (attackerID == attackerIDs[i])
                 {
-                    yield break;
+                    yield break; //returnerar I guess
                 }
             }
         
             //den fanns inte redan! lägg till den
             attackerIDs.Add(attackerID);
             //int savedIndex = attackerIDs.Count;
-            yield return new WaitForSeconds(5);
-            //måste kolla ifall den fortfarande attackera mig
-            if (attacker != null && attacker.GetComponent<AIBase>().target != thisTransform)
+            while(attacker != null && attacker.GetComponent<AIBase>().target == thisTransform) //fortfarande på mig
             {
-                attackerIDs.Remove(attackerID);
+                yield return new WaitForSeconds(5);
             }
+            //måste kolla ifall den fortfarande attackera mig
+
+            attackerIDs.Remove(attackerID);
         }
     }
     public int GetNrAttackers()

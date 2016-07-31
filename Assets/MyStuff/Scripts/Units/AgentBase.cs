@@ -613,7 +613,7 @@ public class AgentBase : AIBase {
                 }
             }
 
-            if (GetStartPointDistance() < aggroDistance * 1.5f || (startChaseTime + chaseTimeNormal) > Time.time)
+            if (GetStartPointDistance() < aggroDistance * 1.5f && (startChaseTime + chaseTimeNormal) > Time.time)
             {
                 if (AttackTarget() == false) //target död?
                 {
@@ -657,7 +657,8 @@ public class AgentBase : AIBase {
         }
 
         if (target != null)
-        {
+        {   
+            
             if(GetTargetDistance() > attackRange * 1.3f) //check for closer target
             {
                 Transform potTarget = CheckForBetterTarget(attackRange);
@@ -667,25 +668,24 @@ public class AgentBase : AIBase {
                 }
             }
 
-            bool continueChaseTarget = true; //flyttar ju inte på sig efter de dödat target??
-            if (GetTargetDistance() < aggroDistance * 1.05f)
+            bool continueChaseTarget = true;
+            if (GetTargetDistance() > aggroDistance * 1.05f)
             {
-                if ((startChaseTime + chaseTimeNormal) > Time.time)
+                if ((startChaseTime + chaseTimeNormal) < Time.time) //för långt ifrån o tiden har gått ur
                 {
-                    if (AttackTarget() == false)
-                    {
-                        target = null;
-                        //AttackMove(movePos);
-                    }
+                    continueChaseTarget = false;
                 }
-                else continueChaseTarget = false;
             }
-            else continueChaseTarget = false;
 
             if(continueChaseTarget == false)
             {
                 target = null;
                 SetDestination(movePos);
+            }
+            else if (AttackTarget() == false) //attackera target!
+            {
+                target = null;
+                //AttackMove(movePos);
             }
         }
     }
