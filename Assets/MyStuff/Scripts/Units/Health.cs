@@ -301,7 +301,7 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         {
             bName = applierID + buffName; //en per unit
         }
-        else
+        else //om de ska vara olika durations så bör nog olika buffar användas, annars skriver de över varandras maxduration
         {
             bName = buffName; //endast en av denna buffens namn
         }
