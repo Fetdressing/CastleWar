@@ -67,4 +67,22 @@ public class AbilityProjectile : CastAbility {
 
         }
     }
+
+    public override List<int> ApplyToolTipValues()
+    {
+        List<int> indexes = base.ApplyToolTipValues();
+        int offset = 0;
+        if (indexes.Count > 0)
+        {
+            for (int i = 0; i < indexes.Count; i++)
+            {
+                string stringToAdd = baseDamage.ToString();
+                tooltip = tooltip.Insert(indexes[i] + offset, stringToAdd);
+                //Debug.Log(tooltip.Length.ToString());
+                offset += stringToAdd.Length;
+            }
+        }
+        tooltip = tooltip.Replace('%', ' ');
+        return indexes;
+    }
 }
