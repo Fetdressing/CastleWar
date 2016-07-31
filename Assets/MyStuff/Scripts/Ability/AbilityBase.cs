@@ -27,6 +27,7 @@ public class AbilityBase : MonoBehaviour{
 
     public Sprite abilitySprite;
     public string name;
+    [TextArea(5, 10)]
     public string tooltip = "Information missing";
     public float aoe = 10;
     public int fatigueCost = 10;
@@ -153,7 +154,19 @@ public class AbilityBase : MonoBehaviour{
     }
 
 
-    public virtual void ApplyToolTipValues()
-    { }
+    public virtual List<int> ApplyToolTipValues() //return för sig själv
+    {
+        List<int> indexes = new List<int>(); //flytta till abilitybase efter!!!
+        //int occurances = 1; //rätta till
+        for (int i = 0; i < tooltip.Length; i++)
+        {
+            if (tooltip[i] == '%')
+            {
+                indexes.Add(i);
+                //occurances -= 1;
+            }
+        }
+        return indexes;
+    }
 
 }

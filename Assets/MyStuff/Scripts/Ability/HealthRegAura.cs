@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class HealthRegAura : PassiveAbility {
     public int regAmount = -10;
@@ -18,21 +19,21 @@ public class HealthRegAura : PassiveAbility {
         }
     }
 
-    public override void ApplyToolTipValues()
+    public override List<int> ApplyToolTipValues()
     {
-        int index = -100;
-        for(int i = 0; i < tooltip.Length; i++)
+        List<int> indexes = base.ApplyToolTipValues();
+        int offset = 0;
+        if (indexes.Count > 0)
         {
-            if(tooltip[i] == '%')
+            for (int i = 0; i < indexes.Count; i++)
             {
-                index = i+1;
-                tooltip.Remove(i, 2);
-                break;
+                string stringToAdd = regAmount.ToString();
+                tooltip = tooltip.Insert(indexes[i] + offset, stringToAdd);
+                //Debug.Log(tooltip.Length.ToString());
+                offset += stringToAdd.Length;
             }
         }
-        if(index >= 0)
-        {
-            tooltip = tooltip.Insert(index, regAmount.ToString());
-        }
+        tooltip = tooltip.Replace('%', ' ');
+        return indexes;
     }
 }
