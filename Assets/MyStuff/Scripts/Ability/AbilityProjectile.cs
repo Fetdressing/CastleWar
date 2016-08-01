@@ -58,11 +58,11 @@ public class AbilityProjectile : CastAbility {
 
             if(validTargets == ValidTargets.Allied || validTargets == ValidTargets.Both) //friendly fire
             {
-                lastProjectileScript.Fire(thisTransform, targetPosition, baseDamage, projectileLifeTime, true, true);
+                lastProjectileScript.Fire(thisTransform, targetPosition, baseDamage, projectileLifeTime, true, true, damageType);
             }
             else
             {
-                lastProjectileScript.Fire(thisTransform, targetPosition, baseDamage, projectileLifeTime, true, false);
+                lastProjectileScript.Fire(thisTransform, targetPosition, baseDamage, projectileLifeTime, true, false, damageType);
             }
 
         }

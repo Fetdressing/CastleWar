@@ -3,7 +3,7 @@ using System.Collections;
 
 public class ProjectilePosition : Projectile {
 
-    public override void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff)
+    public override void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff, TypeDamage dmgType)
     {
         StopAllCoroutines();
         ToggleActive(true);
@@ -15,6 +15,7 @@ public class ProjectilePosition : Projectile {
         notifyAttacked = notifyattacked;
         friendlyFire = ff;
         damageRoll = damage;
+        damageType = dmgType;
 
         startAliveTime = Time.time;
         StartCoroutine(LifeTime(lifeTime));

@@ -7,6 +7,8 @@ public class Health : MonoBehaviour {
     public int unitID = 0;
     private int initializedTimes = 0;
     [HideInInspector]
+    public static DamageHandler damageHandler = null;
+    [HideInInspector]
     public UnitSpellHandler unitSpellHandler;
     [HideInInspector]
     public AIBase aiBase;
@@ -32,6 +34,7 @@ public class Health : MonoBehaviour {
     private float healthRegIntervall = 0.8f;
     private float healthRegTimer = 0.0f;
 
+    public TypeArmor armorType;
     public int startArmor = 3;
     [HideInInspector]
     public int armor;
@@ -63,6 +66,11 @@ public class Health : MonoBehaviour {
     public void Init()
     {
         initializedTimes++;
+        if (damageHandler == null)
+        {
+            damageHandler = GameObject.FindGameObjectWithTag("DamageHandler").GetComponent<DamageHandler>();
+        }
+
         thisTransform = this.transform;
         thisRenderer = GetComponentsInChildren<Renderer>();
 
@@ -232,6 +240,12 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         }
         healthBar.fillAmount = (float)currHealth / (float)maxHealth;
         return true; //target vid liv
+    } //endast med armor i åtanke
+    public bool AddHealth(int h, TypeDamage damageType) //armor type + armor i åtanke!
+    {
+        float efficiency = damageHandler.GetDamageEfficiency(damageType, armorType);
+        h = (int)((float)h * efficiency);
+        return AddHealth(h);
     }
 
     public void Die()

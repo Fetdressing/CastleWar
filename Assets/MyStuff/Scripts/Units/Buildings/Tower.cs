@@ -188,16 +188,16 @@ public class Tower : BuildingBase {
             {
                 if (IsFriendly(target)) //om man har satt en friendly som target så måste man kunna skada den, så sätt ff = true
                 {
-                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, true);
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, true, damageType);
                 }
                 else
                 {
-                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, false); //annars inte
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, true, false, damageType); //annars inte
                 }
             }
             else //bara typ nån destructable
             {
-                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, false, false);
+                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, 4, false, false, damageType);
             }
 
         }

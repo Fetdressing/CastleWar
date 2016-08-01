@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(UnitSpellHandler))]
 public abstract class AIBase : MonoBehaviour {
-
     [HideInInspector]
     public int initializedTimes = 0;
     [HideInInspector]
@@ -58,6 +57,7 @@ public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
     public int movementSpeed;
 
+    public TypeDamage damageType;
     public int startDamageSpread = 3;
     public int startDamageDamage = 6;
     [HideInInspector]
@@ -104,7 +104,6 @@ public abstract class AIBase : MonoBehaviour {
     public virtual void Init()
     {
         initializedTimes++;
-
         id = nrAI;
         nrAI++;
         thisTransform = this.transform;

@@ -4,6 +4,7 @@ using System.Collections;
 public class CastAbility : AbilityBase {
     [HideInInspector]
     public Vector3 targetPosition;
+    public TypeDamage damageType;
 
     public virtual int CastSpell(Vector3 targetPos, int currFatigue, ref bool isCastable) //returnerar kostnaden av spellen
     {

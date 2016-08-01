@@ -233,7 +233,7 @@ public class AgentBase : AIBase {
                     int damageRoll = RollDamage();
 
                     unitSpellHandler.RegisterAttack();
-                    if (targetHealth.AddHealth(-damageRoll)) //target överlevde attacken
+                    if (targetHealth.AddHealth(-damageRoll, damageType)) //target överlevde attacken
                     {
                         targetAlive = true;
                     }

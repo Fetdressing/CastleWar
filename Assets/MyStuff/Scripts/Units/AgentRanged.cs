@@ -191,16 +191,16 @@ public class AgentRanged : AgentBase {
             {
                 if (IsFriendly(target)) //om man har satt en friendly som target så måste man kunna skada den, så sätt ff = true
                 {
-                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, true, true);
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, true, true, damageType);
                 }
                 else
                 {
-                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, true, false); //annars inte
+                    lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, true, false, damageType); //annars inte
                 }
             }
             else //bara typ nån destructable
             {
-                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, false, false);
+                lastProjectileScript.Fire(target, targetHealth.middlePoint, damageRoll, projectileLifeTime, false, false, damageType);
             }
             
         }

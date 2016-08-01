@@ -18,6 +18,8 @@ public class Projectile : MonoBehaviour {
     public bool homing = false;
     public bool friendlyFire = false;
 
+    [HideInInspector]
+    public TypeDamage damageType;
     [HideInInspector] public int damageRoll; //skickas av skjutaren
     public float shootForce = 40;
     public float maxVelocity = 0.02f;
@@ -105,7 +107,7 @@ public class Projectile : MonoBehaviour {
         }
     }
 	
-    public virtual void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff)
+    public virtual void Fire(Transform target, Vector3 aimPos, int damage, float lifeTime, bool notifyattacked, bool ff, TypeDamage dmgType)
     {
         StopAllCoroutines();
         ToggleActive(true);
@@ -117,6 +119,7 @@ public class Projectile : MonoBehaviour {
         notifyAttacked = notifyattacked;
         friendlyFire = ff;
         damageRoll = damage;
+        damageType = dmgType;
 
         startAliveTime = Time.time;
         StartCoroutine(LifeTime(lifeTime));
@@ -253,7 +256,7 @@ public class Projectile : MonoBehaviour {
 
     public void ApplyDamageTransform(Transform t)
     {
-        t.GetComponent<Health>().AddHealth(-damageRoll);
+        t.GetComponent<Health>().AddHealth(-damageRoll, damageType);
         if (notifyAttacked)
         {
             if (t.transform.GetComponent<AIBase>() != null)
