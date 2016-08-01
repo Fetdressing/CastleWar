@@ -10,7 +10,9 @@ public class Selector : MonoBehaviour {
     [HideInInspector]
     public string playerTeam;
     [HideInInspector]
-    public LayerMask playerLayer;
+    public LayerMask playerLayer; //används om man vill sätta något till spelaren layer
+    [HideInInspector]
+    public LayerMask playerLayerMask; //används vid culling
 
     [HideInInspector]
     public RaycastHit mouseHit;
@@ -85,10 +87,13 @@ public class Selector : MonoBehaviour {
     {
         thisTransform = this.transform;
         teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
+
         playerTeam = teamHandler.playerTeam;
-        playerLayer = LayerMask.NameToLayer("Nothing");
-        playerLayer = ~playerLayer;
-        playerLayer |= (1 << LayerMask.NameToLayer(playerTeam));
+        playerLayerMask = LayerMask.NameToLayer("Nothing");
+        playerLayerMask = ~playerLayerMask;
+        playerLayerMask |= (1 << LayerMask.NameToLayer(playerTeam));
+        playerLayer = LayerMask.NameToLayer(playerTeam);
+
         potDoubleClick = false;
         doubleClickTimer = 0.0f;
 
@@ -666,7 +671,7 @@ public class Selector : MonoBehaviour {
         Health tHealth = t.GetComponent<Health>();
         if (tHealth.IsAlive() == false) return;
 
-        Collider[] hitColliders = Physics.OverlapSphere(t.position, 50, playerLayer);
+        Collider[] hitColliders = Physics.OverlapSphere(t.position, 50, playerLayerMask);
         for (int i = 0; i < hitColliders.Length; i++)
         {
             if (hitColliders[i].transform.GetComponent<Health>().unitID == tHealth.unitID)

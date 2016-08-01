@@ -228,6 +228,7 @@ public abstract class AIBase : MonoBehaviour {
     public virtual void AutoCastSpell() //används i typ attack funktionen
     {
         if (unitSpellHandler == null) return;
+        if (target.GetComponent<AIBase>().IsFriendly(thisTransform)) return;
         if (autocast && validSpellIndexMax > 0)
         {
             int randomSpellIndex = Random.Range(0, validSpellIndexMax);
@@ -420,7 +421,7 @@ public abstract class AIBase : MonoBehaviour {
 
     public virtual int RollDamage()
     {
-        float fatigueAffection = Mathf.Clamp(currFatigue / maxFatigue, minFatigueAffection, 1.0f);
+        float fatigueAffection = Mathf.Clamp((float)currFatigue / (float)maxFatigue, minFatigueAffection, 1.0f);
         return ((int)(Random.Range(damage - damageSpread, damage + damageSpread) * fatigueAffection));
     }
     public int GetMinDamage()
