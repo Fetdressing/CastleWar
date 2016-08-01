@@ -85,6 +85,15 @@ public abstract class AIBase : MonoBehaviour {
     public int currSpellIndex = 0;
     public bool autocast = false;
 
+    public int startFatigue = 100;
+    [HideInInspector]
+    public int maxFatigue;
+    [HideInInspector]
+    public int currFatigue;
+    public int startFatigueReg = 3;
+    [HideInInspector]
+    public int fatigueReg;
+
     public virtual void Init()
     {
         initializedTimes++;

@@ -224,7 +224,7 @@ public class Selector : MonoBehaviour {
             targets[i].GetComponent<Health>().ToggleSelMarker(false);
         }
         int unitID = targetHealths[i].unitID;
-        Transform targetTemp = targets[i];
+        Transform targetTemp = targets[i]; //spara ned transform istället för o köra på index
         targets.RemoveAt(i);
         targetHealths.RemoveAt(i);
         targetAIBases.RemoveAt(i);
