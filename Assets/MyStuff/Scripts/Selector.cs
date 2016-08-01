@@ -86,7 +86,9 @@ public class Selector : MonoBehaviour {
         thisTransform = this.transform;
         teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         playerTeam = teamHandler.playerTeam;
-        playerLayer = LayerMask.NameToLayer(playerTeam);
+        playerLayer = LayerMask.NameToLayer("Nothing");
+        playerLayer = ~playerLayer;
+        playerLayer |= (1 << LayerMask.NameToLayer(playerTeam));
         potDoubleClick = false;
         doubleClickTimer = 0.0f;
 
@@ -665,14 +667,11 @@ public class Selector : MonoBehaviour {
         if (tHealth.IsAlive() == false) return;
 
         Collider[] hitColliders = Physics.OverlapSphere(t.position, 50, playerLayer);
-        Debug.Log(hitColliders.Length.ToString());
         for (int i = 0; i < hitColliders.Length; i++)
         {
-            Debug.Log(hitColliders[i].transform.name);
             if (hitColliders[i].transform.GetComponent<Health>().unitID == tHealth.unitID)
             {
                 AddTarget(hitColliders[i].transform);
-                break;
             }
         }
     }
