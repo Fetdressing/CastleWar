@@ -188,9 +188,9 @@ public class AgentBase : AIBase {
         UpdateMoveSpeed();
     }
 
-    public override bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable)
+    public override bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable, ref int currFatigue)
     {
-        bool success = (unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable, 100000));
+        bool success = (unitSpellHandler.CastSpell(pos, spellIndex, ref isCastable, ref currFatigue));
         if(success)
         {
             lastAttackAnimIndex = Random.Range(0, attackA.Length);
@@ -241,6 +241,7 @@ public class AgentBase : AIBase {
                     {
                         targetAlive = false;
                     }
+                    AddFatigue(-attackFatigueCost);
                 }
 
                 if (targetBase != null)
@@ -784,7 +785,7 @@ public class AgentBase : AIBase {
     public virtual void PerformSpellUpdate()
     {
         bool isCastable = true;
-        if(CastSpell(movePos, currSpellIndex, ref isCastable)) //lyckades kasta
+        if(CastSpell(movePos, currSpellIndex, ref isCastable, ref currFatigue)) //lyckades kasta
         {
             ExecuteNextCommand();
         }

@@ -18,6 +18,9 @@ public class Selector : MonoBehaviour {
     public LayerMask mouseHitLayerMask; //vad som ska träffas som mark
     [HideInInspector]
     public Vector3 mouseHitPos = Vector3.zero;
+    private bool potDoubleClick = false;
+    private float doubleClickTimer = 0.0f;
+    private float doubleClickTimeIntervall = 0.4f;
     //private int selMask;
 
     private List<Transform> targets = new List<Transform>();
@@ -84,8 +87,10 @@ public class Selector : MonoBehaviour {
         teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         playerTeam = teamHandler.playerTeam;
         playerLayer = LayerMask.NameToLayer(playerTeam);
+        potDoubleClick = false;
+        doubleClickTimer = 0.0f;
 
-        Cursor.SetCursor(moveCursor, hotspot, cursorMode);
+    Cursor.SetCursor(moveCursor, hotspot, cursorMode);
 
         for (int i = 0; i < groundMarkerPoolSize; i++)
         {
@@ -590,11 +595,13 @@ public class Selector : MonoBehaviour {
                 if (mouseInput != null && Input.GetButton("Add")) //kolla oxå så att det inte bara är en destructable
                 {
                     AddTarget(mouseInput);
+                    GetPotentialDoubleClick(mouseInput); //double click för att selecta alla av typ
                 }
                 else if (mouseInput != null)
                 {
                     ClearTargets();
                     AddTarget(mouseInput);
+                    GetPotentialDoubleClick(mouseInput);
                 }
             }
         }
@@ -639,6 +646,34 @@ public class Selector : MonoBehaviour {
         {
             selectedSpellIndex = -1000;
             GetNextTargetGroupIndex();
+        }
+    }
+
+    void GetPotentialDoubleClick(Transform t)
+    {
+        if(doubleClickTimer > Time.time)
+        {
+            SelectAllByType(t);
+        }
+        doubleClickTimer = Time.time + doubleClickTimeIntervall;
+    }
+
+    void SelectAllByType(Transform t)
+    {
+        if (t == null || t.gameObject.activeSelf == false) return;
+        Health tHealth = t.GetComponent<Health>();
+        if (tHealth.IsAlive() == false) return;
+
+        Collider[] hitColliders = Physics.OverlapSphere(t.position, 50, playerLayer);
+        Debug.Log(hitColliders.Length.ToString());
+        for (int i = 0; i < hitColliders.Length; i++)
+        {
+            Debug.Log(hitColliders[i].transform.name);
+            if (hitColliders[i].transform.GetComponent<Health>().unitID == tHealth.unitID)
+            {
+                AddTarget(hitColliders[i].transform);
+                break;
+            }
         }
     }
 

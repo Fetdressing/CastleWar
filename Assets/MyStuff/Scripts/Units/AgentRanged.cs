@@ -142,6 +142,7 @@ public class AgentRanged : AgentBase {
                 {
                     attackSpeedTimer = attackSpeed + Time.time;
                     int damageRoll = RollDamage();
+                    AddFatigue(-attackFatigueCost);
                     Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
                 }
             }

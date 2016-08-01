@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(UnitSpellHandler))]
 public abstract class AIBase : MonoBehaviour {
@@ -64,6 +65,9 @@ public abstract class AIBase : MonoBehaviour {
     [HideInInspector]
     public int damage;
 
+    public int attackFatigueCost = 10;
+    public float minFatigueAffection = 0.3f; //hur mycket fatigued påverkar som mest, alltså 30% av attacken ifall currFatigue = 0
+
     public float startAttackSpeed = 1.2f;
     [HideInInspector]
     public float attackSpeed; //public så att agentStats kan påverka den
@@ -90,9 +94,12 @@ public abstract class AIBase : MonoBehaviour {
     public int maxFatigue;
     [HideInInspector]
     public int currFatigue;
+    private float fatigueRegIntervall = 0.8f;
+    private float fatigueRegTimer = 0.0f;
     public int startFatigueReg = 3;
     [HideInInspector]
     public int fatigueReg;
+    public Image fatigueBar;
 
     public virtual void Init()
     {
@@ -112,6 +119,7 @@ public abstract class AIBase : MonoBehaviour {
     {
         StopAllCoroutines();
         attackerIDs.Clear();
+        fatigueRegTimer = 0.0f;
         InitializeStats();
     }
 
@@ -183,6 +191,10 @@ public abstract class AIBase : MonoBehaviour {
         attackSpeed = startAttackSpeed;
 
         attackRange = startAttackRange;
+
+        maxFatigue = startFatigue;
+        currFatigue = maxFatigue;
+        fatigueReg = startFatigueReg;
     }
     public void LoadValidSpellIndexes()
     {
@@ -208,7 +220,7 @@ public abstract class AIBase : MonoBehaviour {
 
     public virtual void AttackUnit(Transform t, bool friendlyFire) { }
 
-    public virtual bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable)
+    public virtual bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable, ref int currFatigue)
     {
         return true;
     } //försöker kasta spellen
@@ -220,7 +232,7 @@ public abstract class AIBase : MonoBehaviour {
         {
             int randomSpellIndex = Random.Range(0, validSpellIndexMax);
             bool isCastable = false;
-            unitSpellHandler.CastSpell(target.position, randomSpellIndex, ref isCastable, 10000);
+            unitSpellHandler.CastSpell(target.position, randomSpellIndex, ref isCastable, ref currFatigue);
         }
     }
 
@@ -408,7 +420,8 @@ public abstract class AIBase : MonoBehaviour {
 
     public virtual int RollDamage()
     {
-        return Random.Range(damage - damageSpread, damage + damageSpread);
+        float fatigueAffection = Mathf.Clamp(currFatigue / maxFatigue, minFatigueAffection, 1.0f);
+        return ((int)(Random.Range(damage - damageSpread, damage + damageSpread) * fatigueAffection));
     }
     public int GetMinDamage()
     {
@@ -419,6 +432,41 @@ public abstract class AIBase : MonoBehaviour {
         return damage + damageSpread;
     }
 
-    public virtual void UpdateEssentials() { }
+    public virtual void UpdateEssentials()
+    {
+        if(fatigueRegTimer < Time.time)
+        {
+            fatigueRegTimer = Time.time + fatigueRegIntervall;
+            AddFatigue(fatigueReg);
+        }
+    }
     public virtual void UpdateMoveSpeed(){}
+
+    public virtual bool AddFatigue(int f)
+    {
+        bool isFatigued = false;
+        currFatigue += f;
+        if(currFatigue < 0)
+        {
+            currFatigue = 0;
+            isFatigued = true;
+        }
+
+        if(currFatigue > maxFatigue)
+        {
+            currFatigue = maxFatigue;
+        }
+
+        if(currFatigue >= maxFatigue)
+        {
+            fatigueBar.transform.parent.gameObject.SetActive(false);
+        }
+        else if(fatigueBar.transform.parent.gameObject.activeSelf == false)
+        {
+            fatigueBar.transform.parent.gameObject.SetActive(true);
+        }
+
+        fatigueBar.fillAmount = (float)currFatigue / (float)maxFatigue;
+        return isFatigued; //true att fatiguen är slut
+    }
 }

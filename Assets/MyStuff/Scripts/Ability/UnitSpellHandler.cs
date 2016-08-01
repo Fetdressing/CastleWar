@@ -121,7 +121,7 @@ public class UnitSpellHandler : MonoBehaviour {
         }
     }
 
-    public bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable, int currFatigue) //man får kanske skicka in ett index
+    public bool CastSpell(Vector3 pos, int spellIndex, ref bool isCastable, ref int currFatigue) //man får kanske skicka in ett index
     { //indexet gäller alla abilities då den ska visa upp alla
         if (allAbilities[spellIndex].GetComponent<CastAbility>() == null) //kolla så att det är en spell som går att kasta
         {
@@ -136,6 +136,7 @@ public class UnitSpellHandler : MonoBehaviour {
         else
         {
             //currFatigue -= costFat;
+            currFatigue -= spellCost;
             return true;
         }
     }
