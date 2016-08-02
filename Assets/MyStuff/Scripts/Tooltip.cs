@@ -6,7 +6,6 @@ public class Tooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private Selector selector;
 
-    [HideInInspector]
     public string tooltip = "Information missing!!!";
     [HideInInspector]
     public int index;
