@@ -811,6 +811,7 @@ public class Selector : MonoBehaviour {
             {
                 minDamageText.text = "N/A";
                 maxDamageText.text = "/" + "N/A";
+                damageTypeImage.sprite = damageHandler.GetDefaultSprite();
             }
 
             UpdateSpellInfo();
@@ -819,12 +820,14 @@ public class Selector : MonoBehaviour {
         {
             currHealthText.text = "N/A";
             maxHealthText.text = " N/A";
+            armorTypeImage.sprite = damageHandler.GetDefaultSprite();
 
             armorText.text = " N/A";
             hpRegText.text = " N/A";
 
             minDamageText.text = "N/A";
             maxDamageText.text = "/" + "N/A";
+            damageTypeImage.sprite = damageHandler.GetDefaultSprite();
         }
     }
     void UpdateSpellInfo()

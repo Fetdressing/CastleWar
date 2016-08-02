@@ -3,6 +3,8 @@ using System.Collections;
 
 public class DamageHandler : MonoBehaviour {
     // Use this for initialization
+    public Sprite defaultSprite;
+
     public Sprite fleshArmorSprite;
     public Sprite lightArmorSprite;
     public Sprite mediumArmorSprite;
@@ -184,7 +186,7 @@ public class DamageHandler : MonoBehaviour {
                 return structureArmorSprite;
             default:
                 Debug.Log("Ej fastställd TypeArmor");
-                return fleshArmorSprite;
+                return defaultSprite;
         }
     }
 
@@ -204,8 +206,13 @@ public class DamageHandler : MonoBehaviour {
                 return siegeDamageSprite;
             default:
                 Debug.Log("Ej fastställd TypeDamage");
-                return slicingDamageSprite;
+                return defaultSprite;
         }
+    }
+
+    public Sprite GetDefaultSprite()
+    {
+        return defaultSprite;
     }
 }
 
