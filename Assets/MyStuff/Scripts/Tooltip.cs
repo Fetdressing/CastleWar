@@ -18,11 +18,16 @@ public class Tooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        tooltip = selector.GetSpellToolTip(index);
-        selector.ToggleToolTipSpell(tooltip);
+        //tooltip = selector.GetSpellToolTip(index);
+        selector.ToggleToolTip(tooltip);
     }
     public void OnPointerExit(PointerEventData eventData)
     {
-        selector.ToggleToolTipSpell("");
+        selector.ToggleToolTip("");
+    }
+
+    public void ChangeToolTip(string s) //så får andra skript kalla på denna istället när värdena ändras
+    {
+        tooltip = s;
     }
 }

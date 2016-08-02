@@ -6,19 +6,44 @@ public class DamageHandler : MonoBehaviour {
     public Sprite defaultSprite;
 
     public Sprite fleshArmorSprite;
+    public string fleshArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite lightArmorSprite;
+    public string lightArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite mediumArmorSprite;
+    public string mediumArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite heavyArmorSprite;
+    public string heavyArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite etherealArmorSprite;
+    public string etherealArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite magicArmorSprite;
+    public string magicArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite divineArmorSprite;
+    public string divineArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
+
     public Sprite structureArmorSprite;
+    public string structureArmor_ToolTip = "Strong resistance versus magic, weak resistance versus slicing attacks.";
 
     public Sprite slicingDamageSprite;
+    public string slicingDamage_ToolTip = "Strong versus flesh, weak versus heavy armor.";
+
     public Sprite bluntDamageSprite;
+    public string bluntDamage_ToolTip = "Strong versus flesh, weak versus heavy armor.";
+
     public Sprite piercingDamageSprite;
+    public string piercingDamage_ToolTip = "Strong versus flesh, weak versus heavy armor.";
+
     public Sprite magicDamageSprite;
+    public string magicDamage_ToolTip = "Strong versus flesh, weak versus heavy armor.";
+
     public Sprite siegeDamageSprite;
+    public string siegeDamage_ToolTip = "Strong versus flesh, weak versus heavy armor.";
+
 
     public float GetDamageEfficiency(TypeDamage damageType, TypeArmor armorType)
     {
@@ -50,11 +75,11 @@ public class DamageHandler : MonoBehaviour {
             case TypeArmor.Medium:
                 return 0.8f;
             case TypeArmor.Heavy:
-                return 0.3f;
+                return 0.6f;
             case TypeArmor.Ethereal:
                 return 0.1f;
             case TypeArmor.Magic:
-                return 0.7f;
+                return 1.0f;
             case TypeArmor.Divine:
                 return 0.2f;
             case TypeArmor.Structure:
@@ -119,7 +144,7 @@ public class DamageHandler : MonoBehaviour {
         switch (armorType)
         {
             case TypeArmor.Flesh:
-                return 0.4f;
+                return 0.6f;
             case TypeArmor.Light:
                 return 0.7f;
             case TypeArmor.Medium:
@@ -213,6 +238,51 @@ public class DamageHandler : MonoBehaviour {
     public Sprite GetDefaultSprite()
     {
         return defaultSprite;
+    }
+
+    public string GetArmorToolTip(TypeArmor tA)
+    {
+        switch (tA)
+        {
+            case TypeArmor.Flesh:
+                return fleshArmor_ToolTip;
+            case TypeArmor.Light:
+                return lightArmor_ToolTip;
+            case TypeArmor.Medium:
+                return mediumArmor_ToolTip;
+            case TypeArmor.Heavy:
+                return heavyArmor_ToolTip;
+            case TypeArmor.Ethereal:
+                return etherealArmor_ToolTip;
+            case TypeArmor.Magic:
+                return magicArmor_ToolTip;
+            case TypeArmor.Divine:
+                return divineArmor_ToolTip;
+            case TypeArmor.Structure:
+                return structureArmor_ToolTip;
+            default:
+                Debug.Log("Ej fastställd TypeArmor");
+                return "";
+        }
+    }
+    public string GetDamageToolTip(TypeDamage tA)
+    {
+        switch (tA)
+        {
+            case TypeDamage.Slicing:
+                return slicingDamage_ToolTip;
+            case TypeDamage.Blunt:
+                return bluntDamage_ToolTip;
+            case TypeDamage.Piercing:
+                return piercingDamage_ToolTip;
+            case TypeDamage.Magic:
+                return magicDamage_ToolTip;
+            case TypeDamage.Siege:
+                return siegeDamage_ToolTip;
+            default:
+                Debug.Log("Ej fastställd TypeArmor");
+                return "";
+        }
     }
 }
 

@@ -42,6 +42,8 @@ public class Selector : MonoBehaviour {
     //selectionBox
 
     //UI
+    public GameObject tooltipTextObject;
+
     public GameObject unitInfoCanvas;
     public Text currHealthText;
     public Text maxHealthText;
@@ -54,7 +56,6 @@ public class Selector : MonoBehaviour {
     public Image damageTypeImage;
 
     public Button[] spellButtons = new Button[4];
-    public GameObject spellTooltipTextObject;
     private int selectedSpellIndex = -1000;
     public Transform spellCastMarkObject; //följer musen när man har spell redo
     public Sprite spellMissingSprite; //ifall det inte finns någon spell så används denna spriten istället
@@ -878,12 +879,32 @@ public class Selector : MonoBehaviour {
             {
                 currTargetGroup.Add(targetGroups[currTargetGroupIndex][i].target);
             }
+            UpdateToolTips();
         }
         else if(targetGroups.Count > 0) //indexet finns ej längre men det finns andra att välja på
         {
             GetNextTargetGroupIndex();
             UpdateCurrTargetGroup();
         }
+    }
+    void UpdateToolTips()
+    {
+
+        for (int i = 0; i < spellButtons.Length; i++) //updatera tooltips till dessa nya units!
+        {
+            spellButtons[i].GetComponent<Tooltip>().ChangeToolTip(GetSpellToolTip(i)); //updatera spelltooltipen
+        }
+        string armorTypeToolTip = damageHandler.GetArmorToolTip(currTargetGroup[0].GetComponent<Health>().armorType);
+        if (currTargetGroup[0].GetComponent<AIBase>() != null)
+        {
+            string damageTypeToolTip = damageHandler.GetDamageToolTip(currTargetGroup[0].GetComponent<AIBase>().damageType);
+            damageTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip(damageTypeToolTip);
+        }
+        else
+        {
+            damageTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip("N/A");
+        }
+        armorTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip(armorTypeToolTip);
     }
 
     void GetNextSpellCasterIndex()
@@ -927,7 +948,7 @@ public class Selector : MonoBehaviour {
             spellButtons[i].GetComponent<Tooltip>().index = i;
             //spellButtons[i].GetComponentsInChildren<Text>()[0].text = Input..("Spell" + (i + 1).ToString());
         }
-        spellTooltipTextObject.SetActive(false);
+        tooltipTextObject.SetActive(false);
     }
 
     public string GetSpellToolTip(int index) //kallas från tooltip scriptet
@@ -935,14 +956,14 @@ public class Selector : MonoBehaviour {
         return(spellButtons[index].GetComponent<Tooltip>().tooltip);
     }
 
-    public void ToggleToolTipSpell(string tooltip) //kallas från tooltip scriptet
+    public void ToggleToolTip(string tooltip) //kallas från tooltip scriptet
     {
         if(tooltip == "")
         {
-            spellTooltipTextObject.SetActive(false);
+            tooltipTextObject.SetActive(false);
             return;
         }
-        spellTooltipTextObject.SetActive(true);
-        spellTooltipTextObject.GetComponentsInChildren<Text>()[0].text = tooltip;
+        tooltipTextObject.SetActive(true);
+        tooltipTextObject.GetComponentsInChildren<Text>()[0].text = tooltip;
     }
 }
