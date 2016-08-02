@@ -3,7 +3,21 @@ using System.Collections;
 
 public class DamageHandler : MonoBehaviour {
     // Use this for initialization
-    
+    public Sprite fleshArmorSprite;
+    public Sprite lightArmorSprite;
+    public Sprite mediumArmorSprite;
+    public Sprite heavyArmorSprite;
+    public Sprite etherealArmorSprite;
+    public Sprite magicArmorSprite;
+    public Sprite divineArmorSprite;
+    public Sprite structureArmorSprite;
+
+    public Sprite slicingDamageSprite;
+    public Sprite bluntDamageSprite;
+    public Sprite piercingDamageSprite;
+    public Sprite magicDamageSprite;
+    public Sprite siegeDamageSprite;
+
     public float GetDamageEfficiency(TypeDamage damageType, TypeArmor armorType)
     {
         switch (damageType)
@@ -145,6 +159,52 @@ public class DamageHandler : MonoBehaviour {
                 return 3.2f;
             default:
                 return 1.0f;
+        }
+    }
+
+    public Sprite GetArmorSprite(TypeArmor tA)
+    {
+        switch(tA)
+        {
+            case TypeArmor.Flesh:
+                return fleshArmorSprite;
+            case TypeArmor.Light:
+                return lightArmorSprite;
+            case TypeArmor.Medium:
+                return mediumArmorSprite;
+            case TypeArmor.Heavy:
+                return heavyArmorSprite;
+            case TypeArmor.Ethereal:
+                return etherealArmorSprite;
+            case TypeArmor.Magic:
+                return magicArmorSprite;
+            case TypeArmor.Divine:
+                return divineArmorSprite;
+            case TypeArmor.Structure:
+                return structureArmorSprite;
+            default:
+                Debug.Log("Ej fastställd TypeArmor");
+                return fleshArmorSprite;
+        }
+    }
+
+    public Sprite GetDamageSprite(TypeDamage tD)
+    {
+        switch (tD)
+        {
+            case TypeDamage.Slicing:
+                return slicingDamageSprite;
+            case TypeDamage.Blunt:
+                return bluntDamageSprite;
+            case TypeDamage.Piercing:
+                return piercingDamageSprite;
+            case TypeDamage.Magic:
+                return magicDamageSprite;
+            case TypeDamage.Siege:
+                return siegeDamageSprite;
+            default:
+                Debug.Log("Ej fastställd TypeDamage");
+                return slicingDamageSprite;
         }
     }
 }

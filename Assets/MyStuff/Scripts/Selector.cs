@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 public class Selector : MonoBehaviour {
     private Transform thisTransform;
     private TeamHandler teamHandler;
+    private DamageHandler damageHandler;
     [HideInInspector]
     public string playerTeam;
     [HideInInspector]
@@ -49,6 +50,8 @@ public class Selector : MonoBehaviour {
     public Text minDamageText;
     public Text maxDamageText;
     public Image unitPortrait;
+    public Image armorTypeImage;
+    public Image damageTypeImage;
 
     public Button[] spellButtons = new Button[4];
     public GameObject spellTooltipTextObject;
@@ -87,6 +90,7 @@ public class Selector : MonoBehaviour {
     {
         thisTransform = this.transform;
         teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
+        damageHandler = GameObject.FindGameObjectWithTag("DamageHandler").GetComponent<DamageHandler>();
 
         playerTeam = teamHandler.playerTeam;
         playerLayerMask = LayerMask.NameToLayer("Nothing");
@@ -794,11 +798,14 @@ public class Selector : MonoBehaviour {
             armorText.text = selHealth.armor.ToString();
             hpRegText.text = selHealth.healthRegAmount.ToString();
 
+            armorTypeImage.sprite = damageHandler.GetArmorSprite(selHealth.armorType);
+
             if(currTargetGroup[0].GetComponent<AIBase>() != null)
             {
                 AIBase selAIBase = currTargetGroup[0].GetComponent<AIBase>();
                 minDamageText.text = selAIBase.GetMinDamage().ToString();
                 maxDamageText.text = selAIBase.GetMaxDamage().ToString();
+                damageTypeImage.sprite = damageHandler.GetDamageSprite(selAIBase.damageType);
             }
             else
             {
