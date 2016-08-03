@@ -296,6 +296,7 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
         }
         if (deathParticleSystemSpawned != null)
         {
+            deathParticleSystemSpawned.transform.position = middlePoint;
             deathParticleSystemSpawned.GetComponent<ParticleTimed>().StartParticleSystem();
         }
         if(deathAnimation != null)
