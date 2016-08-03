@@ -840,7 +840,7 @@ public class Selector : MonoBehaviour {
             {
                 if (currTargetGroup[0].GetComponent<UnitSpellHandler>().SpellIndexExists(i))
                 {
-                    spellButtons[i].GetComponent<Tooltip>().tooltip = tempUSH.allAbilities[i].name + "\n" + tempUSH.allAbilities[i].tooltip;
+                    spellButtons[i].GetComponent<Tooltip>().tooltip = "<b>" + tempUSH.allAbilities[i].name+ "</b>" + "\n" + tempUSH.allAbilities[i].tooltip;
                     spellButtons[i].GetComponent<Image>().sprite = tempUSH.allAbilities[i].abilitySprite;
                 }
                 else

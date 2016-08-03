@@ -161,22 +161,12 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
             {
                 unitSpellHandler.RegisterDamage(h);
             }
-
-            if (h >= 0)
-            {
-                h = -1; //den ska ju inte heala! och minst 1 i damage
-            }
         }
         else //healing
         {
             if (unitSpellHandler != null)
             {
                 unitSpellHandler.RegisterHealing(h);
-            }
-
-            if (isHealable == false)
-            {
-                h = 0;
             }
         }
 
@@ -243,8 +233,22 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
     } //endast med armor i åtanke
     public bool AddHealth(int h, TypeDamage damageType) //armor type + armor i åtanke!
     {
+        bool positiveHealth = false;
+        if(h > 0)
+        {
+            positiveHealth = true;
+        }
         float efficiency = damageHandler.GetDamageEfficiency(damageType, armorType);
         h = (int)((float)h * efficiency);
+
+        if (positiveHealth) //så att man inte gör 0
+        {
+            h = Mathf.Max(1, h);
+        }
+        else
+        {
+            h = Mathf.Min(-1, h);
+        }
         return AddHealth(h);
     }
 

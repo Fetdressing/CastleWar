@@ -6,44 +6,44 @@ public class DamageHandler : MonoBehaviour {
     public Sprite defaultSprite;
 
     public Sprite fleshArmorSprite;
-    private string fleshArmor_ToolTip = "Flesh\nStrong resistance versus magic, weak resistance versus slicing attacks.";
+    private string fleshArmor_ToolTip = "<b>Flesh</b>\nStrong resistance versus magic, weak resistance versus slicing attacks.";
 
     public Sprite lightArmorSprite;
-    private string lightArmor_ToolTip = "Light\nStrong resistance versus blunt, weak resistance versus piercing and slicing attacks.";
+    private string lightArmor_ToolTip = "<b>Light</b>\nStrong resistance versus blunt, weak resistance versus piercing and slicing attacks.";
 
     public Sprite mediumArmorSprite;
-    private string mediumArmor_ToolTip = "Medium\nWeak resistance versus slicing attacks.";
+    private string mediumArmor_ToolTip = "<b>Medium</b>\nWeak resistance versus slicing attacks.";
 
     public Sprite heavyArmorSprite;
-    private string heavyArmor_ToolTip = "Heavy\nStrong resistance versus slicing and piercing, weak resistance versus magic attacks.";
+    private string heavyArmor_ToolTip = "<b>Heavy</b>\nStrong resistance versus slicing and piercing, weak resistance versus magic attacks.";
 
     public Sprite etherealArmorSprite;
-    private string etherealArmor_ToolTip = "Ethereal\nWeak resistance versus magic.";
+    private string etherealArmor_ToolTip = "<b>Ethereal</b>\nWeak resistance versus magic.";
 
     public Sprite magicArmorSprite;
-    private string magicArmor_ToolTip = "Magic\nStrong resistance versus blunt, weak resistance versus piercing attacks.";
+    private string magicArmor_ToolTip = "<b>Magic</b>\nStrong resistance versus blunt, weak resistance versus piercing attacks.";
 
     public Sprite divineArmorSprite;
-    private string divineArmor_ToolTip = "Divine\nStrong resistance versus all attacks.";
+    private string divineArmor_ToolTip = "<b>Divine</b>\nStrong resistance versus all attacks.";
 
     public Sprite structureArmorSprite;
-    private string structureArmor_ToolTip = "Structure\nWeak resistance versus siege attacks.";
+    private string structureArmor_ToolTip = "<b>Structure</b>\nWeak resistance versus siege attacks.";
 
 
     public Sprite slicingDamageSprite;
-    private string slicingDamage_ToolTip = "Slicing\nStrong versus flesh and light armor.";
+    private string slicingDamage_ToolTip = "<b>Slicing</b>\nStrong versus flesh and light armor.";
 
     public Sprite bluntDamageSprite;
-    private string bluntDamage_ToolTip = "Blunt\nStrong versus heavy armor.";
+    private string bluntDamage_ToolTip = "<b>Blunt</b>\nStrong versus heavy armor.";
 
     public Sprite piercingDamageSprite;
-    private string piercingDamage_ToolTip = "Piercing\nStrong versus magic armor.";
+    private string piercingDamage_ToolTip = "<b>Piercing</b>\nStrong versus magic armor.";
 
     public Sprite magicDamageSprite;
-    private string magicDamage_ToolTip = "Magic\nStrong versus heavy armor.";
+    private string magicDamage_ToolTip = "<b>Magic</b>\nStrong versus heavy armor.";
 
     public Sprite siegeDamageSprite;
-    private string siegeDamage_ToolTip = "Siege\nStrong versus structures.";
+    private string siegeDamage_ToolTip = "<b>Siege</b>\nStrong versus structures.";
 
 
     public float GetDamageEfficiency(TypeDamage damageType, TypeArmor armorType)
