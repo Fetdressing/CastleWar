@@ -170,4 +170,15 @@ public class AbilityBase : MonoBehaviour{
         return indexes;
     }
 
+    public float GetCooldownLeft()
+    {
+        return Mathf.Max(0, cooldown_Timer - Time.time);
+    }
+
+    public float GetPercentageCooldownFinished() //1 så är den klar med cooldownen
+    {
+        float per = (cooldown-GetCooldownLeft()) / cooldown;
+        return per;
+    }
+
 }

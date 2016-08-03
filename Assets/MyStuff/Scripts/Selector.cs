@@ -847,7 +847,19 @@ public class Selector : MonoBehaviour {
                 if (currTargetGroup[0].GetComponent<UnitSpellHandler>().SpellIndexExists(i))
                 {
                     spellButtons[i].GetComponent<Tooltip>().tooltip = "<b>" + tempUSH.allAbilities[i].name+ "</b>" + "\n" + tempUSH.allAbilities[i].tooltip;
-                    spellButtons[i].GetComponent<Image>().sprite = tempUSH.allAbilities[i].abilitySprite;
+                    Image spellButtonImage = spellButtons[i].GetComponent<Image>();
+                    spellButtonImage.sprite = tempUSH.allAbilities[i].abilitySprite;
+
+                    float bestCooldown = 0.0f; //displaya den bästa cooldownen hos gruppen, castspell kommer ändå kanske alla som är redo
+                    for(int y = 0; y < currTargetGroup.Count; y++)
+                    {
+                        float currCooldown = currTargetGroup[y].GetComponent<UnitSpellHandler>().allAbilities[i].GetPercentageCooldownFinished();
+                        if (bestCooldown < currCooldown)
+                        {
+                            bestCooldown = currCooldown;
+                        }
+                    }
+                    spellButtonImage.fillAmount = bestCooldown;
                 }
                 else
                 {
