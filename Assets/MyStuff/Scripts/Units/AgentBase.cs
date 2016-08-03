@@ -652,7 +652,7 @@ public class AgentBase : AIBase {
 
         if (agent.pathPending) //så agent.remainingDistance funkar
         { }
-        else if (agent.isOnNavMesh && agent.remainingDistance < 1.5f && GetDistanceToPosition(movePos) < 5.0f || IsCloseEnoughToPos(movePos)) //kom fram
+        else if (agent.isOnNavMesh && agent.remainingDistance < 1.5f && GetDistanceToPosition(movePos) < 5.0f || IsCloseEnoughToPos(movePos)) //kom fram, säkrare funktion
         {
             ExecuteNextCommand();
             return;
