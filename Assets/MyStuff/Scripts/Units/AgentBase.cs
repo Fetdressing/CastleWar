@@ -650,12 +650,14 @@ public class AgentBase : AIBase {
             }
         }
 
-        if (GetDistanceToPosition(movePos) < 1.5f) //kom fram
+        if (agent.pathPending) //så agent.remainingDistance funkar
+        { }
+        else if (agent.isOnNavMesh && agent.remainingDistance < 1.5f && GetDistanceToPosition(movePos) < 5.0f || IsCloseEnoughToPos(movePos)) //kom fram
         {
             ExecuteNextCommand();
             return;
         }
-        else if (target == null && IsCloseEnoughToPos(movePos)) //den får inte vara klar bara för att den råkar passera punkten när den jagar ett target
+        if (target == null && IsCloseEnoughToPos(movePos)) //den får inte vara klar bara för att den råkar passera punkten när den jagar ett target
         {
             ExecuteNextCommand();
             return;
