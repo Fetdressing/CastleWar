@@ -88,7 +88,6 @@ public abstract class AIBase : MonoBehaviour {
     public int validSpellIndexMax = 0; //spell indexes somm denna unit har som högst, dvs 4 är allra högst (q,w,e,r)
     [HideInInspector]
     public int currSpellIndex = 0;
-    public bool autocast = false;
 
     public int startFatigue = 100;
     [HideInInspector]
@@ -229,9 +228,9 @@ public abstract class AIBase : MonoBehaviour {
     {
         if (unitSpellHandler == null) return;
         if (target.GetComponent<AIBase>().IsFriendly(thisTransform)) return;
-        if (autocast && validSpellIndexMax > 0)
+        int randomSpellIndex = Random.Range(0, validSpellIndexMax);
+        if (unitSpellHandler.autoCast[randomSpellIndex] && validSpellIndexMax > 0)
         {
-            int randomSpellIndex = Random.Range(0, validSpellIndexMax);
             bool isCastable = false;
             unitSpellHandler.CastSpell(target.position, randomSpellIndex, ref isCastable, ref currFatigue);
         }

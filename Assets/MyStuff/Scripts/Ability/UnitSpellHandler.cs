@@ -24,6 +24,7 @@ public class UnitSpellHandler : MonoBehaviour {
     public List<CastAbility> castAbilities = new List<CastAbility>();
     [HideInInspector]
     public List<AbilityBase> allAbilities = new List<AbilityBase>();
+    public bool[] autoCast = new bool[4];
 
     //vart de skall utgå ifrån, fäst spellen vid deras position
     public Transform auraPosition;

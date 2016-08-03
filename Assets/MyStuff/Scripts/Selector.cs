@@ -56,6 +56,8 @@ public class Selector : MonoBehaviour {
     public Image damageTypeImage;
 
     public Button[] spellButtons = new Button[4];
+    public Color autoCastColor;
+    private Color normalColor;
     private int selectedSpellIndex = -1000;
     public Transform spellCastMarkObject; //följer musen när man har spell redo
     public Sprite spellMissingSprite; //ifall det inte finns någon spell så används denna spriten istället
@@ -92,6 +94,7 @@ public class Selector : MonoBehaviour {
         thisTransform = this.transform;
         teamHandler = GameObject.FindGameObjectWithTag("TeamHandler").GetComponent<TeamHandler>();
         damageHandler = GameObject.FindGameObjectWithTag("DamageHandler").GetComponent<DamageHandler>();
+        normalColor = spellButtons[0].image.color;
 
         playerTeam = teamHandler.playerTeam;
         playerLayerMask = LayerMask.NameToLayer("Nothing");
@@ -844,11 +847,20 @@ public class Selector : MonoBehaviour {
             UnitSpellHandler tempUSH = currTargetGroup[0].GetComponent<UnitSpellHandler>();
             for (int i = 0; i < spellButtons.Length; i++)
             {
-                if (currTargetGroup[0].GetComponent<UnitSpellHandler>().SpellIndexExists(i))
+                if (tempUSH.SpellIndexExists(i))
                 {
                     spellButtons[i].GetComponent<Tooltip>().tooltip = "<b>" + tempUSH.allAbilities[i].name+ "</b>" + "\n" + tempUSH.allAbilities[i].tooltip;
                     Image spellButtonImage = spellButtons[i].GetComponent<Image>();
                     spellButtonImage.sprite = tempUSH.allAbilities[i].abilitySprite;
+
+                    if (tempUSH.autoCast[i] == true && tempUSH.allAbilities[i].GetComponent<CastAbility>() == true)
+                    {
+                        spellButtons[i].image.color = autoCastColor;
+                    }
+                    else
+                    {
+                        spellButtons[i].image.color = normalColor;
+                    }
 
                     float bestCooldown = 0.0f; //displaya den bästa cooldownen hos gruppen, castspell kommer ändå kanske alla som är redo
                     for(int y = 0; y < currTargetGroup.Count; y++)
@@ -865,6 +877,7 @@ public class Selector : MonoBehaviour {
                 {
                     spellButtons[i].GetComponent<Tooltip>().tooltip = "";
                     spellButtons[i].GetComponent<Image>().sprite = spellMissingSprite;
+                    spellButtons[i].image.color = normalColor;
                 }
             }
         }
@@ -907,7 +920,6 @@ public class Selector : MonoBehaviour {
     }
     void UpdateToolTips()
     {
-
         for (int i = 0; i < spellButtons.Length; i++) //updatera tooltips till dessa nya units!
         {
             spellButtons[i].GetComponent<Tooltip>().ChangeToolTip(GetSpellToolTip(i)); //updatera spelltooltipen
@@ -983,5 +995,17 @@ public class Selector : MonoBehaviour {
         }
         tooltipTextObject.SetActive(true);
         tooltipTextObject.GetComponentsInChildren<Text>()[0].text = tooltip;
+    }
+
+    public void ToggleAutoCast(int spellIndexBut)
+    {
+        if (currTargetGroup[0].GetComponent<UnitSpellHandler>() == null) return;
+        UnitSpellHandler firstSpellHandler = currTargetGroup[0].GetComponent<UnitSpellHandler>();
+        if (!firstSpellHandler.SpellIndexExists(spellIndexBut)) return;
+        bool newAutocastSetting = !firstSpellHandler.autoCast[spellIndexBut];
+        for (int i = 0; i < currTargetGroup.Count; i++)
+        {
+            currTargetGroup[i].GetComponent<UnitSpellHandler>().autoCast[spellIndexBut] = newAutocastSetting;
+        }
     }
 }
