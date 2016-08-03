@@ -191,6 +191,7 @@ public class Selector : MonoBehaviour {
             if (exists == false)
             {
                 Health tempHealth = newTarget.GetComponent<Health>();
+                if (tempHealth.IsAlive() == false) return;
                 tempHealth.ToggleSelMarker(true);
 
                 AIBase tempAIBase = null;
@@ -432,6 +433,11 @@ public class Selector : MonoBehaviour {
     void OrderAttackUnit(Transform t, bool friendfire)
     {
         PlaceGroundMarker(t.position + new Vector3(0, 0.2f, 0));
+        if (t.GetComponent<Health>().IsAlive() == false)
+        {
+            OrderAttackMove(t.position);
+            return;
+        }
         t.GetComponent<Health>().ApplyMaterial(attackSelMat, 0.5f);
         if (Input.GetButton("Add"))
         {

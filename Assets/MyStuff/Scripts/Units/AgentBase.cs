@@ -53,7 +53,7 @@ public class AgentBase : AIBase {
     [HideInInspector]
     public float chaseTimeNormal = 8;
 
-    Transform[] tempTargets; //används för att skanna nearby fiender tex
+    List<Transform> tempTargets; //används för att skanna nearby fiender tex
 
     [HideInInspector]public Vector3 startPos;
     [HideInInspector]public Vector3 startPos2; //används när man tex frångår pathen
@@ -63,7 +63,6 @@ public class AgentBase : AIBase {
     bool ignoreSurrounding = false; //används för att återta en path så att denne inte försöker jaga fiender hela tiden
 
     [Header("Animation")]
-    public GameObject animationObject;
     [HideInInspector]
     public Animation animationH;
 
@@ -108,6 +107,7 @@ public class AgentBase : AIBase {
 
         isPerformingAttack = false;
         hasAppliedDamage = false;
+        agent.enabled = true;
     }
 
     public override void Init()
@@ -146,7 +146,7 @@ public class AgentBase : AIBase {
         if (initializedTimes == 0)
             return;
 
-        if (!healthS.IsAlive() && thisTransform.gameObject.activeSelf == false)
+        if (!healthS.IsAlive() || thisTransform.gameObject.activeSelf == false)
             return;
         
         UpdateEssentials();
@@ -594,7 +594,7 @@ public class AgentBase : AIBase {
         {
             ExecuteNextCommand();
             tempTargets = ScanEnemies(aggroDistance);
-            if (tempTargets != null && tempTargets.Length != 0)
+            if (tempTargets != null && tempTargets.Count != 0)
             {
                 NewTarget(GetBestTarget(tempTargets));
             }
@@ -639,7 +639,7 @@ public class AgentBase : AIBase {
         if (target == null)
         {
             tempTargets = ScanEnemies(aggroDistance);
-            if (tempTargets != null && tempTargets.Length != 0)
+            if (tempTargets != null && tempTargets.Count != 0)
             {
                 NewTarget(GetBestTarget(tempTargets));
                 startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin path efter den jagat
@@ -710,7 +710,7 @@ public class AgentBase : AIBase {
         if (target == null && ignoreSurrounding == false)
         {
             tempTargets = ScanEnemies(aggroDistance);
-            if (tempTargets != null && tempTargets.Length != 0)
+            if (tempTargets != null && tempTargets.Count != 0)
             {
                 NewTarget(GetBestTarget(tempTargets));
                 startPos2 = thisTransform.position; //därifrån den börja jaga, så att den kan återupta sin investigation efter den jagat
@@ -833,10 +833,10 @@ public class AgentBase : AIBase {
             return t2;
         }
     }
-    public virtual Transform GetBestTarget(Transform[] ts) //om ts är sorterad efter avstånd så kommer den kolla de närmre fienderna först
+    public virtual Transform GetBestTarget(List<Transform> ts) //om ts är sorterad efter avstånd så kommer den kolla de närmre fienderna först
     {
         Transform tTemp = null;
-        for (int i = 0; i < ts.Length; i++)
+        for (int i = 0; i < ts.Count; i++)
         {
             if (ts[i].GetComponent<AIBase>().GetNrAttackers() < nrAcceptedAttackersOnTarget)
             {
@@ -846,7 +846,7 @@ public class AgentBase : AIBase {
         }
         if (tTemp == null)
         {
-            int randomIndex = Random.Range(0, ts.Length);
+            int randomIndex = Random.Range(0, ts.Count);
             tTemp = ts[randomIndex];
         }
 
@@ -889,8 +889,8 @@ public class AgentBase : AIBase {
         {
             return null;
         }
-        Transform[] potTargets = ScanEnemies(attackRange);
-        if(potTargets == null)
+        List<Transform> potTargets = ScanEnemies(attackRange);
+        if(potTargets == null || potTargets.Count == 0)
         {
             return null;
         }
@@ -976,7 +976,7 @@ public class AgentBase : AIBase {
     }
     public void SetDestination(Vector3 pos)
     {
-        if (agent != null)
+        if (agent != null && healthS.IsAlive())
         {
             if (IsActive() && agent.enabled == true && agent.isOnNavMesh == true)
             {

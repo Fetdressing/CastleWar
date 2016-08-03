@@ -14,6 +14,7 @@ public abstract class AIBase : MonoBehaviour {
     public Transform thisTransform;
     [HideInInspector]
     public Transform target;
+    public GameObject animationObject;
 
     [HideInInspector]
     public List<string> friendlyLayers = new List<string>(); //bra att dessa är strings, behövs till tex AgentRanged
@@ -278,14 +279,14 @@ public abstract class AIBase : MonoBehaviour {
         List<Transform> hits = new List<Transform>();
         for (int i = 0; i < hitColliders.Length; i++)
         {
-            if (hitColliders[i].transform != thisTransform) //vill väl inte ha mig själv i listan?
+            if (hitColliders[i].transform != thisTransform && hitColliders[i].transform.GetComponent<Health>().IsAlive() == true) //vill väl inte ha mig själv i listan?
             {
                 hits.Add(hitColliders[i].transform);
             }
         }
         return hits;
     }
-    public virtual Transform[] ScanEnemies(float aD)
+    public virtual List<Transform> ScanEnemies(float aD)
     {
         Collider[] hitColliders = Physics.OverlapSphere(thisTransform.position, aD, enemyOnly);
         //int i = 0;
@@ -294,13 +295,16 @@ public abstract class AIBase : MonoBehaviour {
         //    Debug.Log(hitColliders[i].transform.name);
         //    i++;
         //}
-        Transform[] hits = new Transform[hitColliders.Length];
+        List<Transform> hits = new List<Transform>();
 
         if (hitColliders.Length > 0)
         {
             for (int i = 0; i < hitColliders.Length; i++)
             {
-                hits[i] = hitColliders[i].transform;
+                if (hitColliders[i].transform.GetComponent<Health>().IsAlive() == true)
+                {
+                    hits.Add(hitColliders[i].transform);
+                }
             }
             if (thisTransform.GetComponent<AgentBase>() != null)
             {
@@ -353,10 +357,10 @@ public abstract class AIBase : MonoBehaviour {
     {
         return Vector3.Distance(thisTransform.position, p);
     }
-    public virtual void SortTransformsByDistance(ref Transform[] ts) //index 0 kommer hamna närmst
+    public virtual void SortTransformsByDistance(ref List<Transform> ts) //index 0 kommer hamna närmst
     {
         List<Transform> tempTs = new List<Transform>();
-        for (int i = 0; i < ts.Length; i++)
+        for (int i = 0; i < ts.Count; i++)
         {
             tempTs.Add(ts[i]);
         }
@@ -368,7 +372,7 @@ public abstract class AIBase : MonoBehaviour {
               Vector3.Distance(thisTransform.position, b.transform.position));
         });
 
-        for (int i = 0; i < ts.Length; i++)
+        for (int i = 0; i < ts.Count; i++)
         {
             ts[i] = tempTs[i]; //senare index hamnar längre ifrån, 0 är närmst
             //Debug.Log(thisTransform.name + " Index: " + i.ToString() + Vector3.Distance(ts[i].position, thisTransform.position).ToString());

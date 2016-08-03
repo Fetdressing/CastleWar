@@ -205,13 +205,13 @@ public class Tower : BuildingBase {
 
     public virtual void SearchTarget()
     {
-        Transform[] potTargets = ScanEnemies(attackRange);
+        List<Transform> potTargets = ScanEnemies(attackRange);
         if (potTargets == null)
         {
             return;
         }
 
-        for(int i = 0; i < potTargets.Length; i++)
+        for(int i = 0; i < potTargets.Count; i++)
         {
             float tDistance = GetDistanceToTransform(potTargets[i]);
             if(tDistance < attackRange && tDistance > minimumTargetDistance)

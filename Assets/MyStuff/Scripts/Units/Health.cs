@@ -51,6 +51,14 @@ public class Health : MonoBehaviour {
     public bool destroyOnDeath = false;
     public int resourceWorth = 5;
 
+    public GameObject animationObj;
+    public AnimationClip deathAnimation;
+    public GameObject deathParticleSystemObj;
+    [HideInInspector]
+    public GameObject deathParticleSystemSpawned;
+    public float delayedDeathTime = 0;
+    [HideInInspector]
+    public bool isAlive = true;
     //List<string> activeBuffs = new List<string>();
     Dictionary<string, Buff> buffs = new Dictionary<string, Buff>();
     // Use this for initialization
@@ -94,7 +102,18 @@ public class Health : MonoBehaviour {
             thisMaterial.Add(re.material);
             i++;
         }
-        
+
+        if (deathParticleSystemObj != null)
+        {
+            deathParticleSystemSpawned = Instantiate(deathParticleSystemObj.gameObject);
+            deathParticleSystemSpawned.SetActive(false);
+        }
+
+        if(aiBase != null)
+        {
+            animationObj = aiBase.animationObject;
+        }
+
         mainCamera = Camera.main;
 
         maxHealth = startHealth; //maxHealth kan påverkas av andra faktorer also
@@ -122,11 +141,19 @@ public class Health : MonoBehaviour {
         {
             thisRenderer[i].material = thisMaterial[i];
         }
+        isAlive = true;
+        uiCanvas.gameObject.SetActive(true);
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        if(isAlive == false)
+        {
+            uiCanvas.gameObject.SetActive(false);
+            return;
+        }
+
         if(initializedTimes == 0)
         {
             return;
@@ -155,6 +182,8 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
 
     public bool AddHealthTrue(int h)
     {
+        if (isAlive == false) return false;
+
         if (h < 0) //ifall det är damage
         {
             if (unitSpellHandler != null)
@@ -189,7 +218,9 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
 
     public bool AddHealth(int h)
     {
-        if(h < 0) //ifall det är damage
+        if (isAlive == false) return false;
+
+        if (h < 0) //ifall det är damage
         {
             if(unitSpellHandler != null)
             {
@@ -233,6 +264,8 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
     } //endast med armor i åtanke
     public bool AddHealth(int h, TypeDamage damageType) //armor type + armor i åtanke!
     {
+        if (isAlive == false) return false;
+
         bool positiveHealth = false;
         if(h > 0)
         {
@@ -254,25 +287,45 @@ mainCamera.transform.rotation * Vector3.up); //vad gör jag med saker som bara h
 
     public void Die()
     {
+        isAlive = false;
         GameObject.FindGameObjectWithTag("PlayerHandler").GetComponent<Builder>().ReportDeadUnit(thisTransform, resourceWorth);
-        if(destroyOnDeath == true)
+
+        if(aiBase.GetComponent<AgentBase>() != null)
+        {
+            aiBase.GetComponent<AgentBase>().agent.enabled = false;
+        }
+        if (deathParticleSystemSpawned != null)
+        {
+            deathParticleSystemSpawned.GetComponent<ParticleTimed>().StartParticleSystem();
+        }
+        if(deathAnimation != null)
+        {
+            animationObj.GetComponent<Animation>().Play(deathAnimation.name);
+        }
+
+        if (destroyOnDeath == true)
         {
             if (thisTransform.GetComponent<AIBase>() != null)
             {
                 thisTransform.GetComponent<AIBase>().Dealloc();
             }
-
-            Destroy(thisTransform.gameObject);
+            Destroy(thisTransform.gameObject, delayedDeathTime);
         }
         else
         {
-            thisTransform.gameObject.SetActive(false);
+            StartCoroutine(DieDelayed());            
         }        
+    }
+
+    IEnumerator DieDelayed()
+    {
+        yield return new WaitForSeconds(delayedDeathTime);
+        thisTransform.gameObject.SetActive(false);
     }
 
     public bool IsAlive()
     {
-        if(currHealth > 0)
+        if(currHealth > 0 && isAlive == true)
         {
             return true;
         }
