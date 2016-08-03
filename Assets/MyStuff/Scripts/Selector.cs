@@ -885,18 +885,19 @@ public class Selector : MonoBehaviour {
         {
             for (int i = 0; i < spellButtons.Length; i++)
             {
-                spellButtons[i].GetComponent<Tooltip>().tooltip = "";
+                spellButtons[i].GetComponent<Tooltip>().tooltip = ""; //den kommer inte visa någon bar ifall det är "" (y)
                 spellButtons[i].GetComponent<Image>().sprite = spellMissingSprite;
             }
         }
     }
     void UpdateToolTips()
     {
+        //updatera tooltips till dessa nya units!
         if (currTargetGroup.Count == 0) return;
         if (currTargetGroup[0].GetComponent<UnitSpellHandler>() != null)
         {
             UnitSpellHandler tempUSH = currTargetGroup[0].GetComponent<UnitSpellHandler>();
-            for (int i = 0; i < spellButtons.Length; i++) //updatera tooltips till dessa nya units!
+            for (int i = 0; i < spellButtons.Length; i++)
             {
                 if (tempUSH.SpellIndexExists(i))
                 {
@@ -905,7 +906,7 @@ public class Selector : MonoBehaviour {
                 }
                 else
                 {
-                    spellButtons[i].GetComponent<Tooltip>().tooltip = "";
+                    spellButtons[i].GetComponent<Tooltip>().tooltip = ""; //den kommer inte visa någon bar ifall det är "" (y)
                 }
             }
         }
@@ -924,7 +925,7 @@ public class Selector : MonoBehaviour {
 
         //namn och tooltip på unitet
         Health ct = currTargetGroup[0].GetComponent<Health>();
-        unitPortrait.GetComponent<Tooltip>().ChangeToolTip("<b>" + ct.name + "</b>" + ct.tooltip);
+        unitPortrait.GetComponent<Tooltip>().ChangeToolTip("<b>" + ct.name + "</b>\n" + ct.tooltip);
     }
 
     void GetNextTargetGroupIndex()

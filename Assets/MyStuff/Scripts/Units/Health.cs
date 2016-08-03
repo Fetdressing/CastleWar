@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
     public string name = "Name Missing";
+    [TextArea(3,5)]
     public string tooltip = "ToolTip missing";
 
     public int unitID = 0;
