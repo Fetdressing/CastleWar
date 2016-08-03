@@ -200,7 +200,7 @@ public class Projectile : MonoBehaviour {
             }
         }
 
-        Hit(); //den träffade terräng annars
+        //Hit(); //den träffade terräng annars
     }
 
     public virtual void Hit() //explosion

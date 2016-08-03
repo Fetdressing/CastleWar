@@ -136,7 +136,7 @@ public class Selector : MonoBehaviour {
         }
         GetMoveState(); //behöver vara sist
         UpdateUnitInfo();
-        UpdateCurrTargetGroup();
+        UpdateCurrTargetGroup(); //denna updaterar tooltips oxå, because tooltip bara behöver updateras när det är en ny grupp
     }
 
     Transform GetMouseTarget()
@@ -849,7 +849,7 @@ public class Selector : MonoBehaviour {
             {
                 if (tempUSH.SpellIndexExists(i))
                 {
-                    spellButtons[i].GetComponent<Tooltip>().tooltip = "<b>" + tempUSH.allAbilities[i].name+ "</b>" + "\n" + tempUSH.allAbilities[i].tooltip;
+                    //spellButtons[i].GetComponent<Tooltip>().tooltip = "<b>" + tempUSH.allAbilities[i].name+ "</b>" + "\n" + tempUSH.allAbilities[i].tooltip; tooltips updateras i sin egen funktion
                     Image spellButtonImage = spellButtons[i].GetComponent<Image>();
                     spellButtonImage.sprite = tempUSH.allAbilities[i].abilitySprite;
 
@@ -875,9 +875,9 @@ public class Selector : MonoBehaviour {
                 }
                 else
                 {
-                    spellButtons[i].GetComponent<Tooltip>().tooltip = "";
                     spellButtons[i].GetComponent<Image>().sprite = spellMissingSprite;
                     spellButtons[i].image.color = normalColor;
+                    spellButtons[i].GetComponent<Image>().fillAmount = 1;
                 }
             }
         }
@@ -889,6 +889,42 @@ public class Selector : MonoBehaviour {
                 spellButtons[i].GetComponent<Image>().sprite = spellMissingSprite;
             }
         }
+    }
+    void UpdateToolTips()
+    {
+        if (currTargetGroup.Count == 0) return;
+        if (currTargetGroup[0].GetComponent<UnitSpellHandler>() != null)
+        {
+            UnitSpellHandler tempUSH = currTargetGroup[0].GetComponent<UnitSpellHandler>();
+            for (int i = 0; i < spellButtons.Length; i++) //updatera tooltips till dessa nya units!
+            {
+                if (tempUSH.SpellIndexExists(i))
+                {
+                    //spellButtons[i].GetComponent<Tooltip>().ChangeToolTip(GetSpellToolTip(i)); //updatera spelltooltipen
+                    spellButtons[i].GetComponent<Tooltip>().tooltip = "<b>" + tempUSH.allAbilities[i].name + "</b>" + "\n" + tempUSH.allAbilities[i].tooltip; //spell tooltips!
+                }
+                else
+                {
+                    spellButtons[i].GetComponent<Tooltip>().tooltip = "";
+                }
+            }
+        }
+
+        string armorTypeToolTip = damageHandler.GetArmorToolTip(currTargetGroup[0].GetComponent<Health>().armorType);
+        if (currTargetGroup[0].GetComponent<AIBase>() != null)
+        {
+            string damageTypeToolTip = damageHandler.GetDamageToolTip(currTargetGroup[0].GetComponent<AIBase>().damageType);
+            damageTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip(damageTypeToolTip);
+        }
+        else
+        {
+            damageTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip("N/A");
+        }
+        armorTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip(armorTypeToolTip);
+
+        //namn och tooltip på unitet
+        Health ct = currTargetGroup[0].GetComponent<Health>();
+        unitPortrait.GetComponent<Tooltip>().ChangeToolTip("<b>" + ct.name + "</b>" + ct.tooltip);
     }
 
     void GetNextTargetGroupIndex()
@@ -918,24 +954,7 @@ public class Selector : MonoBehaviour {
             UpdateCurrTargetGroup();
         }
     }
-    void UpdateToolTips()
-    {
-        for (int i = 0; i < spellButtons.Length; i++) //updatera tooltips till dessa nya units!
-        {
-            spellButtons[i].GetComponent<Tooltip>().ChangeToolTip(GetSpellToolTip(i)); //updatera spelltooltipen
-        }
-        string armorTypeToolTip = damageHandler.GetArmorToolTip(currTargetGroup[0].GetComponent<Health>().armorType);
-        if (currTargetGroup[0].GetComponent<AIBase>() != null)
-        {
-            string damageTypeToolTip = damageHandler.GetDamageToolTip(currTargetGroup[0].GetComponent<AIBase>().damageType);
-            damageTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip(damageTypeToolTip);
-        }
-        else
-        {
-            damageTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip("N/A");
-        }
-        armorTypeImage.gameObject.GetComponent<Tooltip>().ChangeToolTip(armorTypeToolTip);
-    }
+   
 
     void GetNextSpellCasterIndex()
     {

@@ -138,17 +138,14 @@ public class AgentRanged : AgentBase {
         {
             if (attackSpeedTimer <= Time.time)
             {
-                if(los)
-                {
-                    attackSpeedTimer = attackSpeed + Time.time;
-                    int damageRoll = RollDamage();
-                    AddFatigue(-attackFatigueCost);
-                    Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
-                }
+                attackSpeedTimer = attackSpeed + Time.time;
+                int damageRoll = RollDamage();
+                AddFatigue(-attackFatigueCost);
+                Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
             }
         }
 
-        if (attackRange + 1 < targetDistanceuS || !los) //+1 för marginal
+        if (attackRange + 1 < targetDistanceuS) //+1 för marginal
         {
             SetDestination(target.position);
         }

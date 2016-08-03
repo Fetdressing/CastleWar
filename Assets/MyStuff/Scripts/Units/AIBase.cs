@@ -9,6 +9,7 @@ public abstract class AIBase : MonoBehaviour {
     public int initializedTimes = 0;
     [HideInInspector]
     public static long nrAI = 0;
+    [HideInInspector]
     public long id; //denna går inte att ändras från editor, eller den skrivs över ändå. Bara för att ha koll på den
     [HideInInspector]
     public Transform thisTransform;

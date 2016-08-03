@@ -140,12 +140,12 @@ public class Tower : BuildingBase {
 
     public virtual bool AttackTarget()
     {
-        bool los;
-        los = LineOfSight();
+        //bool los;
+        //los = LineOfSight();
         float targetDistanceuS = (targetDistance - targetHealth.unitSize);
 
         bool targetValid = true;
-        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive() || targetDistanceuS > attackRange || targetDistanceuS < minimumTargetDistance || !los)
+        if (target == null || target.gameObject.activeSelf == false || !targetHealth.IsAlive() || targetDistanceuS > attackRange || targetDistanceuS < minimumTargetDistance)
         {
             targetValid = false;
             return targetValid;
@@ -155,13 +155,10 @@ public class Tower : BuildingBase {
         {
             if (attackSpeedTimer <= Time.time)
             {
-                if (los)
-                {
-                    unitSpellHandler.RegisterAttack();
-                    attackSpeedTimer = attackSpeed + Time.time;
-                    int damageRoll = RollDamage();
-                    Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
-                }
+                unitSpellHandler.RegisterAttack();
+                attackSpeedTimer = attackSpeed + Time.time;
+                int damageRoll = RollDamage();
+                Fire(damageRoll); //den skjuter på marken, på fiende transformen, detta skulle kunna vara mer reliable
             }
         }
         return true;

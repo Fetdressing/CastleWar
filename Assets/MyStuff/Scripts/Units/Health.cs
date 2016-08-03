@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
+    public string name = "Name Missing";
+    public string tooltip = "ToolTip missing";
+
     public int unitID = 0;
     private int initializedTimes = 0;
     [HideInInspector]
